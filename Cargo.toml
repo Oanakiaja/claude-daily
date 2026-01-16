@@ -2,12 +2,12 @@
 name = "daily"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Oanakiaja <oanakiaja@gmail.com>"]
 description = "Daily Context Archive System for Claude Code"
 license = "MIT"
-repository = "https://github.com/yourusername/daily"
+repository = "https://github.com/oanakiaja/claude-daily"
 readme = "README.md"
-keywords = ["claude-code", "archive", "productivity", "cli"]
+keywords = ["claude-code", "archive", "productivity", "cli", "daily-log"]
 categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]

@@ -87,12 +87,12 @@ When Claude Code triggers the SessionEnd hook, it passes JSON via stdin:
 
 ### Session End Reasons
 
-| Reason | Trigger | Archived |
-|--------|---------|:--------:|
-| `prompt_input_exit` | User presses Ctrl+D | ✅ |
-| `logout` | User logs out | ✅ |
-| `clear` | User runs /clear command | ✅ |
-| `other` | Other exit methods | ✅ |
+| Reason              | Trigger                  | Archived |
+| ------------------- | ------------------------ | :------: |
+| `prompt_input_exit` | User presses Ctrl+D      |    ✅    |
+| `logout`            | User logs out            |    ✅    |
+| `clear`             | User runs /clear command |    ✅    |
+| `other`             | Other exit methods       |    ✅    |
 
 All exit reasons trigger archival to ensure complete session history.
 
@@ -137,15 +137,35 @@ daily jobs cleanup
 - **Skill Extraction** - Extract reusable skills and commands from sessions
 - **Terminal Viewer** - View archives directly in terminal with beautiful formatting
 
+## Installation
+
+### Method 1: One-line Install (Recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/oanakiaja/claude-daily/main/scripts/install.sh | bash
+```
+
+### Method 2: Cargo Install
+
+```bash
+cargo install daily
+```
+
+### Method 3: Build from Source
+
+```bash
+git clone https://github.com/oanakiaja/claude-daily.git
+cd claude-daily
+cargo install --path .
+```
+
 ## Quick Start
 
 ```bash
-# 1. Install from source
-git clone https://github.com/yourusername/daily.git
-cd daily && cargo install --path .
-
-# 2. Initialize and install hooks
+# 1. Initialize Daily
 daily init
+
+# 2. Install Claude Code hooks
 daily install
 
 # 3. View today's archive
@@ -196,6 +216,90 @@ storage_path = "~/.claude/daily"
 └── 2024-01-16/
     ├── daily.md
     └── refactor.md
+```
+
+## Claude Code Integration
+
+After installation, run `daily install` to automatically configure Claude Code hooks and slash commands.
+
+### Manual Hook Configuration
+
+If you prefer manual setup, add the following to `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "daily hook session-start"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "daily hook session-end"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Manual Slash Commands Setup
+
+Add the following to `~/.claude/commands/`:
+
+**`~/.claude/commands/daily-view.md`**
+
+```markdown
+---
+description: View daily archive
+---
+
+Use the `daily view` skill to show today's archive summary.
+```
+
+**`~/.claude/commands/daily-get-skill.md`**
+
+```markdown
+---
+description: Extract skill from session insights
+---
+
+Use the `daily-get-skill` skill to extract reusable skills from recent sessions.
+```
+
+**`~/.claude/commands/daily-get-command.md`**
+
+```markdown
+---
+description: Extract command from session insights
+---
+
+Use the `daily-get-command` skill to extract reusable commands from recent sessions.
+```
+
+### Verify Installation
+
+```bash
+# Check hooks are installed
+cat ~/.claude/settings.json | grep -A 20 "hooks"
+
+# Test hook manually
+echo '{"session_id":"test","cwd":"/tmp","hook_event_name":"SessionStart"}' | daily hook session-start
+
+# View available slash commands
+ls ~/.claude/commands/
 ```
 
 ## Requirements

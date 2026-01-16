@@ -79,10 +79,17 @@ jobs:
         with:
           path: artifacts
 
+      - name: Prepare install script
+        run: |
+          cp scripts/install.sh artifacts/install.sh
+          chmod +x artifacts/install.sh
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/**/*
+          files: |
+            artifacts/**/*
+            artifacts/install.sh
           generate_release_notes: true
 
   publish-crate:
