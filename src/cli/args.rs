@@ -171,9 +171,9 @@ pub enum Commands {
         #[arg(short, long)]
         interactive: bool,
 
-        /// Use sonnet model for summarization (default: haiku)
+        /// Use haiku model for summarization (default: sonnet)
         #[arg(long)]
-        sonnet: bool,
+        haiku: bool,
     },
 
     /// Show or update configuration

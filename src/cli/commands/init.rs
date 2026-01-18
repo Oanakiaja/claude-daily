@@ -7,18 +7,18 @@ use crate::archive::ArchiveManager;
 use crate::config::{get_config_path, load_config, save_config, Config};
 
 /// Initialize the daily archive system
-pub async fn run(storage_path: Option<PathBuf>, interactive: bool, use_sonnet: bool) -> Result<()> {
+pub async fn run(storage_path: Option<PathBuf>, interactive: bool, use_haiku: bool) -> Result<()> {
     println!("[daily] Initializing Daily Context Archive System...");
 
     // Load or create config
     let mut config = load_config().unwrap_or_else(|_| Config::default());
 
     // Set model based on flag
-    if use_sonnet {
-        config.summarization.model = "sonnet".into();
-        println!("[daily] Using sonnet model for summarization");
+    if use_haiku {
+        config.summarization.model = "haiku".into();
+        println!("[daily] Using haiku model for summarization");
     } else {
-        println!("[daily] Using haiku model for summarization (default)");
+        println!("[daily] Using sonnet model for summarization (default)");
     }
 
     // Determine storage path based on options

@@ -66,8 +66,8 @@ async fn configure_interactive(
     println!();
 
     // Model selection
-    let models = vec!["haiku (faster, cheaper)", "sonnet (smarter, slower)"];
-    let current_model_idx = if config.summarization.model == "sonnet" {
+    let models = vec!["sonnet (smarter, default)", "haiku (faster, cheaper)"];
+    let current_model_idx = if config.summarization.model == "haiku" {
         1
     } else {
         0
@@ -81,9 +81,9 @@ async fn configure_interactive(
         .context("Failed to select model")?;
 
     config.summarization.model = if model_selection == 1 {
-        "sonnet".into()
-    } else {
         "haiku".into()
+    } else {
+        "sonnet".into()
     };
 
     // Enable daily summary
