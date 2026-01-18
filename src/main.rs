@@ -38,9 +38,10 @@ async fn main() -> Result<()> {
         Commands::Summarize {
             transcript,
             task_name,
+            cwd,
             foreground,
             job_id,
-        } => cli::commands::summarize::run(transcript, task_name, foreground, job_id).await,
+        } => cli::commands::summarize::run(transcript, task_name, cwd, foreground, job_id).await,
         Commands::Digest {
             relative_date,
             date,

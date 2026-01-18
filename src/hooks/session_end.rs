@@ -1,6 +1,9 @@
 use anyhow::Result;
 use std::process::{Command, Stdio};
 
+#[cfg(unix)]
+use std::os::unix::process::CommandExt;
+
 use crate::config::load_config;
 use crate::hooks::read_hook_input;
 use crate::jobs::JobManager;
@@ -58,23 +61,33 @@ pub async fn handle() -> Result<()> {
         Err(_) => (Stdio::null(), Stdio::null()),
     };
 
+    // Get cwd as string for passing to summarize command
+    let cwd_str = input.cwd.to_string_lossy().to_string();
+
     // Spawn background process for summarization
     // This ensures Claude Code can exit immediately
-    match Command::new("daily")
-        .args([
-            "summarize",
-            "--transcript",
-            &transcript_path,
-            "--task-name",
-            &task_name,
-            "--job-id",
-            &job_id,
-            "--foreground",
-        ])
-        .stdin(Stdio::null())
-        .stdout(stdout_file)
-        .stderr(stderr_file)
-        .spawn()
+    let mut cmd = Command::new("daily");
+    cmd.args([
+        "summarize",
+        "--transcript",
+        &transcript_path,
+        "--task-name",
+        &task_name,
+        "--cwd",
+        &cwd_str,
+        "--job-id",
+        &job_id,
+        "--foreground",
+    ])
+    .stdin(Stdio::null())
+    .stdout(stdout_file)
+    .stderr(stderr_file);
+
+    // Create a new process group so Ctrl+C/Cmd+C doesn't kill the background process
+    #[cfg(unix)]
+    cmd.process_group(0);
+
+    match cmd.spawn()
     {
         Ok(child) => {
             // Register the job

@@ -20,6 +20,21 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
+    /// Start web dashboard server
+    Show {
+        /// Port to listen on (default: 31456, auto-increment if occupied)
+        #[arg(short, long)]
+        port: Option<u16>,
+
+        /// Host to bind to
+        #[arg(long, default_value = "127.0.0.1")]
+        host: String,
+
+        /// Do not open browser automatically
+        #[arg(long)]
+        no_open: bool,
+    },
+
     /// View archives (interactive date selection if no date specified)
     View {
         /// Date to view (format: yyyy-mm-dd)
@@ -66,6 +81,10 @@ pub enum Commands {
         /// Task name for the archive
         #[arg(short = 'n', long)]
         task_name: Option<String>,
+
+        /// Working directory of the session
+        #[arg(long)]
+        cwd: Option<PathBuf>,
 
         /// Run in foreground (not background)
         #[arg(long)]
@@ -171,21 +190,6 @@ pub enum Commands {
     Hook {
         #[command(subcommand)]
         hook_type: HookType,
-    },
-
-    /// Start web dashboard server
-    Show {
-        /// Port to listen on (default: 31456, auto-increment if occupied)
-        #[arg(short, long)]
-        port: Option<u16>,
-
-        /// Host to bind to
-        #[arg(long, default_value = "127.0.0.1")]
-        host: String,
-
-        /// Do not open browser automatically
-        #[arg(long)]
-        no_open: bool,
     },
 }
 

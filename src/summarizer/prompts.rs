@@ -19,7 +19,7 @@ Transcript:
 Generate a JSON response with this exact structure:
 ```json
 {{
-  "summary": "2-3 sentence overview of what was accomplished",
+  "summary": "2-3 sentence overview including CONCRETE RESULTS (answers found, solutions implemented, code written). Never just describe the action - always include what was produced or discovered.",
   "decisions": "Key decisions made and their rationale (markdown list format)",
   "learnings": "Key learnings from this session (markdown list format)",
   "skill_hints": "Potential reusable skills (only if passes quality gate, see below)"

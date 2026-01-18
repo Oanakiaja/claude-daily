@@ -14,8 +14,6 @@ pub struct SessionArchive {
     pub session_id: String,
     pub cwd: String,
     pub git_branch: Option<String>,
-    pub duration: Option<String>,
-    pub tool_calls: usize,
     pub summary: String,
     pub decisions: String,
     pub code_changes: String,
@@ -32,8 +30,6 @@ impl SessionArchive {
             session_id,
             cwd,
             git_branch: None,
-            duration: None,
-            tool_calls: 0,
             summary: String::new(),
             decisions: String::new(),
             code_changes: String::new(),
@@ -44,8 +40,6 @@ impl SessionArchive {
 
     /// Fill in data from transcript
     pub fn with_transcript_data(mut self, data: &TranscriptData) -> Self {
-        self.tool_calls = data.tool_calls.len();
-
         // Build code changes from files modified
         if !data.files_modified.is_empty() {
             self.code_changes = data
@@ -84,8 +78,6 @@ impl SessionArchive {
             &self.session_id,
             &self.cwd,
             self.git_branch.as_deref(),
-            self.duration.as_deref(),
-            self.tool_calls,
             &self.summary,
             &self.decisions,
             &self.code_changes,
@@ -132,7 +124,6 @@ mod tests {
         );
 
         assert_eq!(archive.title, "test-session");
-        assert_eq!(archive.tool_calls, 0);
     }
 
     #[test]

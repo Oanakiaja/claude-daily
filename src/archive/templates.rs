@@ -12,8 +12,6 @@ impl Templates {
         session_id: &str,
         cwd: &str,
         git_branch: Option<&str>,
-        duration: Option<&str>,
-        tool_calls: usize,
         summary: &str,
         decisions: &str,
         code_changes: &str,
@@ -22,7 +20,6 @@ impl Templates {
     ) -> String {
         let created = Local::now().to_rfc3339();
         let git_branch_str = git_branch.unwrap_or("N/A");
-        let duration_str = duration.unwrap_or("N/A");
 
         format!(
             r#"---
@@ -31,8 +28,6 @@ date: {date}
 session_id: {session_id}
 cwd: "{cwd}"
 git_branch: "{git_branch_str}"
-duration: "{duration_str}"
-tool_calls: {tool_calls}
 tags: [claude-code, session-archive]
 created: {created}
 ---
@@ -43,8 +38,6 @@ created: {created}
 
 - **Working Directory**: `{cwd}`
 - **Git Branch**: `{git_branch_str}`
-- **Session Duration**: {duration_str}
-- **Tool Calls**: {tool_calls}
 
 ## Summary
 
@@ -240,8 +233,6 @@ mod tests {
             "abc123",
             "/home/user/project",
             Some("main"),
-            Some("30 min"),
-            10,
             "Test summary",
             "Test decisions",
             "Test changes",
@@ -251,7 +242,6 @@ mod tests {
 
         assert!(content.contains("title: \"Test Session\""));
         assert!(content.contains("session_id: abc123"));
-        assert!(content.contains("tool_calls: 10"));
     }
 
     #[test]

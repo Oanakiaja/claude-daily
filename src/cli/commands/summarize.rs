@@ -12,6 +12,7 @@ use crate::transcript::TranscriptParser;
 pub async fn run(
     transcript: PathBuf,
     task_name: Option<String>,
+    cwd: Option<PathBuf>,
     foreground: bool,
     job_id: Option<String>,
 ) -> Result<()> {
@@ -23,10 +24,8 @@ pub async fn run(
         format!("session-{}", timestamp)
     });
 
-    // Get working directory from transcript path or current dir
-    let cwd = transcript
-        .parent()
-        .and_then(|p| p.parent()) // Go up from transcript to project
+    // Use provided cwd, or fallback to current dir
+    let cwd = cwd
         .map(|p| p.to_string_lossy().to_string())
         .unwrap_or_else(|| {
             std::env::current_dir()
@@ -46,19 +45,24 @@ pub async fn run(
 
         let transcript_str = transcript.to_string_lossy().to_string();
 
+        // Build args with cwd
+        let args = vec![
+            "summarize".to_string(),
+            "--transcript".to_string(),
+            transcript_str,
+            "--task-name".to_string(),
+            task_name.clone(),
+            "--cwd".to_string(),
+            cwd.clone(),
+            "--foreground".to_string(),
+        ];
+
         // Spawn detached background process
         #[cfg(unix)]
         {
             // Use nohup-style spawning on Unix
             Command::new(&exe)
-                .args([
-                    "summarize",
-                    "--transcript",
-                    &transcript_str,
-                    "--task-name",
-                    &task_name,
-                    "--foreground",
-                ])
+                .args(&args)
                 .stdin(Stdio::null())
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
@@ -69,20 +73,16 @@ pub async fn run(
         #[cfg(windows)]
         {
             Command::new(&exe)
-                .args([
-                    "summarize",
-                    "--transcript",
-                    &transcript_str,
-                    "--task-name",
-                    &task_name,
-                    "--foreground",
-                ])
+                .args(&args)
                 .stdin(Stdio::null())
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .spawn()
                 .context("Failed to spawn background process")?;
         }
+
+        // Suppress unused variable warning
+        let _ = args;
 
         eprintln!("[daily] Background summarization started");
         return Ok(());
@@ -129,6 +129,15 @@ async fn run_summarization(
     task_name: &str,
     cwd: &str,
 ) -> Result<()> {
+    // Check if transcript file exists before attempting to parse
+    if !transcript.exists() {
+        eprintln!(
+            "[daily] Transcript file not found, skipping: {}",
+            transcript.display()
+        );
+        return Ok(());
+    }
+
     // Check if session is empty before summarizing
     let transcript_data =
         TranscriptParser::parse(transcript).context("Failed to parse transcript")?;
