@@ -7,6 +7,7 @@ use std::os::unix::process::CommandExt;
 use crate::config::load_config;
 use crate::hooks::read_hook_input;
 use crate::jobs::JobManager;
+use crate::transcript::TranscriptParser;
 
 /// Handle SessionEnd hook from Claude Code
 /// Spawns background process for summarization
@@ -30,9 +31,18 @@ pub async fn handle() -> Result<()> {
     // Archive on all session end reasons to collect complete history
     // Reasons: "prompt_input_exit" (Ctrl+D), "logout", "clear", "other"
     eprintln!(
-        "[daily] Session ended with {:?}, starting archive",
+        "[daily] Session ended with {:?}, checking transcript",
         input.reason
     );
+
+    // Check if transcript is empty before spawning summarization job
+    // This avoids creating useless 0s jobs for sessions with no user input
+    if is_transcript_empty(&input.transcript_path) {
+        eprintln!("[daily] Empty session (no user input), skipping archive");
+        return Ok(());
+    }
+
+    eprintln!("[daily] Starting archive");
 
     // Generate task name from working directory
     let task_name = generate_task_name(&input.cwd);
@@ -107,6 +117,23 @@ pub async fn handle() -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Check if the transcript file is empty or contains no user messages
+fn is_transcript_empty(transcript_path: &std::path::Path) -> bool {
+    // If file doesn't exist, consider it empty
+    if !transcript_path.exists() {
+        return true;
+    }
+
+    // Parse transcript and check if it has meaningful content
+    match TranscriptParser::parse(transcript_path) {
+        Ok(data) => data.is_empty(),
+        Err(_) => {
+            // If parsing fails, don't skip - let summarization handle the error
+            false
+        }
+    }
 }
 
 /// Generate a task name from the working directory

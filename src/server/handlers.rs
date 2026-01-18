@@ -9,6 +9,7 @@ use std::sync::{Arc, RwLock};
 use crate::archive::ArchiveManager;
 use crate::config::{save_config, Config};
 use crate::jobs::JobManager;
+use crate::summarizer::Prompts;
 
 use super::dto::*;
 
@@ -255,6 +256,12 @@ pub async fn get_config(State(state): State<Arc<AppState>>) -> impl IntoResponse
         auto_digest_enabled: config.summarization.auto_digest_enabled,
         digest_time: config.summarization.digest_time.clone(),
         author: config.archive.author.clone(),
+        prompt_templates: PromptTemplatesDto {
+            session_summary: config.prompt_templates.session_summary.clone(),
+            daily_summary: config.prompt_templates.daily_summary.clone(),
+            skill_extract: config.prompt_templates.skill_extract.clone(),
+            command_extract: config.prompt_templates.command_extract.clone(),
+        },
     };
     Json(ApiResponse::success(config_dto))
 }
@@ -313,6 +320,22 @@ pub async fn update_config(
         };
     }
 
+    // Update prompt templates if provided
+    if let Some(templates) = req.prompt_templates {
+        if let Some(t) = templates.session_summary {
+            config.prompt_templates.session_summary = if t.is_empty() { None } else { Some(t) };
+        }
+        if let Some(t) = templates.daily_summary {
+            config.prompt_templates.daily_summary = if t.is_empty() { None } else { Some(t) };
+        }
+        if let Some(t) = templates.skill_extract {
+            config.prompt_templates.skill_extract = if t.is_empty() { None } else { Some(t) };
+        }
+        if let Some(t) = templates.command_extract {
+            config.prompt_templates.command_extract = if t.is_empty() { None } else { Some(t) };
+        }
+    }
+
     // Save config to file
     if let Err(e) = save_config(&config) {
         return Json(ApiResponse::<ConfigDto>::error(format!(
@@ -331,8 +354,29 @@ pub async fn update_config(
         auto_digest_enabled: config.summarization.auto_digest_enabled,
         digest_time: config.summarization.digest_time.clone(),
         author: config.archive.author.clone(),
+        prompt_templates: PromptTemplatesDto {
+            session_summary: config.prompt_templates.session_summary.clone(),
+            daily_summary: config.prompt_templates.daily_summary.clone(),
+            skill_extract: config.prompt_templates.skill_extract.clone(),
+            command_extract: config.prompt_templates.command_extract.clone(),
+        },
     };
     Json(ApiResponse::success(config_dto))
+}
+
+/// Get default prompt templates
+pub async fn get_default_templates() -> impl IntoResponse {
+    let defaults = DefaultTemplatesDto {
+        session_summary_en: Prompts::default_session_summary_template("en").to_string(),
+        session_summary_zh: Prompts::default_session_summary_template("zh").to_string(),
+        daily_summary_en: Prompts::default_daily_summary_template("en").to_string(),
+        daily_summary_zh: Prompts::default_daily_summary_template("zh").to_string(),
+        skill_extract_en: Prompts::default_skill_extract_template("en").to_string(),
+        skill_extract_zh: Prompts::default_skill_extract_template("zh").to_string(),
+        command_extract_en: Prompts::default_command_extract_template("en").to_string(),
+        command_extract_zh: Prompts::default_command_extract_template("zh").to_string(),
+    };
+    Json(ApiResponse::success(defaults))
 }
 
 // Helper functions

@@ -11,6 +11,9 @@ pub struct Config {
     pub summarization: SummarizationConfig,
     pub hooks: HooksConfig,
     pub output: OutputConfig,
+    /// Custom prompt templates (None = use built-in defaults)
+    #[serde(default)]
+    pub prompt_templates: PromptTemplatesConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -69,6 +72,26 @@ pub struct OutputConfig {
     pub time_format: String,
 }
 
+/// Custom prompt templates configuration
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct PromptTemplatesConfig {
+    /// Custom session summary template (None = use default)
+    #[serde(default)]
+    pub session_summary: Option<String>,
+
+    /// Custom daily summary template (None = use default)
+    #[serde(default)]
+    pub daily_summary: Option<String>,
+
+    /// Custom skill extraction template (None = use default)
+    #[serde(default)]
+    pub skill_extract: Option<String>,
+
+    /// Custom command extraction template (None = use default)
+    #[serde(default)]
+    pub command_extract: Option<String>,
+}
+
 impl Default for Config {
     fn default() -> Self {
         let default_path = dirs::home_dir()
@@ -103,6 +126,7 @@ impl Default for Config {
                 date_format: "%Y-%m-%d".into(),
                 time_format: "%H:%M:%S".into(),
             },
+            prompt_templates: PromptTemplatesConfig::default(),
         }
     }
 }

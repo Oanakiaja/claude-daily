@@ -157,6 +157,7 @@ pub struct ConfigDto {
     pub auto_digest_enabled: bool,
     pub digest_time: String,
     pub author: Option<String>,
+    pub prompt_templates: PromptTemplatesDto,
 }
 
 /// Config update request
@@ -169,4 +170,36 @@ pub struct ConfigUpdateRequest {
     pub auto_digest_enabled: Option<bool>,
     pub digest_time: Option<String>,
     pub author: Option<String>,
+    pub prompt_templates: Option<PromptTemplatesUpdateRequest>,
+}
+
+/// Prompt templates DTO for API responses
+#[derive(Serialize, Clone)]
+pub struct PromptTemplatesDto {
+    pub session_summary: Option<String>,
+    pub daily_summary: Option<String>,
+    pub skill_extract: Option<String>,
+    pub command_extract: Option<String>,
+}
+
+/// Prompt templates update request
+#[derive(Deserialize)]
+pub struct PromptTemplatesUpdateRequest {
+    pub session_summary: Option<String>,
+    pub daily_summary: Option<String>,
+    pub skill_extract: Option<String>,
+    pub command_extract: Option<String>,
+}
+
+/// Default templates DTO for API responses
+#[derive(Serialize)]
+pub struct DefaultTemplatesDto {
+    pub session_summary_en: String,
+    pub session_summary_zh: String,
+    pub daily_summary_en: String,
+    pub daily_summary_zh: String,
+    pub skill_extract_en: String,
+    pub skill_extract_zh: String,
+    pub command_extract_en: String,
+    pub command_extract_zh: String,
 }

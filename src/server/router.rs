@@ -26,6 +26,10 @@ pub fn create_router(state: Arc<AppState>) -> Router {
         // Config routes
         .route("/config", get(handlers::get_config))
         .route("/config", patch(handlers::update_config))
+        .route(
+            "/config/templates/defaults",
+            get(handlers::get_default_templates),
+        )
         // Health check
         .route("/health", get(handlers::health_check));
 

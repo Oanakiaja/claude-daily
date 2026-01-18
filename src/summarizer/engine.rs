@@ -124,10 +124,16 @@ impl SummarizerEngine {
         // Get git branch
         let git_branch = crate::archive::session::get_git_branch(cwd);
 
-        // Build prompt and invoke Claude
+        // Build prompt and invoke Claude (using custom template if configured)
         let language = &self.config.summarization.summary_language;
-        let prompt =
-            Prompts::session_summary(&transcript_text, cwd, git_branch.as_deref(), language);
+        let custom_template = self.config.prompt_templates.session_summary.as_deref();
+        let prompt = Prompts::session_summary_with_template(
+            custom_template,
+            &transcript_text,
+            cwd,
+            git_branch.as_deref(),
+            language,
+        );
 
         let response = self.invoke_claude(&prompt)?;
         let json_str = self.extract_json(&response)?;
@@ -196,10 +202,16 @@ impl SummarizerEngine {
 
         let sessions_json = serde_json::to_string_pretty(&session_data)?;
 
-        // Build prompt and invoke Claude (with existing summary if present)
+        // Build prompt and invoke Claude (with existing summary if present, using custom template if configured)
         let language = &self.config.summarization.summary_language;
-        let prompt =
-            Prompts::daily_summary(&sessions_json, date, existing_summary.as_deref(), language);
+        let custom_template = self.config.prompt_templates.daily_summary.as_deref();
+        let prompt = Prompts::daily_summary_with_template(
+            custom_template,
+            &sessions_json,
+            date,
+            existing_summary.as_deref(),
+            language,
+        );
         let response = self.invoke_claude(&prompt)?;
         let json_str = self.extract_json(&response)?;
 
@@ -226,7 +238,9 @@ impl SummarizerEngine {
     /// Extract skill from session
     pub async fn extract_skill(&self, session_content: &str, hint: Option<&str>) -> Result<String> {
         let language = &self.config.summarization.summary_language;
-        let prompt = Prompts::extract_skill(session_content, hint, language);
+        let custom_template = self.config.prompt_templates.skill_extract.as_deref();
+        let prompt =
+            Prompts::extract_skill_with_template(custom_template, session_content, hint, language);
         let response = self.invoke_claude(&prompt)?;
 
         // Extract markdown from response
@@ -240,7 +254,13 @@ impl SummarizerEngine {
         hint: Option<&str>,
     ) -> Result<String> {
         let language = &self.config.summarization.summary_language;
-        let prompt = Prompts::extract_command(session_content, hint, language);
+        let custom_template = self.config.prompt_templates.command_extract.as_deref();
+        let prompt = Prompts::extract_command_with_template(
+            custom_template,
+            session_content,
+            hint,
+            language,
+        );
         let response = self.invoke_claude(&prompt)?;
 
         // Extract markdown from response

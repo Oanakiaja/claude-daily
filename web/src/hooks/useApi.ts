@@ -44,6 +44,31 @@ export interface DigestResponse {
   session_count: number
 }
 
+export interface PromptTemplates {
+  session_summary: string | null
+  daily_summary: string | null
+  skill_extract: string | null
+  command_extract: string | null
+}
+
+export interface PromptTemplatesUpdate {
+  session_summary?: string | null
+  daily_summary?: string | null
+  skill_extract?: string | null
+  command_extract?: string | null
+}
+
+export interface DefaultTemplates {
+  session_summary_en: string
+  session_summary_zh: string
+  daily_summary_en: string
+  daily_summary_zh: string
+  skill_extract_en: string
+  skill_extract_zh: string
+  command_extract_en: string
+  command_extract_zh: string
+}
+
 export interface Config {
   storage_path: string
   model: string
@@ -53,6 +78,7 @@ export interface Config {
   auto_digest_enabled: boolean
   digest_time: string
   author: string | null
+  prompt_templates: PromptTemplates
 }
 
 export interface ConfigUpdate {
@@ -63,6 +89,7 @@ export interface ConfigUpdate {
   auto_digest_enabled?: boolean
   digest_time?: string
   author?: string
+  prompt_templates?: PromptTemplatesUpdate
 }
 
 interface ApiResponse<T> {
@@ -154,6 +181,11 @@ export function useApi() {
     [request]
   )
 
+  const fetchDefaultTemplates = useCallback(
+    () => request<DefaultTemplates>('/config/templates/defaults'),
+    [request]
+  )
+
   return {
     loading,
     error,
@@ -168,5 +200,6 @@ export function useApi() {
     triggerDigest,
     fetchConfig,
     updateConfig,
+    fetchDefaultTemplates,
   }
 }
