@@ -145,3 +145,28 @@ pub enum WsMessage {
     DigestCompleted { date: String },
     Connected,
 }
+
+/// Config DTO for API responses
+#[derive(Serialize)]
+pub struct ConfigDto {
+    pub storage_path: String,
+    pub model: String,
+    pub summary_language: String,
+    pub enable_daily_summary: bool,
+    pub enable_extraction_hints: bool,
+    pub auto_digest_enabled: bool,
+    pub digest_time: String,
+    pub author: Option<String>,
+}
+
+/// Config update request
+#[derive(Deserialize)]
+pub struct ConfigUpdateRequest {
+    pub summary_language: Option<String>,
+    pub model: Option<String>,
+    pub enable_daily_summary: Option<bool>,
+    pub enable_extraction_hints: Option<bool>,
+    pub auto_digest_enabled: Option<bool>,
+    pub digest_time: Option<String>,
+    pub author: Option<String>,
+}

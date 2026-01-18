@@ -4,22 +4,23 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use crate::archive::ArchiveManager;
-use crate::config::Config;
+use crate::config::{save_config, Config};
 use crate::jobs::JobManager;
 
 use super::dto::*;
 
 /// Shared application state
 pub struct AppState {
-    pub config: Config,
+    pub config: RwLock<Config>,
 }
 
 /// List all available dates
 pub async fn list_dates(State(state): State<Arc<AppState>>) -> impl IntoResponse {
-    let manager = ArchiveManager::new(state.config.clone());
+    let config = state.config.read().unwrap().clone();
+    let manager = ArchiveManager::new(config);
 
     match manager.list_dates() {
         Ok(dates) => {
@@ -54,7 +55,8 @@ pub async fn get_daily_summary(
     State(state): State<Arc<AppState>>,
     Path(date): Path<String>,
 ) -> impl IntoResponse {
-    let manager = ArchiveManager::new(state.config.clone());
+    let config = state.config.read().unwrap().clone();
+    let manager = ArchiveManager::new(config);
 
     match manager.read_daily_summary(&date) {
         Ok(content) => {
@@ -70,7 +72,8 @@ pub async fn list_sessions(
     State(state): State<Arc<AppState>>,
     Path(date): Path<String>,
 ) -> impl IntoResponse {
-    let manager = ArchiveManager::new(state.config.clone());
+    let config = state.config.read().unwrap().clone();
+    let manager = ArchiveManager::new(config);
 
     match manager.list_sessions(&date) {
         Ok(sessions) => {
@@ -99,7 +102,8 @@ pub async fn get_session(
     State(state): State<Arc<AppState>>,
     Path((date, name)): Path<(String, String)>,
 ) -> impl IntoResponse {
-    let manager = ArchiveManager::new(state.config.clone());
+    let config = state.config.read().unwrap().clone();
+    let manager = ArchiveManager::new(config);
 
     match manager.read_session(&date, &name) {
         Ok(content) => {
@@ -117,7 +121,8 @@ pub async fn get_session(
 
 /// List all jobs
 pub async fn list_jobs(State(state): State<Arc<AppState>>) -> impl IntoResponse {
-    match JobManager::new(&state.config) {
+    let config = state.config.read().unwrap();
+    match JobManager::new(&config) {
         Ok(manager) => match manager.list(true) {
             Ok(jobs) => {
                 let job_dtos: Vec<JobDto> = jobs.into_iter().map(Into::into).collect();
@@ -134,7 +139,8 @@ pub async fn get_job(
     State(state): State<Arc<AppState>>,
     Path(job_id): Path<String>,
 ) -> impl IntoResponse {
-    match JobManager::new(&state.config) {
+    let config = state.config.read().unwrap();
+    match JobManager::new(&config) {
         Ok(manager) => match manager.load_job(&job_id) {
             Ok(job) => Json(ApiResponse::success(JobDto::from(job))),
             Err(e) => Json(ApiResponse::<JobDto>::error(e.to_string())),
@@ -148,7 +154,8 @@ pub async fn get_job_log(
     State(state): State<Arc<AppState>>,
     Path(job_id): Path<String>,
 ) -> impl IntoResponse {
-    match JobManager::new(&state.config) {
+    let config = state.config.read().unwrap();
+    match JobManager::new(&config) {
         Ok(manager) => match manager.read_log(&job_id, None) {
             Ok(content) => Json(ApiResponse::success(JobLogDto {
                 id: job_id,
@@ -165,7 +172,8 @@ pub async fn kill_job(
     State(state): State<Arc<AppState>>,
     Path(job_id): Path<String>,
 ) -> impl IntoResponse {
-    match JobManager::new(&state.config) {
+    let config = state.config.read().unwrap();
+    match JobManager::new(&config) {
         Ok(manager) => match manager.kill(&job_id) {
             Ok(killed) => {
                 if killed {
@@ -185,7 +193,8 @@ pub async fn trigger_digest(
     State(state): State<Arc<AppState>>,
     Path(date): Path<String>,
 ) -> impl IntoResponse {
-    let manager = ArchiveManager::new(state.config.clone());
+    let config = state.config.read().unwrap().clone();
+    let manager = ArchiveManager::new(config);
 
     // Check if there are sessions to digest
     match manager.list_sessions(&date) {
@@ -232,6 +241,98 @@ pub async fn trigger_digest(
 /// Health check endpoint
 pub async fn health_check() -> impl IntoResponse {
     (StatusCode::OK, "OK")
+}
+
+/// Get current configuration
+pub async fn get_config(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    let config = state.config.read().unwrap();
+    let config_dto = ConfigDto {
+        storage_path: config.storage.path.to_string_lossy().to_string(),
+        model: config.summarization.model.clone(),
+        summary_language: config.summarization.summary_language.clone(),
+        enable_daily_summary: config.summarization.enable_daily_summary,
+        enable_extraction_hints: config.summarization.enable_extraction_hints,
+        auto_digest_enabled: config.summarization.auto_digest_enabled,
+        digest_time: config.summarization.digest_time.clone(),
+        author: config.archive.author.clone(),
+    };
+    Json(ApiResponse::success(config_dto))
+}
+
+/// Update configuration
+pub async fn update_config(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<ConfigUpdateRequest>,
+) -> impl IntoResponse {
+    let mut config = state.config.write().unwrap();
+
+    // Update fields if provided
+    if let Some(lang) = req.summary_language {
+        if lang == "en" || lang == "zh" {
+            config.summarization.summary_language = lang;
+        } else {
+            return Json(ApiResponse::<ConfigDto>::error(
+                "Invalid language. Must be 'en' or 'zh'",
+            ));
+        }
+    }
+    if let Some(model) = req.model {
+        if model == "sonnet" || model == "haiku" {
+            config.summarization.model = model;
+        } else {
+            return Json(ApiResponse::<ConfigDto>::error(
+                "Invalid model. Must be 'sonnet' or 'haiku'",
+            ));
+        }
+    }
+    if let Some(enable) = req.enable_daily_summary {
+        config.summarization.enable_daily_summary = enable;
+    }
+    if let Some(enable) = req.enable_extraction_hints {
+        config.summarization.enable_extraction_hints = enable;
+    }
+    if let Some(enable) = req.auto_digest_enabled {
+        config.summarization.auto_digest_enabled = enable;
+    }
+    if let Some(time) = req.digest_time {
+        // Validate time format
+        let parts: Vec<&str> = time.split(':').collect();
+        if parts.len() == 2 {
+            if let (Ok(h), Ok(m)) = (parts[0].parse::<u32>(), parts[1].parse::<u32>()) {
+                if h < 24 && m < 60 {
+                    config.summarization.digest_time = time;
+                }
+            }
+        }
+    }
+    if let Some(author) = req.author {
+        config.archive.author = if author.is_empty() {
+            None
+        } else {
+            Some(author)
+        };
+    }
+
+    // Save config to file
+    if let Err(e) = save_config(&config) {
+        return Json(ApiResponse::<ConfigDto>::error(format!(
+            "Failed to save config: {}",
+            e
+        )));
+    }
+
+    // Return updated config
+    let config_dto = ConfigDto {
+        storage_path: config.storage.path.to_string_lossy().to_string(),
+        model: config.summarization.model.clone(),
+        summary_language: config.summarization.summary_language.clone(),
+        enable_daily_summary: config.summarization.enable_daily_summary,
+        enable_extraction_hints: config.summarization.enable_extraction_hints,
+        auto_digest_enabled: config.summarization.auto_digest_enabled,
+        digest_time: config.summarization.digest_time.clone(),
+        author: config.archive.author.clone(),
+    };
+    Json(ApiResponse::success(config_dto))
 }
 
 // Helper functions

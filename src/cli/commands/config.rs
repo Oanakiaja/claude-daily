@@ -30,6 +30,15 @@ pub async fn run(set_storage: Option<PathBuf>, show: bool, interactive: bool) ->
         println!("  Storage path: {}", config.storage.path.display());
         println!("  Summarization model: {}", config.summarization.model);
         println!(
+            "  Summary language: {} ({})",
+            config.summarization.summary_language,
+            if config.summarization.summary_language == "zh" {
+                "Chinese"
+            } else {
+                "English"
+            }
+        );
+        println!(
             "  Enable daily summary: {}",
             config.summarization.enable_daily_summary
         );
@@ -82,6 +91,27 @@ async fn configure_interactive(config: &mut crate::config::Config) -> Result<()>
         "haiku".into()
     } else {
         "sonnet".into()
+    };
+
+    // Language selection
+    let languages = vec!["en (English, default)", "zh (Chinese / 中文)"];
+    let current_lang_idx = if config.summarization.summary_language == "zh" {
+        1
+    } else {
+        0
+    };
+
+    let lang_selection = Select::with_theme(&theme)
+        .with_prompt("Select summary language")
+        .items(&languages)
+        .default(current_lang_idx)
+        .interact()
+        .context("Failed to select language")?;
+
+    config.summarization.summary_language = if lang_selection == 1 {
+        "zh".into()
+    } else {
+        "en".into()
     };
 
     // Enable daily summary
@@ -148,6 +178,15 @@ async fn configure_interactive(config: &mut crate::config::Config) -> Result<()>
     println!();
     println!("Updated settings:");
     println!("  Model: {}", config.summarization.model);
+    println!(
+        "  Summary language: {} ({})",
+        config.summarization.summary_language,
+        if config.summarization.summary_language == "zh" {
+            "Chinese"
+        } else {
+            "English"
+        }
+    );
     println!(
         "  Daily summary: {}",
         config.summarization.enable_daily_summary

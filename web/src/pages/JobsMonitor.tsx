@@ -2,33 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApi } from '../hooks/useApi'
 import type { Job } from '../hooks/useApi'
-import { useWebSocket } from '../hooks/useWebSocket'
 import { JobCard } from '../components/JobCard'
-
-interface WebSocketJobMessage {
-  type: string
-  data: Job
-}
 
 export function JobsMonitor() {
   const [jobs, setJobs] = useState<Job[]>([])
   const { fetchJobs, killJob, error } = useApi()
-
-  const handleWsMessage = useCallback((msg: WebSocketJobMessage) => {
-    if (msg.type === 'JobUpdated') {
-      setJobs((prev) => {
-        const idx = prev.findIndex((j) => j.id === msg.data.id)
-        if (idx >= 0) {
-          const updated = [...prev]
-          updated[idx] = msg.data
-          return updated
-        }
-        return [msg.data, ...prev]
-      })
-    }
-  }, [])
-
-  const { connected } = useWebSocket(handleWsMessage as (msg: { type: string; data?: unknown }) => void)
 
   const loadJobs = useCallback(() => {
     fetchJobs()
@@ -57,18 +35,8 @@ export function JobsMonitor() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8">
         <h1 className="text-3xl font-bold text-balance">Jobs Monitor</h1>
-        <div className="flex items-center gap-2">
-          <span
-            className={`size-2 rounded-full ${
-              connected ? 'bg-green-500' : 'bg-red-500'
-            }`}
-          />
-          <span className="text-sm text-gray-500">
-            {connected ? 'Connected' : 'Disconnected'}
-          </span>
-        </div>
       </div>
 
       {error && (

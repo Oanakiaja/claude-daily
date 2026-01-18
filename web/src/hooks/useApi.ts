@@ -44,6 +44,27 @@ export interface DigestResponse {
   session_count: number
 }
 
+export interface Config {
+  storage_path: string
+  model: string
+  summary_language: string
+  enable_daily_summary: boolean
+  enable_extraction_hints: boolean
+  auto_digest_enabled: boolean
+  digest_time: string
+  author: string | null
+}
+
+export interface ConfigUpdate {
+  summary_language?: string
+  model?: string
+  enable_daily_summary?: boolean
+  enable_extraction_hints?: boolean
+  auto_digest_enabled?: boolean
+  digest_time?: string
+  author?: string
+}
+
 interface ApiResponse<T> {
   success: boolean
   data?: T
@@ -122,6 +143,17 @@ export function useApi() {
     [request]
   )
 
+  const fetchConfig = useCallback(() => request<Config>('/config'), [request])
+
+  const updateConfig = useCallback(
+    (config: ConfigUpdate) =>
+      request<Config>('/config', {
+        method: 'PATCH',
+        body: JSON.stringify(config),
+      }),
+    [request]
+  )
+
   return {
     loading,
     error,
@@ -134,5 +166,7 @@ export function useApi() {
     fetchJobLog,
     killJob,
     triggerDigest,
+    fetchConfig,
+    updateConfig,
   }
 }

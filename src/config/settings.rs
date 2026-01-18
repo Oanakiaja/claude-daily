@@ -38,6 +38,13 @@ pub struct SummarizationConfig {
     /// Enable auto-digest of previous day's sessions on session start
     #[serde(default = "default_auto_digest")]
     pub auto_digest_enabled: bool,
+    /// Language for summary output ("en" for English, "zh" for Chinese)
+    #[serde(default = "default_summary_language")]
+    pub summary_language: String,
+}
+
+fn default_summary_language() -> String {
+    "en".into()
 }
 
 fn default_digest_time() -> String {
@@ -84,6 +91,7 @@ impl Default for Config {
                 enable_extraction_hints: true,
                 digest_time: "06:00".into(),
                 auto_digest_enabled: true,
+                summary_language: "en".into(),
             },
             hooks: HooksConfig {
                 enable_session_start: true,

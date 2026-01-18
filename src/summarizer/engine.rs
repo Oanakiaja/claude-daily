@@ -125,7 +125,9 @@ impl SummarizerEngine {
         let git_branch = crate::archive::session::get_git_branch(cwd);
 
         // Build prompt and invoke Claude
-        let prompt = Prompts::session_summary(&transcript_text, cwd, git_branch.as_deref());
+        let language = &self.config.summarization.summary_language;
+        let prompt =
+            Prompts::session_summary(&transcript_text, cwd, git_branch.as_deref(), language);
 
         let response = self.invoke_claude(&prompt)?;
         let json_str = self.extract_json(&response)?;
@@ -195,7 +197,9 @@ impl SummarizerEngine {
         let sessions_json = serde_json::to_string_pretty(&session_data)?;
 
         // Build prompt and invoke Claude (with existing summary if present)
-        let prompt = Prompts::daily_summary(&sessions_json, date, existing_summary.as_deref());
+        let language = &self.config.summarization.summary_language;
+        let prompt =
+            Prompts::daily_summary(&sessions_json, date, existing_summary.as_deref(), language);
         let response = self.invoke_claude(&prompt)?;
         let json_str = self.extract_json(&response)?;
 
@@ -221,7 +225,8 @@ impl SummarizerEngine {
 
     /// Extract skill from session
     pub async fn extract_skill(&self, session_content: &str, hint: Option<&str>) -> Result<String> {
-        let prompt = Prompts::extract_skill(session_content, hint);
+        let language = &self.config.summarization.summary_language;
+        let prompt = Prompts::extract_skill(session_content, hint, language);
         let response = self.invoke_claude(&prompt)?;
 
         // Extract markdown from response
@@ -234,7 +239,8 @@ impl SummarizerEngine {
         session_content: &str,
         hint: Option<&str>,
     ) -> Result<String> {
-        let prompt = Prompts::extract_command(session_content, hint);
+        let language = &self.config.summarization.summary_language;
+        let prompt = Prompts::extract_command(session_content, hint, language);
         let response = self.invoke_claude(&prompt)?;
 
         // Extract markdown from response

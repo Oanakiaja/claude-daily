@@ -1,5 +1,5 @@
 use axum::{
-    routing::{get, post},
+    routing::{get, patch, post},
     Router,
 };
 use std::sync::Arc;
@@ -23,6 +23,9 @@ pub fn create_router(state: Arc<AppState>) -> Router {
         .route("/jobs/:id", get(handlers::get_job))
         .route("/jobs/:id/log", get(handlers::get_job_log))
         .route("/jobs/:id/kill", post(handlers::kill_job))
+        // Config routes
+        .route("/config", get(handlers::get_config))
+        .route("/config", patch(handlers::update_config))
         // Health check
         .route("/health", get(handlers::health_check));
 

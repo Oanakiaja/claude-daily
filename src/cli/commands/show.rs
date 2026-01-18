@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use colored::Colorize;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use tokio::net::TcpListener;
 use tokio::signal;
 
@@ -13,7 +13,9 @@ const MAX_PORT_ATTEMPTS: u16 = 100;
 /// Run the web dashboard server
 pub async fn run(port: Option<u16>, host: String, open_browser: bool) -> Result<()> {
     let config = load_config()?;
-    let state = Arc::new(AppState { config });
+    let state = Arc::new(AppState {
+        config: RwLock::new(config),
+    });
 
     // Find available port
     let (listener, actual_port) = find_available_port(&host, port).await?;

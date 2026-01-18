@@ -4,6 +4,7 @@ import { DailyList } from './pages/DailyList'
 import { DayDetail } from './pages/DayDetail'
 import { SessionDetail } from './pages/SessionDetail'
 import { JobsMonitor } from './pages/JobsMonitor'
+import { Settings } from './pages/Settings'
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="day/:date" element={<DayDetail />} />
         <Route path="day/:date/session/:name" element={<SessionDetail />} />
         <Route path="jobs" element={<JobsMonitor />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>
   )

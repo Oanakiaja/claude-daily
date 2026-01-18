@@ -39,6 +39,19 @@ export function Layout() {
               >
                 Jobs
               </NavLink>
+              <NavLink
+                to="/settings"
+                className={({ isActive }) =>
+                  cn(
+                    'text-sm transition-colors',
+                    isActive
+                      ? 'text-orange-400'
+                      : 'text-gray-400 hover:text-gray-200'
+                  )
+                }
+              >
+                Settings
+              </NavLink>
             </nav>
           </div>
         </div>

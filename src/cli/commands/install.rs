@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use serde_json::{json, Map, Value};
 use std::fs;
 
 use crate::config::load_config;
@@ -182,48 +183,34 @@ Ask the user where they want to install the command and make any requested modif
 
     // Update settings.json to enable hooks
     let settings_file = target_dir.join("settings.json");
-    if !settings_file.exists() {
-        let settings = r#"{
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "daily hook session-start"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "daily hook session-end"
-          }
-        ]
-      }
-    ]
-  }
-}
-"#;
-        fs::write(&settings_file, settings)?;
-        println!("[daily] Settings installed: {}", settings_file.display());
+    let daily_hooks = create_daily_hooks();
+
+    if settings_file.exists() {
+        // Read and merge with existing settings
+        let content =
+            fs::read_to_string(&settings_file).context("Failed to read existing settings.json")?;
+        let mut settings: Value =
+            serde_json::from_str(&content).context("Failed to parse settings.json")?;
+
+        let merged = merge_hooks(&mut settings, &daily_hooks);
+        if merged {
+            let output = serde_json::to_string_pretty(&settings)?;
+            fs::write(&settings_file, output)?;
+            println!("[daily] Hooks merged into: {}", settings_file.display());
+        } else {
+            println!(
+                "[daily] Hooks already configured in: {}",
+                settings_file.display()
+            );
+        }
     } else {
-        println!("[daily] Note: settings.json already exists, please add hooks manually");
-        println!();
-        println!("Add this to your hooks configuration:");
-        println!(
-            r#"
-"SessionStart": [
-  {{ "hooks": [{{ "type": "command", "command": "daily hook session-start" }}] }}
-],
-"SessionEnd": [
-  {{ "hooks": [{{ "type": "command", "command": "daily hook session-end" }}] }}
-]
-"#
-        );
+        // Create new settings file
+        let settings = json!({
+            "hooks": daily_hooks
+        });
+        let output = serde_json::to_string_pretty(&settings)?;
+        fs::write(&settings_file, output)?;
+        println!("[daily] Settings installed: {}", settings_file.display());
     }
 
     println!();
@@ -237,4 +224,84 @@ Ask the user where they want to install the command and make any requested modif
     println!("Hooks are now active. Sessions will be automatically archived.");
 
     Ok(())
+}
+
+/// Create the daily hooks configuration
+fn create_daily_hooks() -> Map<String, Value> {
+    let mut hooks = Map::new();
+
+    let session_start_hook = json!([{
+        "hooks": [{
+            "type": "command",
+            "command": "daily hook session-start"
+        }]
+    }]);
+
+    let session_end_hook = json!([{
+        "hooks": [{
+            "type": "command",
+            "command": "daily hook session-end"
+        }]
+    }]);
+
+    hooks.insert("SessionStart".to_string(), session_start_hook);
+    hooks.insert("SessionEnd".to_string(), session_end_hook);
+    hooks
+}
+
+/// Check if a hook array already contains the daily hook command
+fn has_daily_hook(hooks_array: &[Value], command: &str) -> bool {
+    for hook_entry in hooks_array {
+        if let Some(inner_hooks) = hook_entry.get("hooks").and_then(|h| h.as_array()) {
+            for inner_hook in inner_hooks {
+                if let Some(cmd) = inner_hook.get("command").and_then(|c| c.as_str()) {
+                    if cmd == command {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
+/// Merge daily hooks into existing settings, returns true if changes were made
+fn merge_hooks(settings: &mut Value, daily_hooks: &Map<String, Value>) -> bool {
+    let mut changed = false;
+
+    // Ensure hooks object exists
+    if settings.get("hooks").is_none() {
+        settings["hooks"] = json!({});
+    }
+
+    let hooks = settings["hooks"].as_object_mut().unwrap();
+
+    for (event_name, daily_hook_value) in daily_hooks {
+        let command = match event_name.as_str() {
+            "SessionStart" => "daily hook session-start",
+            "SessionEnd" => "daily hook session-end",
+            _ => continue,
+        };
+
+        if let Some(existing) = hooks.get_mut(event_name) {
+            // Event exists, check if daily hook is already present
+            if let Some(existing_array) = existing.as_array_mut() {
+                if !has_daily_hook(existing_array, command) {
+                    // Append daily hook to existing array
+                    if let Some(daily_array) = daily_hook_value.as_array() {
+                        for item in daily_array {
+                            existing_array.push(item.clone());
+                        }
+                        changed = true;
+                    }
+                }
+            }
+        } else {
+            // Event doesn't exist, add it
+            hooks.insert(event_name.clone(), daily_hook_value.clone());
+            changed = true;
+        }
+    }
+
+    changed
 }
