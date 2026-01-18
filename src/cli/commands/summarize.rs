@@ -210,7 +210,9 @@ async fn auto_extract_skill(
     let session_content = archive.to_markdown();
 
     // Extract skill (will apply 沉淀三问 quality gate)
-    let skill_content = engine.extract_skill(&session_content, Some(&archive.skill_hints)).await?;
+    let skill_content = engine
+        .extract_skill(&session_content, Some(&archive.skill_hints))
+        .await?;
 
     // Check if extraction was rejected by quality gate
     if skill_content.trim().starts_with("NOT_EXTRACTABLE:") {

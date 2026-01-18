@@ -146,7 +146,7 @@ fn check_pending_skills(config: &crate::config::Config) {
             if entry.path().is_dir() {
                 if let Ok(files) = fs::read_dir(entry.path()) {
                     for file in files.flatten() {
-                        if file.path().extension().map_or(false, |e| e == "md") {
+                        if file.path().extension().is_some_and(|e| e == "md") {
                             let date = entry.file_name().to_string_lossy().to_string();
                             let name = file
                                 .path()
@@ -167,7 +167,10 @@ fn check_pending_skills(config: &crate::config::Config) {
 
     eprintln!();
     eprintln!("[daily] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    eprintln!("[daily] {} pending skill(s) waiting for review:", pending_skills.len());
+    eprintln!(
+        "[daily] {} pending skill(s) waiting for review:",
+        pending_skills.len()
+    );
     for (date, name) in pending_skills.iter().take(5) {
         eprintln!("[daily]   • {}/{}", date, name);
     }

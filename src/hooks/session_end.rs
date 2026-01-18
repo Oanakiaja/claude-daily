@@ -87,8 +87,7 @@ pub async fn handle() -> Result<()> {
     #[cfg(unix)]
     cmd.process_group(0);
 
-    match cmd.spawn()
-    {
+    match cmd.spawn() {
         Ok(child) => {
             // Register the job
             if let Err(e) =

@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::config::load_config;
 
@@ -29,7 +29,7 @@ pub async fn run_review(install: Option<String>, delete: Option<String>) -> Resu
 }
 
 /// List all pending skills
-fn list_pending_skills(pending_dir: &PathBuf) -> Result<()> {
+fn list_pending_skills(pending_dir: &Path) -> Result<()> {
     let mut skills: Vec<(String, String, PathBuf)> = Vec::new();
 
     if let Ok(entries) = fs::read_dir(pending_dir) {
@@ -38,7 +38,7 @@ fn list_pending_skills(pending_dir: &PathBuf) -> Result<()> {
                 let date = entry.file_name().to_string_lossy().to_string();
                 if let Ok(files) = fs::read_dir(entry.path()) {
                     for file in files.flatten() {
-                        if file.path().extension().map_or(false, |e| e == "md") {
+                        if file.path().extension().is_some_and(|e| e == "md") {
                             let name = file
                                 .path()
                                 .file_stem()
@@ -86,13 +86,16 @@ fn list_pending_skills(pending_dir: &PathBuf) -> Result<()> {
 
     println!();
     println!("{}", "─".repeat(60));
-    println!("Or ask Claude: \"install skill {}/{}\"", skills[0].0, skills[0].1);
+    println!(
+        "Or ask Claude: \"install skill {}/{}\"",
+        skills[0].0, skills[0].1
+    );
 
     Ok(())
 }
 
 /// Install a skill to user's skills directory
-fn install_skill(pending_dir: &PathBuf, skill_ref: &str) -> Result<()> {
+fn install_skill(pending_dir: &Path, skill_ref: &str) -> Result<()> {
     let (date, name) = parse_skill_ref(skill_ref)?;
     let skill_path = pending_dir.join(&date).join(format!("{}.md", name));
 
@@ -132,7 +135,7 @@ fn install_skill(pending_dir: &PathBuf, skill_ref: &str) -> Result<()> {
 }
 
 /// Delete a pending skill
-fn delete_skill(pending_dir: &PathBuf, skill_ref: &str) -> Result<()> {
+fn delete_skill(pending_dir: &Path, skill_ref: &str) -> Result<()> {
     let (date, name) = parse_skill_ref(skill_ref)?;
     let skill_path = pending_dir.join(&date).join(format!("{}.md", name));
 

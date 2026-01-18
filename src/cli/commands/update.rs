@@ -60,7 +60,12 @@ async fn get_latest_version() -> Result<String> {
     let api_url = format!("https://api.github.com/repos/{}/releases/latest", REPO);
 
     let output = Command::new("curl")
-        .args(["-fsSL", "-H", "Accept: application/vnd.github.v3+json", &api_url])
+        .args([
+            "-fsSL",
+            "-H",
+            "Accept: application/vnd.github.v3+json",
+            &api_url,
+        ])
         .output()
         .context("Failed to execute curl")?;
 
@@ -130,12 +135,7 @@ async fn download_and_install(version: &str, platform: &str) -> Result<()> {
 
     // Download binary using curl
     let output = Command::new("curl")
-        .args([
-            "-fsSL",
-            "-o",
-            tmp_file.to_str().unwrap(),
-            &download_url,
-        ])
+        .args(["-fsSL", "-o", tmp_file.to_str().unwrap(), &download_url])
         .output()
         .context("Failed to execute curl")?;
 

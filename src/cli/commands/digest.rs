@@ -50,10 +50,16 @@ pub async fn run(
         if force {
             // Force mode: check if daily.md exists and regenerate
             if manager.read_daily_summary(&target_date).is_err() {
-                eprintln!("[daily] No sessions and no existing daily.md for {}", target_date);
+                eprintln!(
+                    "[daily] No sessions and no existing daily.md for {}",
+                    target_date
+                );
                 return Ok(());
             }
-            eprintln!("[daily] Force regenerating daily summary for {}...", target_date);
+            eprintln!(
+                "[daily] Force regenerating daily summary for {}...",
+                target_date
+            );
         } else {
             eprintln!("[daily] No sessions found for {}", target_date);
             return Ok(());

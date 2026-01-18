@@ -216,11 +216,7 @@ pub async fn trigger_digest(
                 .spawn()
             {
                 Ok(_) => Json(ApiResponse::success(DigestResponse {
-                    message: format!(
-                        "Digest started for {} ({} sessions)",
-                        date,
-                        sessions.len()
-                    ),
+                    message: format!("Digest started for {} ({} sessions)", date, sessions.len()),
                     session_count: sessions.len(),
                 })),
                 Err(e) => Json(ApiResponse::<DigestResponse>::error(format!(
