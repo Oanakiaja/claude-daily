@@ -2,8 +2,8 @@ use anyhow::{Context, Result};
 use std::fs;
 use std::path::PathBuf;
 
-use crate::config::Config;
 use super::templates::Templates;
+use crate::config::Config;
 
 /// Manages archive directory structure and file operations
 pub struct ArchiveManager {
@@ -19,8 +19,7 @@ impl ArchiveManager {
     pub fn ensure_storage_dir(&self) -> Result<PathBuf> {
         let path = self.config.storage_path();
         if !path.exists() {
-            fs::create_dir_all(&path)
-                .context("Failed to create storage directory")?;
+            fs::create_dir_all(&path).context("Failed to create storage directory")?;
         }
         Ok(path)
     }
@@ -30,15 +29,13 @@ impl ArchiveManager {
         let today_dir = self.config.today_dir();
 
         if !today_dir.exists() {
-            fs::create_dir_all(&today_dir)
-                .context("Failed to create today's directory")?;
+            fs::create_dir_all(&today_dir).context("Failed to create today's directory")?;
 
             // Initialize daily.md
             let daily_md = today_dir.join("daily.md");
             let today = chrono::Local::now().format("%Y-%m-%d").to_string();
             let content = Templates::daily_init(&today);
-            fs::write(&daily_md, content)
-                .context("Failed to write daily.md")?;
+            fs::write(&daily_md, content).context("Failed to write daily.md")?;
         }
 
         Ok(today_dir)
@@ -49,14 +46,12 @@ impl ArchiveManager {
         let date_dir = self.config.date_dir(date);
 
         if !date_dir.exists() {
-            fs::create_dir_all(&date_dir)
-                .context("Failed to create date directory")?;
+            fs::create_dir_all(&date_dir).context("Failed to create date directory")?;
 
             // Initialize daily.md
             let daily_md = date_dir.join("daily.md");
             let content = Templates::daily_init(date);
-            fs::write(&daily_md, content)
-                .context("Failed to write daily.md")?;
+            fs::write(&daily_md, content).context("Failed to write daily.md")?;
         }
 
         Ok(date_dir)
@@ -132,8 +127,10 @@ impl ArchiveManager {
     /// Read a session archive file
     pub fn read_session(&self, date: &str, task_name: &str) -> Result<String> {
         let path = self.session_archive_path(date, task_name);
-        fs::read_to_string(&path)
-            .context(format!("Failed to read session archive: {}", path.display()))
+        fs::read_to_string(&path).context(format!(
+            "Failed to read session archive: {}",
+            path.display()
+        ))
     }
 
     /// Read the daily summary file
@@ -147,8 +144,10 @@ impl ArchiveManager {
     pub fn write_session(&self, date: &str, task_name: &str, content: &str) -> Result<PathBuf> {
         self.ensure_date_dir(date)?;
         let path = self.session_archive_path(date, task_name);
-        fs::write(&path, content)
-            .context(format!("Failed to write session archive: {}", path.display()))?;
+        fs::write(&path, content).context(format!(
+            "Failed to write session archive: {}",
+            path.display()
+        ))?;
         Ok(path)
     }
 

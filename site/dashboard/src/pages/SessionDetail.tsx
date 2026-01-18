@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useApi } from '../hooks/useApi'
+import type { SessionDetail as SessionDetailType } from '../hooks/useApi'
 import { MarkdownRenderer } from '../components/MarkdownRenderer'
 
 export function SessionDetail() {
-  const { date, name } = useParams()
-  const [session, setSession] = useState(null)
+  const { date, name } = useParams<{ date: string; name: string }>()
+  const [session, setSession] = useState<SessionDetailType | null>(null)
   const { fetchSession, loading, error } = useApi()
 
   useEffect(() => {
+    if (!date || !name) return
     fetchSession(date, name)
       .then(setSession)
       .catch(console.error)
@@ -38,7 +40,7 @@ export function SessionDetail() {
           {date}
         </Link>
         <span className="text-gray-600 mx-2">/</span>
-        <span className="text-orange-400 truncate">{decodeURIComponent(name)}</span>
+        <span className="text-orange-400 truncate">{decodeURIComponent(name || '')}</span>
       </nav>
 
       {error && (
@@ -55,7 +57,7 @@ export function SessionDetail() {
           {/* Session Metadata */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold mb-4 text-balance">
-              {session.metadata?.title || decodeURIComponent(name)}
+              {session.metadata?.title || decodeURIComponent(name || '')}
             </h1>
 
             <div className="flex flex-wrap gap-4 text-sm text-gray-400">

@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useApi } from '../hooks/useApi'
+import type { DateItem } from '../hooks/useApi'
 import { cn } from '../lib/utils'
 import { format, parseISO, isToday, isYesterday } from 'date-fns'
 
 export function DailyList() {
-  const [dates, setDates] = useState([])
+  const [dates, setDates] = useState<DateItem[]>([])
   const { fetchDates, loading, error } = useApi()
 
   useEffect(() => {
@@ -15,7 +16,7 @@ export function DailyList() {
       .catch(console.error)
   }, [fetchDates])
 
-  const getDateLabel = (dateStr) => {
+  const getDateLabel = (dateStr: string) => {
     const date = parseISO(dateStr)
     if (isToday(date)) return 'Today'
     if (isYesterday(date)) return 'Yesterday'

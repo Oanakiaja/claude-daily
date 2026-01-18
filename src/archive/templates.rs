@@ -5,6 +5,7 @@ pub struct Templates;
 
 impl Templates {
     /// Generate session archive frontmatter and content
+    #[allow(clippy::too_many_arguments)]
     pub fn session_archive(
         title: &str,
         date: &str,
@@ -72,6 +73,7 @@ created: {created}
     }
 
     /// Generate daily summary frontmatter and content
+    #[allow(clippy::too_many_arguments)]
     pub fn daily_summary(
         date: &str,
         session_count: usize,
@@ -173,12 +175,7 @@ _No sessions archived yet._
 
     /// Generate skill template
     #[allow(dead_code)]
-    pub fn skill(
-        name: &str,
-        description: &str,
-        trigger: &str,
-        workflow: &str,
-    ) -> String {
+    pub fn skill(name: &str, description: &str, trigger: &str, workflow: &str) -> String {
         let timestamp = Local::now().to_rfc3339();
 
         format!(
@@ -215,12 +212,7 @@ _Add examples based on your usage patterns._
 
     /// Generate command template
     #[allow(dead_code)]
-    pub fn command(
-        name: &str,
-        description: &str,
-        use_case: &str,
-        content: &str,
-    ) -> String {
+    pub fn command(name: &str, description: &str, use_case: &str, content: &str) -> String {
         format!(
             r#"---
 description: "{description}"

@@ -1,10 +1,10 @@
 use anyhow::{Context, Result};
 use dialoguer::{theme::ColorfulTheme, Confirm, FuzzySelect, Input};
-use std::path::PathBuf;
 use std::fs;
+use std::path::{Path, PathBuf};
 
-use crate::config::{load_config, save_config, get_config_path, Config};
 use crate::archive::ArchiveManager;
+use crate::config::{get_config_path, load_config, save_config, Config};
 
 /// Initialize the daily archive system
 pub async fn run(storage_path: Option<PathBuf>, interactive: bool) -> Result<()> {
@@ -61,14 +61,14 @@ pub async fn run(storage_path: Option<PathBuf>, interactive: bool) -> Result<()>
 }
 
 /// Expand ~ in path
-fn expand_path(path: &PathBuf) -> PathBuf {
+fn expand_path(path: &Path) -> PathBuf {
     let path_str = path.to_string_lossy();
     if path_str.starts_with("~") {
         if let Some(home) = dirs::home_dir() {
             return home.join(path_str.trim_start_matches("~/").trim_start_matches("~"));
         }
     }
-    path.clone()
+    path.to_path_buf()
 }
 
 /// Interactive directory selection with keyword search
@@ -102,7 +102,7 @@ fn select_directory_interactive() -> Result<Option<PathBuf>> {
     // Build display items with path info
     let display_items: Vec<String> = candidates
         .iter()
-        .map(|p| format_path_display(p))
+        .map(|p| format_path_display(p.as_path()))
         .collect();
 
     // Use FuzzySelect for selection (user can type to filter)
@@ -121,7 +121,10 @@ fn select_directory_interactive() -> Result<Option<PathBuf>> {
             // If selected path doesn't end with "daily", offer to create subdirectory
             let final_path = if !selected.ends_with("daily") {
                 let create_subdir: bool = dialoguer::Confirm::with_theme(&theme)
-                    .with_prompt(format!("Create 'daily' subdirectory in {}?", selected.display()))
+                    .with_prompt(format!(
+                        "Create 'daily' subdirectory in {}?",
+                        selected.display()
+                    ))
                     .default(true)
                     .interact()
                     .unwrap_or(true);
@@ -155,7 +158,7 @@ fn collect_default_candidates() -> Vec<PathBuf> {
 }
 
 /// Recursively search for directories matching the keyword
-fn search_directories_recursive(root: &PathBuf, keyword: &str, max_depth: usize) -> Vec<PathBuf> {
+fn search_directories_recursive(root: &Path, keyword: &str, max_depth: usize) -> Vec<PathBuf> {
     let mut results = Vec::new();
     search_recursive_helper(root, keyword, max_depth, 0, &mut results);
 
@@ -175,7 +178,7 @@ fn search_directories_recursive(root: &PathBuf, keyword: &str, max_depth: usize)
 }
 
 fn search_recursive_helper(
-    dir: &PathBuf,
+    dir: &Path,
     keyword: &str,
     max_depth: usize,
     current_depth: usize,
@@ -196,9 +199,7 @@ fn search_recursive_helper(
             continue;
         }
 
-        let name = path.file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("");
+        let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
         // Skip most hidden directories but allow some special ones
         if name.starts_with('.') && name != ".claude" {
@@ -206,15 +207,24 @@ fn search_recursive_helper(
         }
 
         // Skip system directories that are unlikely to contain user data
-        if matches!(name, "node_modules" | "target" | "build" | "dist" | ".git" | "vendor" | "cache" | "Cache" | "Caches") {
+        if matches!(
+            name,
+            "node_modules"
+                | "target"
+                | "build"
+                | "dist"
+                | ".git"
+                | "vendor"
+                | "cache"
+                | "Cache"
+                | "Caches"
+        ) {
             continue;
         }
 
         // Check if directory name matches keyword
-        if name.to_lowercase().contains(keyword) {
-            if !results.contains(&path) {
-                results.push(path.clone());
-            }
+        if name.to_lowercase().contains(keyword) && !results.contains(&path) {
+            results.push(path.clone());
         }
 
         // Continue searching deeper
@@ -223,7 +233,7 @@ fn search_recursive_helper(
 }
 
 /// Format path for display, showing abbreviated home path
-fn format_path_display(path: &PathBuf) -> String {
+fn format_path_display(path: &Path) -> String {
     let path_str = path.to_string_lossy();
 
     if let Some(home) = dirs::home_dir() {

@@ -29,8 +29,8 @@ pub fn read_hook_input() -> Result<HookInput> {
         anyhow::bail!("No input received from stdin");
     }
 
-    let input: HookInput = serde_json::from_str(&buffer)
-        .context("Failed to parse hook input JSON")?;
+    let input: HookInput =
+        serde_json::from_str(&buffer).context("Failed to parse hook input JSON")?;
 
     Ok(input)
 }

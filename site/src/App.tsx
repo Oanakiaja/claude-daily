@@ -5,16 +5,24 @@ import DataFlowVisualization from './components/DataFlowVisualization';
 import Docs from './components/Docs';
 import { steps, claudeStructure } from './data/content';
 
+interface StepEnterData {
+  data: number;
+}
+
+interface StepProgressData {
+  progress: number;
+}
+
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'docs'>('home');
 
-  const onStepEnter = useCallback(({ data }) => {
+  const onStepEnter = useCallback(({ data }: StepEnterData) => {
     setCurrentStep(data);
   }, []);
 
-  const onStepProgress = useCallback(({ progress }) => {
+  const onStepProgress = useCallback(({ progress }: StepProgressData) => {
     setProgress(progress);
   }, []);
 

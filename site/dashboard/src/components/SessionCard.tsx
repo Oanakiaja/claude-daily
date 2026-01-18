@@ -1,7 +1,13 @@
 import { Link } from 'react-router-dom'
 import { cn } from '../lib/utils'
+import type { Session } from '../hooks/useApi'
 
-export function SessionCard({ session, date }) {
+interface SessionCardProps {
+  session: Session
+  date: string
+}
+
+export function SessionCard({ session, date }: SessionCardProps) {
   return (
     <Link to={`/day/${date}/session/${encodeURIComponent(session.name)}`}>
       <div

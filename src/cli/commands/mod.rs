@@ -1,9 +1,10 @@
-pub mod init;
-pub mod view;
-pub mod summarize;
+pub mod config;
 pub mod digest;
 pub mod extract;
-pub mod config;
+pub mod init;
 pub mod install;
 pub mod jobs;
 pub mod show;
+pub mod skills;
+pub mod summarize;
+pub mod view;

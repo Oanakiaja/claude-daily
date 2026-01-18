@@ -276,7 +276,13 @@ impl JobManager {
 fn sanitize_name(name: &str) -> String {
     name.chars()
         .take(20)
-        .map(|c| if c.is_alphanumeric() || c == '-' { c } else { '-' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '-' {
+                c
+            } else {
+                '-'
+            }
+        })
         .collect::<String>()
         .to_lowercase()
 }

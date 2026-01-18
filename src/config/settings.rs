@@ -70,9 +70,7 @@ impl Default for Config {
             .join("daily");
 
         Self {
-            storage: StorageConfig {
-                path: default_path,
-            },
+            storage: StorageConfig { path: default_path },
             archive: ArchiveConfig {
                 author: None,
                 tags: vec!["claude-code".into(), "daily-archive".into()],
@@ -127,15 +125,14 @@ impl Config {
 
 /// Load configuration from file or create default
 pub fn load_config() -> Result<Config> {
-    let config: Config = confy::load(APP_NAME, Some("config"))
-        .context("Failed to load configuration")?;
+    let config: Config =
+        confy::load(APP_NAME, Some("config")).context("Failed to load configuration")?;
     Ok(config)
 }
 
 /// Save configuration to file
 pub fn save_config(config: &Config) -> Result<()> {
-    confy::store(APP_NAME, Some("config"), config)
-        .context("Failed to save configuration")?;
+    confy::store(APP_NAME, Some("config"), config).context("Failed to save configuration")?;
     Ok(())
 }
 
@@ -153,7 +150,11 @@ mod tests {
     #[test]
     fn test_default_config() {
         let config = Config::default();
-        assert!(config.storage.path.to_string_lossy().contains(".claude/daily"));
+        assert!(config
+            .storage
+            .path
+            .to_string_lossy()
+            .contains(".claude/daily"));
         assert_eq!(config.summarization.model, "sonnet");
     }
 

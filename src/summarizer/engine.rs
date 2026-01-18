@@ -3,10 +3,10 @@ use serde::Deserialize;
 use std::io::Write;
 use std::process::{Command, Stdio};
 
+use super::prompts::Prompts;
+use crate::archive::{ArchiveManager, DailySummary, SessionArchive};
 use crate::config::Config;
 use crate::transcript::TranscriptParser;
-use crate::archive::{SessionArchive, DailySummary, ArchiveManager};
-use super::prompts::Prompts;
 
 /// Response structure from session summarization
 #[derive(Debug, Deserialize)]
@@ -68,7 +68,9 @@ impl SummarizerEngine {
                 .context("Failed to write prompt to claude")?;
         }
 
-        let output = child.wait_with_output().context("Failed to wait for claude")?;
+        let output = child
+            .wait_with_output()
+            .context("Failed to wait for claude")?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
@@ -82,7 +84,10 @@ impl SummarizerEngine {
     fn extract_json(&self, response: &str) -> Result<String> {
         // Try to find JSON in code block first
         if let Some(start) = response.find("```json") {
-            if let Some(end) = response[start..].find("```\n").or(response[start..].rfind("```")) {
+            if let Some(end) = response[start..]
+                .find("```\n")
+                .or(response[start..].rfind("```"))
+            {
                 let json_start = start + 7; // Skip ```json
                 let json_end = start + end;
                 if json_end > json_start {
@@ -119,18 +124,14 @@ impl SummarizerEngine {
         let git_branch = crate::archive::session::get_git_branch(cwd);
 
         // Build prompt and invoke Claude
-        let prompt = Prompts::session_summary(
-            &transcript_text,
-            cwd,
-            git_branch.as_deref(),
-        );
+        let prompt = Prompts::session_summary(&transcript_text, cwd, git_branch.as_deref());
 
         let response = self.invoke_claude(&prompt)?;
         let json_str = self.extract_json(&response)?;
 
         // Parse response
-        let summary_response: SessionSummaryResponse = serde_json::from_str(&json_str)
-            .context("Failed to parse summary response")?;
+        let summary_response: SessionSummaryResponse =
+            serde_json::from_str(&json_str).context("Failed to parse summary response")?;
 
         // Build archive
         let today = chrono::Local::now().format("%Y-%m-%d").to_string();
@@ -139,19 +140,15 @@ impl SummarizerEngine {
             .map(|s| s.to_string_lossy().to_string())
             .unwrap_or_else(|| "unknown".to_string());
 
-        let archive = SessionArchive::new(
-            task_name.to_string(),
-            today,
-            session_id,
-            cwd.to_string(),
-        )
-        .with_transcript_data(&transcript_data)
-        .with_summary(
-            summary_response.summary,
-            summary_response.decisions,
-            summary_response.learnings,
-            summary_response.skill_hints,
-        );
+        let archive =
+            SessionArchive::new(task_name.to_string(), today, session_id, cwd.to_string())
+                .with_transcript_data(&transcript_data)
+                .with_summary(
+                    summary_response.summary,
+                    summary_response.decisions,
+                    summary_response.learnings,
+                    summary_response.skill_hints,
+                );
 
         // Set git branch
         let mut archive = archive;
@@ -193,8 +190,8 @@ impl SummarizerEngine {
         let json_str = self.extract_json(&response)?;
 
         // Parse response
-        let daily_response: DailySummaryResponse = serde_json::from_str(&json_str)
-            .context("Failed to parse daily summary response")?;
+        let daily_response: DailySummaryResponse =
+            serde_json::from_str(&json_str).context("Failed to parse daily summary response")?;
 
         // Build daily summary
         let mut summary = DailySummary::new(date.to_string());
@@ -222,7 +219,11 @@ impl SummarizerEngine {
     }
 
     /// Extract command from session
-    pub async fn extract_command(&self, session_content: &str, hint: Option<&str>) -> Result<String> {
+    pub async fn extract_command(
+        &self,
+        session_content: &str,
+        hint: Option<&str>,
+    ) -> Result<String> {
         let prompt = Prompts::extract_command(session_content, hint);
         let response = self.invoke_claude(&prompt)?;
 

@@ -105,7 +105,9 @@ impl From<JobInfo> for JobDto {
         // Compute elapsed before moving fields
         let elapsed = info.elapsed_human();
         let started_at = info.started_at.format("%Y-%m-%d %H:%M:%S").to_string();
-        let finished_at = info.finished_at.map(|t: chrono::DateTime<chrono::Local>| t.format("%Y-%m-%d %H:%M:%S").to_string());
+        let finished_at = info
+            .finished_at
+            .map(|t: chrono::DateTime<chrono::Local>| t.format("%Y-%m-%d %H:%M:%S").to_string());
 
         Self {
             id: info.id,
@@ -128,6 +130,7 @@ pub struct JobLogDto {
 }
 
 /// WebSocket message types
+#[allow(dead_code)]
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type", content = "data")]
 pub enum WsMessage {

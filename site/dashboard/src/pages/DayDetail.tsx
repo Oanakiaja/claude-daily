@@ -2,17 +2,18 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useApi } from '../hooks/useApi'
-import { cn } from '../lib/utils'
+import type { DailySummary, Session } from '../hooks/useApi'
 import { SessionCard } from '../components/SessionCard'
 import { MarkdownRenderer } from '../components/MarkdownRenderer'
 
 export function DayDetail() {
-  const { date } = useParams()
-  const [summary, setSummary] = useState(null)
-  const [sessions, setSessions] = useState([])
+  const { date } = useParams<{ date: string }>()
+  const [summary, setSummary] = useState<DailySummary | null>(null)
+  const [sessions, setSessions] = useState<Session[]>([])
   const { fetchDailySummary, fetchSessions, loading, error } = useApi()
 
   useEffect(() => {
+    if (!date) return
     Promise.all([
       fetchDailySummary(date).then(setSummary),
       fetchSessions(date).then(setSessions),
@@ -109,7 +110,7 @@ export function DayDetail() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <SessionCard session={session} date={date} />
+                <SessionCard session={session} date={date!} />
               </motion.div>
             ))}
           </div>

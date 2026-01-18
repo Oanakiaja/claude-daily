@@ -1,4 +1,3 @@
-
 /// Prompts for Claude CLI summarization
 pub struct Prompts;
 
@@ -23,14 +22,24 @@ Generate a JSON response with this exact structure:
   "summary": "2-3 sentence overview of what was accomplished",
   "decisions": "Key decisions made and their rationale (markdown list format)",
   "learnings": "Key learnings from this session (markdown list format)",
-  "skill_hints": "Potential reusable skills identified (markdown format with name, description, trigger)"
+  "skill_hints": "Potential reusable skills (only if passes quality gate, see below)"
 }}
 ```
 
-Focus on:
-1. What was the main goal and was it achieved?
-2. What key decisions were made and why?
-3. What patterns could become reusable skills/commands?
+## Skill Quality Gate (沉淀三问)
+Only suggest skills that pass ALL three criteria:
+1. **踩过坑吗？** Did debugging, trial-and-error, or non-obvious discovery occur?
+2. **下次还会遇到吗？** Is this a recurring problem, not a one-time edge case?
+3. **能说清楚吗？** Can the solution be clearly described and verified?
+
+For skill_hints format (only if quality gate passes):
+```
+- **[skill-name]**: [what it solves]
+  - Trigger: [error message or symptom]
+  - Why: [root cause]
+```
+
+If no skills pass the quality gate, set skill_hints to "None identified in this session."
 
 Output ONLY the JSON block, no additional text."#
         )
@@ -74,50 +83,70 @@ Output ONLY the JSON block."#
     /// Generate prompt for skill extraction
     pub fn extract_skill(session_summary: &str, skill_hint: Option<&str>) -> String {
         let hint = skill_hint.unwrap_or("Based on patterns in the session");
+        let today = chrono::Local::now().format("%Y-%m-%d").to_string();
 
         format!(
-            r#"Generate a complete SKILL.md file for Claude Code based on this session.
+            r#"You are extracting a reusable skill from a Claude Code session.
 
-Session Summary:
+## Quality Gate - Answer these three questions first:
+
+1. **踩过坑吗？** Was there trial-and-error, debugging, or a non-obvious discovery?
+2. **下次还会遇到吗？** Is this a recurring problem, not a one-time edge case?
+3. **能说清楚吗？** Can the solution be clearly described and verified?
+
+If ANY answer is NO, respond with:
+```
+NOT_EXTRACTABLE: [reason]
+```
+
+If ALL answers are YES, generate the skill.
+
+## Session Summary:
 {session_summary}
 
 Skill Hint: {hint}
 
-Generate a complete skill file that:
-1. Has clear trigger conditions (when should Claude use this skill)
-2. Provides step-by-step workflow
-3. Includes best practices from the session
-4. Is immediately usable
+## Output Format:
 
-Output the complete SKILL.md content following this format:
 ```markdown
 ---
 name: skill-name-kebab-case
-description: "Brief description"
+description: "Retrieval-optimized: include error messages, symptoms, or how user might describe the problem. Max 100 tokens."
+origin: "{today}/session-name"
+confidence: verified
 ---
 
 # Skill Name
 
-[Description of what this skill does]
+Brief description of what this skill solves.
 
-## Trigger
+## When to Use
 
-Use this skill when: [trigger conditions]
+Trigger this skill when you encounter:
+- [Exact error message or symptom, e.g., "ECONNREFUSED on port 3000"]
+- [How user might describe it, e.g., "my dev server won't start"]
+- [Related scenarios]
 
-## Workflow
+## Root Cause
 
-[Step-by-step instructions]
+Why does this problem happen? Understanding the cause prevents future issues.
 
-## Best Practices
+## Solution
 
-[Key practices to follow]
+Step-by-step resolution:
 
-## Examples
+1. [First step]
+2. [Second step]
+...
 
-[Usage examples]
+## Verification
+
+How to confirm the problem is solved:
+- [Check command or expected output]
 ```
 
-Output ONLY the markdown content."#
+Output ONLY the markdown content (or NOT_EXTRACTABLE message)."#,
+            today = today
         )
     }
 

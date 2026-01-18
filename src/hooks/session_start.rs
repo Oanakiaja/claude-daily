@@ -19,10 +19,7 @@ pub async fn handle() -> Result<()> {
 
     // Try to read hook input, but don't fail if not available
     // (allows manual testing without stdin)
-    let _input = match read_hook_input() {
-        Ok(input) => Some(input),
-        Err(_) => None,
-    };
+    let _input = read_hook_input().ok();
 
     let today = Local::now().format("%Y-%m-%d").to_string();
     let daily_dir = config.today_dir();
@@ -76,6 +73,9 @@ _No sessions archived yet._
         check_auto_digest(&config);
     }
 
+    // Check for pending skills to review
+    check_pending_skills(&config);
+
     // Exit with 0 to allow session to continue
     Ok(())
 }
@@ -128,4 +128,55 @@ fn check_auto_digest(config: &crate::config::Config) {
             .stderr(Stdio::null())
             .spawn();
     }
+}
+
+/// Check for pending skills that need user review
+fn check_pending_skills(config: &crate::config::Config) {
+    let pending_dir = config.storage.path.join("pending-skills");
+
+    if !pending_dir.exists() {
+        return;
+    }
+
+    // Count pending skills across all dates
+    let mut pending_skills: Vec<(String, String)> = Vec::new();
+
+    if let Ok(entries) = fs::read_dir(&pending_dir) {
+        for entry in entries.flatten() {
+            if entry.path().is_dir() {
+                if let Ok(files) = fs::read_dir(entry.path()) {
+                    for file in files.flatten() {
+                        if file.path().extension().map_or(false, |e| e == "md") {
+                            let date = entry.file_name().to_string_lossy().to_string();
+                            let name = file
+                                .path()
+                                .file_stem()
+                                .map(|s| s.to_string_lossy().to_string())
+                                .unwrap_or_default();
+                            pending_skills.push((date, name));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if pending_skills.is_empty() {
+        return;
+    }
+
+    eprintln!();
+    eprintln!("[daily] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    eprintln!("[daily] {} pending skill(s) waiting for review:", pending_skills.len());
+    for (date, name) in pending_skills.iter().take(5) {
+        eprintln!("[daily]   • {}/{}", date, name);
+    }
+    if pending_skills.len() > 5 {
+        eprintln!("[daily]   ... and {} more", pending_skills.len() - 5);
+    }
+    eprintln!("[daily]");
+    eprintln!("[daily] Review with: daily review-skills");
+    eprintln!("[daily] Or ask Claude: \"review my pending skills\"");
+    eprintln!("[daily] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    eprintln!();
 }

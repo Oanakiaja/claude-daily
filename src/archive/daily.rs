@@ -1,9 +1,9 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-use crate::config::Config;
 use super::manager::ArchiveManager;
 use super::templates::Templates;
+use crate::config::Config;
 
 /// Represents a daily summary
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -44,6 +44,7 @@ impl DailySummary {
     }
 
     /// Update summary content from AI analysis
+    #[allow(clippy::too_many_arguments)]
     pub fn with_content(
         mut self,
         overview: String,

@@ -4,16 +4,24 @@
 
 English | [中文](README.zh-CN.md)
 
-A context archive system for [Claude Code](https://claude.ai/code) that automatically records and summarizes your AI-assisted work sessions.
+**More than a log — a system that compounds your context.**
+
+Daily is a context archive system for [Claude Code](https://claude.ai/code) that automatically records, summarizes, and distills reusable skills from your AI-assisted work sessions. The more you use it, the stronger your personal context library becomes.
 
 ![Daily-show](assets/daily-show.png)
+
+## Why Daily?
+
+Every session holds valuable insights — problem-solving patterns, workflow optimizations, and domain knowledge. But these insights fade. Daily captures them automatically and transforms them into **reusable skills and commands** that compound over time.
+
+> **Compound Context**: Like compound interest for your expertise. Each session adds to your personal knowledge base, making future sessions more powerful — whether you're coding, writing, researching, or learning.
 
 ## Features
 
 - **Automatic Recording** - Hooks into Claude Code to capture session transcripts
 - **Smart Summarization** - Background AI processing generates meaningful summaries
 - **Daily Insights** - Aggregates all sessions into actionable daily summary
-- **Skill Extraction** - Extract reusable skills and commands from sessions
+- **Skill Extraction** - Distill reusable skills and commands from your sessions — your context library compounds over time
 
 ## Installation
 
@@ -50,7 +58,52 @@ daily show
 2. **Background Job** - Non-blocking process spawned for summarization
 3. **AI Summarization** - Claude API processes transcript
 4. **Session Archive** - Individual session saved to `~/.claude/daily/{date}/{task}.md`
-5. **Digest** - Sessions are consolidated into `daily.md` via manual `daily digest` or auto-trigger
+5. **Skill Sedimentation** - Auto-evaluates if session contains extractable knowledge
+6. **Digest** - Sessions are consolidated into `daily.md` via manual `daily digest` or auto-trigger
+
+## Skill Sedimentation (Auto-Learning)
+
+Daily automatically identifies and extracts reusable knowledge from your sessions. When a session ends, it evaluates whether the work contains skills worth preserving using the **"Three Questions" quality gate**:
+
+1. **踩过坑吗？** (Did you hit a wall?) - Was there debugging, trial-and-error, or non-obvious discovery?
+2. **下次还会遇到吗？** (Will it happen again?) - Is this a recurring problem, not a one-time edge case?
+3. **能说清楚吗？** (Can you explain it?) - Can the solution be clearly described and verified?
+
+### How It Works
+
+```
+SessionEnd → Summarize → Quality Gate → Pending Skills → SessionStart Reminder
+```
+
+1. When your session ends, Daily analyzes if there's extractable knowledge
+2. Skills that pass the quality gate are saved to `~/.claude/daily/pending-skills/`
+3. On your next session start, you'll see a reminder:
+
+```
+[daily] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[daily] 2 pending skill(s) waiting for review:
+[daily]   • 2024-01-18/fix-econnrefused
+[daily]   • 2024-01-17/next-build-optimization
+[daily]
+[daily] Review with: daily review-skills
+[daily] Or ask Claude: "review my pending skills"
+[daily] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### Managing Pending Skills
+
+```bash
+# List all pending skills
+daily review-skills
+
+# Install a skill to ~/.claude/skills/ (Claude will auto-use it)
+daily review-skills --install 2024-01-18/fix-econnrefused
+
+# Delete a skill you don't need
+daily review-skills --delete 2024-01-18/fix-econnrefused
+```
+
+Once installed, skills are placed in `~/.claude/skills/{skill-name}/SKILL.md` where Claude Code automatically discovers and applies them when relevant conditions are detected.
 
 ## Commands
 
@@ -72,6 +125,9 @@ daily show
 | `daily config --show`            | Show current configuration                                   |
 | `daily extract-skill`            | Extract reusable skill from session                          |
 | `daily extract-command`          | Extract reusable command from session                        |
+| `daily review-skills`            | List pending skills waiting for review                       |
+| `daily review-skills --install`  | Install a pending skill to ~/.claude/skills/                 |
+| `daily review-skills --delete`   | Delete a pending skill                                       |
 | `daily jobs list`                | List background jobs                                         |
 | `daily jobs log <id>`            | View job logs                                                |
 
@@ -118,6 +174,9 @@ After digest, individual session files are removed, keeping only the consolidate
 │   ├── daily.md             # Placeholder
 │   ├── fix-bug-143052.md    # Session archive
 │   └── new-feature-152310.md # Session archive
+├── pending-skills/          # Auto-extracted skills awaiting review
+│   └── 2024-01-16/
+│       └── fix-econnrefused.md
 └── jobs/
     └── *.json, *.log        # Background job tracking
 ```

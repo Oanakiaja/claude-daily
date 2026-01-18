@@ -51,9 +51,7 @@ impl TranscriptData {
         }
 
         // Check if all user messages are just whitespace
-        self.user_messages
-            .iter()
-            .all(|msg| msg.trim().is_empty())
+        self.user_messages.iter().all(|msg| msg.trim().is_empty())
     }
 }
 
@@ -63,8 +61,7 @@ pub struct TranscriptParser;
 impl TranscriptParser {
     /// Parse a transcript file and extract relevant information
     pub fn parse<P: AsRef<Path>>(path: P) -> Result<TranscriptData> {
-        let file = File::open(path.as_ref())
-            .context("Failed to open transcript file")?;
+        let file = File::open(path.as_ref()).context("Failed to open transcript file")?;
         let reader = BufReader::new(file);
 
         let mut entries = Vec::new();
@@ -111,7 +108,9 @@ impl TranscriptParser {
                         // Track file modifications
                         if tool_name == "Write" || tool_name == "Edit" {
                             if let Some(input) = &entry.tool_input {
-                                if let Some(file_path) = input.get("file_path").and_then(|v| v.as_str()) {
+                                if let Some(file_path) =
+                                    input.get("file_path").and_then(|v| v.as_str())
+                                {
                                     if !files_modified.contains(&file_path.to_string()) {
                                         files_modified.push(file_path.to_string());
                                     }
@@ -161,7 +160,8 @@ impl TranscriptParser {
         // Add tool usage summary
         if !data.tool_calls.is_empty() {
             text.push_str("## Tools Used\n\n");
-            let mut tool_counts: std::collections::HashMap<&str, usize> = std::collections::HashMap::new();
+            let mut tool_counts: std::collections::HashMap<&str, usize> =
+                std::collections::HashMap::new();
             for call in &data.tool_calls {
                 *tool_counts.entry(&call.name).or_insert(0) += 1;
             }

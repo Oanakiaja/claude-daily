@@ -1,7 +1,7 @@
 use anyhow::Result;
 use chrono::{Duration, Local};
 use colored::*;
-use dialoguer::{FuzzySelect, theme::ColorfulTheme};
+use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 
 use crate::archive::ArchiveManager;
 use crate::config::load_config;
@@ -137,7 +137,10 @@ async fn show_daily_summary(manager: &ArchiveManager, date: &str) -> Result<()> 
             Ok(())
         }
         Err(_) => {
-            println!("{}", format!("No daily summary found for {}", date).yellow());
+            println!(
+                "{}",
+                format!("No daily summary found for {}", date).yellow()
+            );
             Ok(())
         }
     }
@@ -157,7 +160,10 @@ async fn show_full_archive(manager: &ArchiveManager, date: &str) -> Result<()> {
             if let Some(end) = after_header.find("\n## Sessions") {
                 println!("{}", &after_header[..end]);
             } else {
-                println!("{}", after_header.lines().take(10).collect::<Vec<_>>().join("\n"));
+                println!(
+                    "{}",
+                    after_header.lines().take(10).collect::<Vec<_>>().join("\n")
+                );
             }
         }
     }
@@ -193,7 +199,10 @@ async fn show_full_archive(manager: &ArchiveManager, date: &str) -> Result<()> {
     }
 
     println!();
-    println!("Use {} to see a specific session", "daily view --date DATE".cyan());
+    println!(
+        "Use {} to see a specific session",
+        "daily view --date DATE".cyan()
+    );
 
     Ok(())
 }

@@ -1,6 +1,12 @@
 import { cn } from '../lib/utils'
+import type { Job } from '../hooks/useApi'
 
-export function JobCard({ job, onKill }) {
+interface JobCardProps {
+  job: Job
+  onKill?: (id: string) => void
+}
+
+export function JobCard({ job, onKill }: JobCardProps) {
   const isRunning = job.status_type === 'running'
   const isFailed = job.status_type === 'failed'
 

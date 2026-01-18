@@ -1,10 +1,10 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-use crate::config::Config;
-use crate::transcript::TranscriptData;
 use super::manager::ArchiveManager;
 use super::templates::Templates;
+use crate::config::Config;
+use crate::transcript::TranscriptData;
 
 /// Represents a summarized session ready for archiving
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -25,12 +25,7 @@ pub struct SessionArchive {
 
 impl SessionArchive {
     /// Create a new session archive from raw data
-    pub fn new(
-        title: String,
-        date: String,
-        session_id: String,
-        cwd: String,
-    ) -> Self {
+    pub fn new(title: String, date: String, session_id: String, cwd: String) -> Self {
         Self {
             title,
             date,

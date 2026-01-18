@@ -70,9 +70,17 @@ pub async fn log(job_id: String, tail: Option<usize>, follow: bool) -> Result<()
         job.status.to_string().cyan()
     );
     println!("{} {}", "Task:".bold(), job.task_name);
-    println!("{} {}", "Started:".bold(), job.started_at.format("%Y-%m-%d %H:%M:%S"));
+    println!(
+        "{} {}",
+        "Started:".bold(),
+        job.started_at.format("%Y-%m-%d %H:%M:%S")
+    );
     if let Some(finished) = job.finished_at {
-        println!("{} {}", "Finished:".bold(), finished.format("%Y-%m-%d %H:%M:%S"));
+        println!(
+            "{} {}",
+            "Finished:".bold(),
+            finished.format("%Y-%m-%d %H:%M:%S")
+        );
     }
     println!("{}", "-".repeat(50));
 
@@ -126,10 +134,8 @@ async fn follow_log(manager: &JobManager, job_id: &str) -> Result<()> {
                 if let Ok(file) = std::fs::File::open(&log_path) {
                     let mut reader = BufReader::new(file);
                     reader.seek(SeekFrom::Start(last_pos))?;
-                    for line in reader.lines() {
-                        if let Ok(line) = line {
-                            println!("{}", line);
-                        }
+                    for line in reader.lines().map_while(Result::ok) {
+                        println!("{}", line);
                     }
                 }
                 println!("\n{} {}", "Job finished:".bold(), job.status);
@@ -178,7 +184,12 @@ pub async fn kill(job_id: String) -> Result<()> {
     }
 
     if manager.kill(&job_id)? {
-        println!("{} Killed job {} (PID: {})", "Success:".green(), job_id, job.pid);
+        println!(
+            "{} Killed job {} (PID: {})",
+            "Success:".green(),
+            job_id,
+            job.pid
+        );
     } else {
         println!(
             "{} Failed to kill job {} (PID: {}). Process may have already exited.",

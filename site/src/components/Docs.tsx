@@ -1,8 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { commands, slashCommands, quickStart, globalOptions } from '../data/docs';
+import type { Command } from '../data/docs';
 
-function CommandCard({ command, isExpanded, onClick }) {
+interface CommandCardProps {
+  command: Command;
+  isExpanded: boolean;
+  onClick: () => void;
+}
+
+function CommandCard({ command, isExpanded, onClick }: CommandCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -90,7 +97,7 @@ function CommandCard({ command, isExpanded, onClick }) {
 }
 
 export default function Docs() {
-  const [expandedCommand, setExpandedCommand] = useState(null);
+  const [expandedCommand, setExpandedCommand] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredCommands = commands.filter(cmd =>
@@ -188,7 +195,7 @@ export default function Docs() {
 
           {/* Command List */}
           <div className="space-y-4">
-            {filteredCommands.map((command, idx) => (
+            {filteredCommands.map((command) => (
               <CommandCard
                 key={command.name}
                 command={command}

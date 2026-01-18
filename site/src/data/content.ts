@@ -1,4 +1,30 @@
-export const steps = [
+export interface VizState {
+  showClaudeCode: boolean;
+  showHooks: boolean;
+  showCommands: boolean;
+  showTranscript: boolean;
+  showSummarizer: boolean;
+  showLog: boolean;
+  highlight: string;
+  activeFlow: string[];
+}
+
+export interface Step {
+  id: string;
+  title: string;
+  content: string;
+  detail: string;
+  vizState: VizState;
+}
+
+export interface ClaudeStructureItem {
+  path: string;
+  type: 'folder' | 'file';
+  level: number;
+  desc?: string;
+}
+
+export const steps: Step[] = [
   {
     id: 'intro',
     title: 'What is Daily?',
@@ -144,6 +170,38 @@ export const steps = [
     }
   },
   {
+    id: 'skill-sedimentation',
+    title: 'Skill Sedimentation',
+    content: `Daily automatically evaluates if the session contains extractable knowledge using the "Three Questions" quality gate: Did you debug? Will it recur? Can you explain it?`,
+    detail: 'Skills that pass the quality gate are auto-extracted and saved to pending-skills/ for your review. Low-quality patterns are filtered out.',
+    vizState: {
+      showClaudeCode: true,
+      showHooks: true,
+      showCommands: true,
+      showTranscript: true,
+      showSummarizer: true,
+      showLog: true,
+      highlight: 'skill-extraction',
+      activeFlow: ['summarizer-to-skills'],
+    }
+  },
+  {
+    id: 'pending-skills',
+    title: 'Pending Skills Review',
+    content: `On your next session start, Daily reminds you of pending skills. Use \`daily review-skills\` to install or discard them.`,
+    detail: 'Installed skills go to ~/.claude/skills/ where Claude auto-discovers them. When similar problems arise, Claude applies the learned solution.',
+    vizState: {
+      showClaudeCode: true,
+      showHooks: true,
+      showCommands: true,
+      showTranscript: true,
+      showSummarizer: true,
+      showLog: true,
+      highlight: 'pending-skills',
+      activeFlow: ['skills-to-claude'],
+    }
+  },
+  {
     id: 'digest',
     title: 'Digest: Consolidate Sessions',
     content: `Sessions accumulate as individual files. The digest process consolidates them into a single daily.md - either manually via \`daily digest\` or automatically on next session start.`,
@@ -209,12 +267,13 @@ export const steps = [
   },
 ];
 
-export const claudeStructure = [
+export const claudeStructure: ClaudeStructureItem[] = [
   { path: '~/.claude/', type: 'folder', level: 0 },
   { path: 'daily/', type: 'folder', level: 1, desc: 'Log storage' },
   { path: '2024-01-15/', type: 'folder', level: 2 },
   { path: 'daily.md', type: 'file', level: 3 },
   { path: 'fix-bug.md', type: 'file', level: 3 },
+  { path: 'pending-skills/', type: 'folder', level: 2, desc: 'Auto-extracted skills' },
   { path: 'jobs/', type: 'folder', level: 2 },
   { path: 'hooks/', type: 'folder', level: 1, desc: 'Lifecycle hooks' },
   { path: 'SessionStart.sh', type: 'file', level: 2 },
@@ -222,4 +281,5 @@ export const claudeStructure = [
   { path: 'commands/', type: 'folder', level: 1, desc: 'Slash commands' },
   { path: 'daily-view.md', type: 'file', level: 2 },
   { path: 'daily-get-skill.md', type: 'file', level: 2 },
+  { path: 'skills/', type: 'folder', level: 1, desc: 'Installed skills' },
 ];

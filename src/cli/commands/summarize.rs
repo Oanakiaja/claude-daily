@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use std::fs;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
@@ -129,8 +130,8 @@ async fn run_summarization(
     cwd: &str,
 ) -> Result<()> {
     // Check if session is empty before summarizing
-    let transcript_data = TranscriptParser::parse(transcript)
-        .context("Failed to parse transcript")?;
+    let transcript_data =
+        TranscriptParser::parse(transcript).context("Failed to parse transcript")?;
 
     if transcript_data.is_empty() {
         eprintln!("[daily] Session is empty, skipping summarization");
@@ -149,10 +150,94 @@ async fn run_summarization(
     let archive_path = archive.save(config)?;
     eprintln!("[daily] Session archived: {}", archive_path.display());
 
+    // Auto-evaluate skill extraction (沉淀三问 quality gate)
+    if should_extract_skill(&archive.skill_hints) {
+        eprintln!("[daily] Skill candidate detected, attempting extraction...");
+        match auto_extract_skill(&engine, &archive, config).await {
+            Ok(Some(skill_path)) => {
+                eprintln!("[daily] Pending skill saved: {}", skill_path.display());
+            }
+            Ok(None) => {
+                eprintln!("[daily] Skill did not pass quality gate, skipped");
+            }
+            Err(e) => {
+                eprintln!("[daily] Skill extraction failed: {}", e);
+            }
+        }
+    }
+
     // Note: Daily summary is now generated via `daily digest` command
     // either manually or auto-triggered on session start
 
     eprintln!("[daily] Summarization complete!");
 
     Ok(())
+}
+
+/// Check if skill_hints suggest extractable knowledge
+fn should_extract_skill(skill_hints: &str) -> bool {
+    let hints_lower = skill_hints.to_lowercase();
+
+    // Skip if explicitly marked as none
+    if hints_lower.contains("none identified")
+        || hints_lower.contains("no skills")
+        || hints_lower.contains("no potential")
+        || skill_hints.trim().is_empty()
+    {
+        return false;
+    }
+
+    // Check for skill markers (name, trigger, etc.)
+    hints_lower.contains("**") || hints_lower.contains("trigger:") || hints_lower.contains("- ")
+}
+
+/// Auto-extract skill from session archive
+async fn auto_extract_skill(
+    engine: &SummarizerEngine,
+    archive: &crate::archive::SessionArchive,
+    config: &crate::config::Config,
+) -> Result<Option<PathBuf>> {
+    // Build context from archive
+    let session_content = archive.to_markdown();
+
+    // Extract skill (will apply 沉淀三问 quality gate)
+    let skill_content = engine.extract_skill(&session_content, Some(&archive.skill_hints)).await?;
+
+    // Check if extraction was rejected by quality gate
+    if skill_content.trim().starts_with("NOT_EXTRACTABLE:") {
+        return Ok(None);
+    }
+
+    // Save to pending-skills directory
+    let pending_dir = config
+        .storage
+        .path
+        .join("pending-skills")
+        .join(&archive.date);
+    fs::create_dir_all(&pending_dir)?;
+
+    // Extract skill name from content
+    let skill_name = extract_skill_name(&skill_content);
+    let skill_file = pending_dir.join(format!("{}.md", skill_name));
+
+    fs::write(&skill_file, &skill_content)?;
+
+    Ok(Some(skill_file))
+}
+
+/// Extract skill name from YAML frontmatter
+fn extract_skill_name(content: &str) -> String {
+    for line in content.lines() {
+        let line = line.trim();
+        if line.starts_with("name:") {
+            let name = line.trim_start_matches("name:").trim();
+            let name = name.trim_matches('"').trim_matches('\'');
+            if !name.is_empty() {
+                return name.to_string();
+            }
+        }
+    }
+    // Fallback with timestamp
+    let timestamp = chrono::Local::now().format("%H%M%S");
+    format!("skill-{}", timestamp)
 }

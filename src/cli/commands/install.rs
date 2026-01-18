@@ -8,16 +8,12 @@ pub async fn run(scope: String) -> Result<()> {
     let _config = load_config()?;
 
     let target_dir = match scope.as_str() {
-        "user" => {
-            dirs::home_dir()
-                .context("Failed to get home directory")?
-                .join(".claude")
-        }
-        "project" => {
-            std::env::current_dir()
-                .context("Failed to get current directory")?
-                .join(".claude")
-        }
+        "user" => dirs::home_dir()
+            .context("Failed to get home directory")?
+            .join(".claude"),
+        "project" => std::env::current_dir()
+            .context("Failed to get current directory")?
+            .join(".claude"),
         _ => {
             anyhow::bail!("Invalid scope: {}. Use 'user' or 'project'", scope);
         }
@@ -218,14 +214,16 @@ Ask the user where they want to install the command and make any requested modif
         println!("[daily] Note: settings.json already exists, please add hooks manually");
         println!();
         println!("Add this to your hooks configuration:");
-        println!(r#"
+        println!(
+            r#"
 "SessionStart": [
   {{ "hooks": [{{ "type": "command", "command": "daily hook session-start" }}] }}
 ],
 "SessionEnd": [
   {{ "hooks": [{{ "type": "command", "command": "daily hook session-end" }}] }}
 ]
-"#);
+"#
+        );
     }
 
     println!();

@@ -1,14 +1,20 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApi } from '../hooks/useApi'
+import type { Job } from '../hooks/useApi'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { JobCard } from '../components/JobCard'
 
-export function JobsMonitor() {
-  const [jobs, setJobs] = useState([])
-  const { fetchJobs, killJob, loading, error } = useApi()
+interface WebSocketJobMessage {
+  type: string
+  data: Job
+}
 
-  const handleWsMessage = useCallback((msg) => {
+export function JobsMonitor() {
+  const [jobs, setJobs] = useState<Job[]>([])
+  const { fetchJobs, killJob, error } = useApi()
+
+  const handleWsMessage = useCallback((msg: WebSocketJobMessage) => {
     if (msg.type === 'JobUpdated') {
       setJobs((prev) => {
         const idx = prev.findIndex((j) => j.id === msg.data.id)
@@ -22,7 +28,7 @@ export function JobsMonitor() {
     }
   }, [])
 
-  const { connected } = useWebSocket(handleWsMessage)
+  const { connected } = useWebSocket(handleWsMessage as (msg: { type: string; data?: unknown }) => void)
 
   const loadJobs = useCallback(() => {
     fetchJobs()
@@ -37,7 +43,7 @@ export function JobsMonitor() {
     return () => clearInterval(interval)
   }, [loadJobs])
 
-  const handleKill = async (id) => {
+  const handleKill = async (id: string) => {
     try {
       await killJob(id)
       loadJobs()

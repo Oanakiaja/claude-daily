@@ -2,8 +2,8 @@ use anyhow::{Context, Result};
 use std::fs;
 use std::path::PathBuf;
 
-use crate::config::load_config;
 use crate::archive::ArchiveManager;
+use crate::config::load_config;
 use crate::summarizer::SummarizerEngine;
 
 /// Extract skill from archive
@@ -17,17 +17,35 @@ pub async fn run_skill(
     let engine = SummarizerEngine::new(config.clone());
 
     // Determine date
-    let view_date = date.unwrap_or_else(|| {
-        chrono::Local::now().format("%Y-%m-%d").to_string()
-    });
+    let view_date = date.unwrap_or_else(|| chrono::Local::now().format("%Y-%m-%d").to_string());
 
     // Get session content
     let session_content = get_session_content(&manager, &view_date, session.as_deref()).await?;
 
     println!("[daily] Extracting skill from session...");
+    println!("[daily] Applying quality gate (踩过坑? 下次还会遇到? 能说清楚?)...");
 
     // Extract skill using Claude
     let skill_content = engine.extract_skill(&session_content, None).await?;
+
+    // Check if skill is extractable
+    if skill_content.trim().starts_with("NOT_EXTRACTABLE:") {
+        let reason = skill_content
+            .trim()
+            .strip_prefix("NOT_EXTRACTABLE:")
+            .unwrap_or("Unknown reason")
+            .trim();
+        println!();
+        println!("[daily] ⚠ Skill not extractable: {}", reason);
+        println!();
+        println!("This session may not contain reusable knowledge that meets the quality bar:");
+        println!("  - 踩过坑吗？ Was there debugging or non-obvious discovery?");
+        println!("  - 下次还会遇到吗？ Is this a recurring problem?");
+        println!("  - 能说清楚吗？ Can it be clearly described?");
+        println!();
+        println!("Try a different session with `daily extract-skill --session <name>`");
+        return Ok(());
+    }
 
     // Determine output path
     let output_path = if let Some(path) = output {
@@ -63,8 +81,14 @@ pub async fn run_skill(
 
     println!();
     println!("To install this skill:");
-    println!("  User-level: mv {} ~/.claude/skills/", output_path.display());
-    println!("  Project-level: mv {} .claude/skills/", output_path.display());
+    println!(
+        "  User-level: mv {} ~/.claude/skills/",
+        output_path.display()
+    );
+    println!(
+        "  Project-level: mv {} .claude/skills/",
+        output_path.display()
+    );
 
     Ok(())
 }
@@ -80,9 +104,7 @@ pub async fn run_command(
     let engine = SummarizerEngine::new(config.clone());
 
     // Determine date
-    let view_date = date.unwrap_or_else(|| {
-        chrono::Local::now().format("%Y-%m-%d").to_string()
-    });
+    let view_date = date.unwrap_or_else(|| chrono::Local::now().format("%Y-%m-%d").to_string());
 
     // Get session content
     let session_content = get_session_content(&manager, &view_date, session.as_deref()).await?;
@@ -129,8 +151,14 @@ pub async fn run_command(
 
     println!();
     println!("To install this command:");
-    println!("  User-level: mv {} ~/.claude/commands/", output_path.display());
-    println!("  Project-level: mv {} .claude/commands/", output_path.display());
+    println!(
+        "  User-level: mv {} ~/.claude/commands/",
+        output_path.display()
+    );
+    println!(
+        "  Project-level: mv {} .claude/commands/",
+        output_path.display()
+    );
 
     Ok(())
 }
@@ -142,7 +170,8 @@ async fn get_session_content(
     session: Option<&str>,
 ) -> Result<String> {
     if let Some(session_name) = session {
-        manager.read_session(date, session_name)
+        manager
+            .read_session(date, session_name)
             .context(format!("Failed to read session: {}", session_name))
     } else {
         // Get most recent session
@@ -152,7 +181,8 @@ async fn get_session_content(
         }
 
         let latest = sessions.last().unwrap();
-        manager.read_session(date, latest)
+        manager
+            .read_session(date, latest)
             .context(format!("Failed to read session: {}", latest))
     }
 }
@@ -214,6 +244,9 @@ description: test
 # My Command Name
 
 Instructions here."#;
-        assert_eq!(extract_name_from_content(content, "default"), "my-command-name");
+        assert_eq!(
+            extract_name_from_content(content, "default"),
+            "my-command-name"
+        );
     }
 }

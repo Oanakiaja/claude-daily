@@ -121,6 +121,17 @@ pub enum Commands {
         output: Option<PathBuf>,
     },
 
+    /// Review and manage pending skills
+    ReviewSkills {
+        /// Install a pending skill (format: YYYY-MM-DD/skill-name)
+        #[arg(long)]
+        install: Option<String>,
+
+        /// Delete a pending skill (format: YYYY-MM-DD/skill-name)
+        #[arg(long)]
+        delete: Option<String>,
+    },
+
     /// Manage background jobs
     Jobs {
         #[command(subcommand)]

@@ -1,6 +1,12 @@
 import { motion } from 'framer-motion';
+import type { VizState } from '../data/content';
 
-const DataFlowVisualization = ({ step, vizState }) => {
+interface DataFlowVisualizationProps {
+  step: number;
+  vizState: VizState;
+}
+
+const DataFlowVisualization = ({ step, vizState }: DataFlowVisualizationProps) => {
   const {
     showClaudeCode,
     showHooks,
@@ -12,8 +18,8 @@ const DataFlowVisualization = ({ step, vizState }) => {
     activeFlow,
   } = vizState;
 
-  const isHighlighted = (id) => highlight === id || highlight === 'all' || highlight === 'claude-dir';
-  const isFlowActive = (id) => activeFlow?.includes(id) || highlight === 'all';
+  const isHighlighted = (id: string) => highlight === id || highlight === 'all' || highlight === 'claude-dir';
+  const isFlowActive = (id: string) => activeFlow?.includes(id) || highlight === 'all';
 
   const boxVariants = {
     hidden: { opacity: 0, scale: 0.8 },

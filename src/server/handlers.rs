@@ -18,9 +18,7 @@ pub struct AppState {
 }
 
 /// List all available dates
-pub async fn list_dates(
-    State(state): State<Arc<AppState>>,
-) -> impl IntoResponse {
+pub async fn list_dates(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let manager = ArchiveManager::new(state.config.clone());
 
     match manager.list_dates() {
@@ -31,7 +29,10 @@ pub async fn list_dates(
                     let sessions = manager.list_sessions(&date).unwrap_or_default();
                     let has_digest = manager
                         .read_daily_summary(&date)
-                        .map(|content| content.contains("## Overview") && !content.contains("No sessions recorded yet"))
+                        .map(|content| {
+                            content.contains("## Overview")
+                                && !content.contains("No sessions recorded yet")
+                        })
                         .unwrap_or(false);
 
                     DateInfo {
@@ -115,9 +116,7 @@ pub async fn get_session(
 }
 
 /// List all jobs
-pub async fn list_jobs(
-    State(state): State<Arc<AppState>>,
-) -> impl IntoResponse {
+pub async fn list_jobs(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     match JobManager::new(&state.config) {
         Ok(manager) => match manager.list(true) {
             Ok(jobs) => {
@@ -220,11 +219,8 @@ fn parse_daily_summary(date: &str, content: &str) -> DailySummaryDto {
             .lines()
             .filter_map(|line| {
                 let line = line.trim();
-                if line.starts_with("- ") {
-                    Some(line[2..].trim_matches('"').to_string())
-                } else {
-                    None
-                }
+                line.strip_prefix("- ")
+                    .map(|stripped| stripped.trim_matches('"').to_string())
             })
             .collect()
     } else {
@@ -249,11 +245,17 @@ fn extract_session_preview(content: &str) -> (String, String) {
     // Extract title from frontmatter or first heading
     let title = if let Some(start) = content.find("title:") {
         let start = start + 6;
-        let end = content[start..].find('\n').map(|i| start + i).unwrap_or(content.len());
+        let end = content[start..]
+            .find('\n')
+            .map(|i| start + i)
+            .unwrap_or(content.len());
         content[start..end].trim().trim_matches('"').to_string()
     } else if let Some(start) = content.find("# ") {
         let start = start + 2;
-        let end = content[start..].find('\n').map(|i| start + i).unwrap_or(content.len());
+        let end = content[start..]
+            .find('\n')
+            .map(|i| start + i)
+            .unwrap_or(content.len());
         content[start..end].trim().to_string()
     } else {
         "Untitled".to_string()
@@ -283,9 +285,9 @@ fn extract_session_metadata(content: &str) -> SessionMetadata {
     let mut metadata = SessionMetadata::default();
 
     // Parse YAML frontmatter
-    if content.starts_with("---\n") {
-        if let Some(end) = content[4..].find("\n---") {
-            let frontmatter = &content[4..4 + end];
+    if let Some(stripped) = content.strip_prefix("---\n") {
+        if let Some(end) = stripped.find("\n---") {
+            let frontmatter = &stripped[..end];
             for line in frontmatter.lines() {
                 if let Some((key, value)) = line.split_once(':') {
                     let key = key.trim();

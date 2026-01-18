@@ -1,4 +1,45 @@
-export const commands = [
+export interface CommandOption {
+  flag: string;
+  desc: string;
+}
+
+export interface CommandExample {
+  cmd: string;
+  desc: string;
+}
+
+export interface CommandSubcommand {
+  cmd: string;
+  desc: string;
+}
+
+export interface Command {
+  name: string;
+  usage: string;
+  description: string;
+  options?: CommandOption[];
+  subcommands?: CommandSubcommand[];
+  examples?: CommandExample[];
+}
+
+export interface SlashCommand {
+  name: string;
+  description: string;
+  usage: string;
+}
+
+export interface QuickStartItem {
+  step: number;
+  title: string;
+  cmd: string;
+}
+
+export interface GlobalOption {
+  flag: string;
+  desc: string;
+}
+
+export const commands: Command[] = [
   {
     name: 'init',
     usage: 'daily init [-i|--interactive] [-s|--storage-path <PATH>]',
@@ -108,6 +149,20 @@ export const commands = [
     ],
   },
   {
+    name: 'review-skills',
+    usage: 'daily review-skills [--install <REF>] [--delete <REF>]',
+    description: 'Review and manage pending skills that were auto-extracted from sessions. Skills are extracted when sessions contain debugging discoveries or reusable solutions.',
+    options: [
+      { flag: '--install <REF>', desc: 'Install a pending skill (format: YYYY-MM-DD/skill-name)' },
+      { flag: '--delete <REF>', desc: 'Delete a pending skill (format: YYYY-MM-DD/skill-name)' },
+    ],
+    examples: [
+      { cmd: 'daily review-skills', desc: 'List all pending skills' },
+      { cmd: 'daily review-skills --install 2024-01-18/fix-econnrefused', desc: 'Install a skill' },
+      { cmd: 'daily review-skills --delete 2024-01-18/fix-econnrefused', desc: 'Delete a skill' },
+    ],
+  },
+  {
     name: 'config',
     usage: 'daily config [--show] [--set-storage <PATH>]',
     description: 'Show or update Daily configuration.',
@@ -153,7 +208,7 @@ export const commands = [
   },
 ];
 
-export const slashCommands = [
+export const slashCommands: SlashCommand[] = [
   {
     name: '/daily-view',
     description: "View today's daily archive or a specific date",
@@ -171,14 +226,14 @@ export const slashCommands = [
   },
 ];
 
-export const quickStart = [
+export const quickStart: QuickStartItem[] = [
   { step: 1, title: 'Install Daily', cmd: 'curl -fsSL https://raw.githubusercontent.com/oanakiaja/claude-daily/main/scripts/install.sh | bash' },
   { step: 2, title: 'Initialize', cmd: 'daily init -i' },
   { step: 3, title: 'Install hooks', cmd: 'daily install' },
   { step: 4, title: 'Start coding', cmd: 'claude' },
 ];
 
-export const globalOptions = [
+export const globalOptions: GlobalOption[] = [
   { flag: '-v, --verbose', desc: 'Enable verbose output' },
   { flag: '-c, --config <PATH>', desc: 'Custom config file path' },
   { flag: '-h, --help', desc: 'Show help information' },

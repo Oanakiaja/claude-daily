@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 
-export function useWebSocket(onMessage) {
-  const wsRef = useRef(null)
-  const reconnectTimeoutRef = useRef(null)
+interface WebSocketMessage {
+  type: string
+  data?: unknown
+}
+
+export function useWebSocket(onMessage?: (msg: WebSocketMessage) => void) {
+  const wsRef = useRef<WebSocket | null>(null)
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [connected, setConnected] = useState(false)
 
   const connect = useCallback(() => {
@@ -33,7 +38,7 @@ export function useWebSocket(onMessage) {
 
     ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data)
+        const data = JSON.parse(event.data) as WebSocketMessage
         onMessage?.(data)
       } catch (err) {
         console.error('Failed to parse WebSocket message:', err)

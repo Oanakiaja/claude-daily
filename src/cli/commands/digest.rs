@@ -19,13 +19,20 @@ fn parse_relative_date(relative: &str) -> Option<String> {
 }
 
 /// Run the digest command - generate daily summary from sessions
-pub async fn run(relative_date: Option<String>, date: Option<String>, background: bool) -> Result<()> {
+pub async fn run(
+    relative_date: Option<String>,
+    date: Option<String>,
+    background: bool,
+) -> Result<()> {
     let config = load_config()?;
 
     // Determine target date: relative_date takes precedence, then --date, then today
     let target_date = if let Some(rel) = relative_date {
         parse_relative_date(&rel).unwrap_or_else(|| {
-            eprintln!("[daily] Unknown relative date '{}', using as literal date", rel);
+            eprintln!(
+                "[daily] Unknown relative date '{}', using as literal date",
+                rel
+            );
             rel
         })
     } else {
@@ -49,8 +56,7 @@ pub async fn run(relative_date: Option<String>, date: Option<String>, background
             sessions.len()
         );
 
-        let exe = std::env::current_exe()
-            .context("Failed to get current executable")?;
+        let exe = std::env::current_exe().context("Failed to get current executable")?;
 
         Command::new(&exe)
             .args(["digest", "--date", &target_date])
@@ -82,16 +88,10 @@ pub async fn run(relative_date: Option<String>, date: Option<String>, background
             // Delete session files after successful digest
             match manager.delete_sessions(&target_date) {
                 Ok(deleted) => {
-                    eprintln!(
-                        "[daily] Cleaned up {} session files",
-                        deleted.len()
-                    );
+                    eprintln!("[daily] Cleaned up {} session files", deleted.len());
                 }
                 Err(e) => {
-                    eprintln!(
-                        "[daily] Warning: Failed to cleanup session files: {}",
-                        e
-                    );
+                    eprintln!("[daily] Warning: Failed to cleanup session files: {}", e);
                 }
             }
         }
