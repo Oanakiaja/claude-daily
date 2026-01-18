@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 /// Embedded dashboard assets
 #[derive(RustEmbed)]
-#[folder = "site/dashboard/dist"]
+#[folder = "web/dist"]
 struct DashboardAssets;
 
 /// Create a service that serves embedded static files
