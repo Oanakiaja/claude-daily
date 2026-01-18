@@ -19,7 +19,8 @@ async fn main() -> Result<()> {
         Commands::Init {
             storage_path,
             interactive,
-        } => cli::commands::init::run(storage_path, interactive).await,
+            sonnet,
+        } => cli::commands::init::run(storage_path, interactive, sonnet).await,
         Commands::Hook { hook_type } => match hook_type {
             HookType::SessionStart => hooks::session_start::handle().await,
             HookType::SessionEnd => hooks::session_end::handle().await,
@@ -61,9 +62,11 @@ async fn main() -> Result<()> {
         Commands::ReviewSkills { install, delete } => {
             cli::commands::skills::run_review(install, delete).await
         }
-        Commands::Config { set_storage, show } => {
-            cli::commands::config::run(set_storage, show).await
-        }
+        Commands::Config {
+            set_storage,
+            show,
+            interactive,
+        } => cli::commands::config::run(set_storage, show, interactive).await,
         Commands::Install { scope } => cli::commands::install::run(scope).await,
         Commands::Update { check, version } => cli::commands::update::run(check, version).await,
         Commands::Jobs { action } => match action {

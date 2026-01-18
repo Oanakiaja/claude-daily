@@ -107,29 +107,29 @@ Once installed, skills are placed in `~/.claude/skills/{skill-name}/SKILL.md` wh
 
 ## Commands
 
-| Command                          | Description                                                  |
-| -------------------------------- | ------------------------------------------------------------ |
-| `daily init`                     | Initialize system and create storage directory               |
-| `daily init -i`                  | Interactive setup with directory selection and digest config |
-| `daily install`                  | Install Claude Code hooks and slash commands                 |
+| Command                          | Description                                                     |
+| -------------------------------- | --------------------------------------------------------------- |
+| `daily init`                     | Initialize system and create storage directory                  |
+| `daily init -i`                  | Interactive setup with directory selection and digest config    |
+| `daily install`                  | Install Claude Code hooks and slash commands                    |
 | `daily show`                     | Open web dashboard in browser (default: http://127.0.0.1:31456) |
-| `daily show --port 8080`         | Start dashboard on custom port                               |
-| `daily show --no-open`           | Start server without opening browser                         |
-| `daily view`                     | View today's archive (interactive date selection)            |
-| `daily view --date 2024-01-15`   | View archive for specific date                               |
-| `daily view --list`              | List all sessions for the day                                |
-| `daily today`                    | Quick alias for today's archive                              |
-| `daily yest`                     | Quick alias for yesterday's archive                          |
-| `daily digest`                   | Consolidate today's sessions into daily.md                   |
-| `daily digest --date 2024-01-15` | Digest sessions for specific date                            |
-| `daily config --show`            | Show current configuration                                   |
-| `daily extract-skill`            | Extract reusable skill from session                          |
-| `daily extract-command`          | Extract reusable command from session                        |
-| `daily review-skills`            | List pending skills waiting for review                       |
-| `daily review-skills --install`  | Install a pending skill to ~/.claude/skills/                 |
-| `daily review-skills --delete`   | Delete a pending skill                                       |
-| `daily jobs list`                | List background jobs                                         |
-| `daily jobs log <id>`            | View job logs                                                |
+| `daily show --port 8080`         | Start dashboard on custom port                                  |
+| `daily show --no-open`           | Start server without opening browser                            |
+| `daily view`                     | View today's archive (interactive date selection)               |
+| `daily view --date 2024-01-15`   | View archive for specific date                                  |
+| `daily view --list`              | List all sessions for the day                                   |
+| `daily today`                    | Quick alias for today's archive                                 |
+| `daily yest`                     | Quick alias for yesterday's archive                             |
+| `daily digest`                   | Consolidate today's sessions into daily.md                      |
+| `daily digest --date 2024-01-15` | Digest sessions for specific date                               |
+| `daily config --show`            | Show current configuration                                      |
+| `daily extract-skill`            | Extract reusable skill from session                             |
+| `daily extract-command`          | Extract reusable command from session                           |
+| `daily review-skills`            | List pending skills waiting for review                          |
+| `daily review-skills --install`  | Install a pending skill to ~/.claude/skills/                    |
+| `daily review-skills --delete`   | Delete a pending skill                                          |
+| `daily jobs list`                | List background jobs                                            |
+| `daily jobs log <id>`            | View job logs                                                   |
 
 ### Claude Code Slash Commands
 

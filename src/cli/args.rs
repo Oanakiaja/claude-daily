@@ -170,6 +170,10 @@ pub enum Commands {
         /// Interactive mode: fuzzy search and select directory
         #[arg(short, long)]
         interactive: bool,
+
+        /// Use sonnet model for summarization (default: haiku)
+        #[arg(long)]
+        sonnet: bool,
     },
 
     /// Show or update configuration
@@ -181,6 +185,10 @@ pub enum Commands {
         /// Show current config
         #[arg(long)]
         show: bool,
+
+        /// Interactive configuration mode
+        #[arg(short, long)]
+        interactive: bool,
     },
 
     /// Install plugin to Claude Code

@@ -113,26 +113,26 @@ daily review-skills --delete 2024-01-18/fix-econnrefused
 
 ## 命令
 
-| 命令                           | 描述                                                      |
-| ------------------------------ | --------------------------------------------------------- |
-| `daily init`                   | 初始化系统并创建存储目录                                  |
-| `daily install`                | 安装 Claude Code hooks 和斜杠命令                         |
-| `daily show`                   | 在浏览器中打开 Web 仪表盘（默认：http://127.0.0.1:31456） |
-| `daily show --port 8080`       | 在自定义端口启动仪表盘                                    |
-| `daily show --no-open`         | 启动服务但不自动打开浏览器                                |
-| `daily view`                   | 查看今日归档（交互式日期选择）                            |
-| `daily view --date 2024-01-15` | 查看指定日期的归档                                        |
-| `daily view --list`            | 列出当天所有会话                                          |
-| `daily today`                  | 查看今日归档的快捷方式                                    |
-| `daily yest`                   | 查看昨日归档的快捷方式                                    |
-| `daily config --show`          | 显示当前配置                                              |
-| `daily extract-skill`          | 从会话中提取可复用技能                                    |
-| `daily extract-command`        | 从会话中提取可复用命令                                    |
-| `daily review-skills`          | 列出待审核的技能                                          |
-| `daily review-skills --install`| 安装待审核技能到 ~/.claude/skills/                        |
-| `daily review-skills --delete` | 删除待审核技能                                            |
-| `daily jobs list`              | 列出后台任务                                              |
-| `daily jobs log <id>`          | 查看任务日志                                              |
+| 命令                            | 描述                                                      |
+| ------------------------------- | --------------------------------------------------------- |
+| `daily init`                    | 初始化系统并创建存储目录                                  |
+| `daily install`                 | 安装 Claude Code hooks 和斜杠命令                         |
+| `daily show`                    | 在浏览器中打开 Web 仪表盘（默认：http://127.0.0.1:31456） |
+| `daily show --port 8080`        | 在自定义端口启动仪表盘                                    |
+| `daily show --no-open`          | 启动服务但不自动打开浏览器                                |
+| `daily view`                    | 查看今日归档（交互式日期选择）                            |
+| `daily view --date 2024-01-15`  | 查看指定日期的归档                                        |
+| `daily view --list`             | 列出当天所有会话                                          |
+| `daily today`                   | 查看今日归档的快捷方式                                    |
+| `daily yest`                    | 查看昨日归档的快捷方式                                    |
+| `daily config --show`           | 显示当前配置                                              |
+| `daily extract-skill`           | 从会话中提取可复用技能                                    |
+| `daily extract-command`         | 从会话中提取可复用命令                                    |
+| `daily review-skills`           | 列出待审核的技能                                          |
+| `daily review-skills --install` | 安装待审核技能到 ~/.claude/skills/                        |
+| `daily review-skills --delete`  | 删除待审核技能                                            |
+| `daily jobs list`               | 列出后台任务                                              |
+| `daily jobs log <id>`           | 查看任务日志                                              |
 
 ### Claude Code 斜杠命令
 
