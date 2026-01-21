@@ -105,7 +105,6 @@ fn select_directory_interactive() -> Result<Option<PathBuf>> {
     }
 
     // Otherwise treat as keyword search
-    println!("[daily] Searching for '{}'...", input);
     let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
     let candidates = search_directories_recursive(&home, &input.to_lowercase(), 10);
 
@@ -113,8 +112,6 @@ fn select_directory_interactive() -> Result<Option<PathBuf>> {
         println!("[daily] No matching directories found. Using default path.");
         return Ok(None);
     }
-
-    println!("[daily] Found {} matching directories.", candidates.len());
 
     // Build display items with path info
     let display_items: Vec<String> = candidates
