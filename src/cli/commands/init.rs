@@ -84,9 +84,11 @@ fn expand_path(path: &Path) -> PathBuf {
 fn select_directory_interactive() -> Result<Option<PathBuf>> {
     let theme = ColorfulTheme::default();
 
-    // Ask user for search keyword
+    // Ask user for search keyword with default hint
     let keyword: String = dialoguer::Input::with_theme(&theme)
-        .with_prompt("Enter keyword to search directories (e.g., 'obsidian', 'daily', 'vault')")
+        .with_prompt("Enter keyword to search directories [default: ~/.claude/daily]")
+        .default(String::new())
+        .show_default(false)
         .allow_empty(true)
         .interact_text()
         .context("Failed to read input")?;
