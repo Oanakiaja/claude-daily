@@ -109,18 +109,7 @@ pub async fn run(
         Ok(summary) => {
             let summary_path = summary.save(&config)?;
             eprintln!("[daily] Daily summary created: {}", summary_path.display());
-
-            // Delete session files after successful digest (only if there were sessions)
-            if !sessions.is_empty() {
-                match manager.delete_sessions(&target_date) {
-                    Ok(deleted) => {
-                        eprintln!("[daily] Cleaned up {} session files", deleted.len());
-                    }
-                    Err(e) => {
-                        eprintln!("[daily] Warning: Failed to cleanup session files: {}", e);
-                    }
-                }
-            }
+            // Session files are preserved for reference
         }
         Err(e) => {
             eprintln!("[daily] Error: Failed to create daily summary: {}", e);
