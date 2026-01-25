@@ -61,7 +61,9 @@ pub async fn get_daily_summary(
 
     match manager.read_daily_summary(&date) {
         Ok(content) => {
-            let summary = parse_daily_summary(&date, &content);
+            let file_path = manager.daily_summary_path(&date);
+            let mut summary = parse_daily_summary(&date, &content);
+            summary.file_path = file_path.to_string_lossy().to_string();
             Json(ApiResponse::success(summary))
         }
         Err(e) => Json(ApiResponse::<DailySummaryDto>::error(e.to_string())),
@@ -109,10 +111,12 @@ pub async fn get_session(
     match manager.read_session(&date, &name) {
         Ok(content) => {
             let metadata = extract_session_metadata(&content);
+            let file_path = manager.session_archive_path(&date, &name);
             let detail = SessionDetailDto {
                 name,
                 content,
                 metadata,
+                file_path: file_path.to_string_lossy().to_string(),
             };
             Json(ApiResponse::success(detail))
         }
@@ -432,6 +436,7 @@ fn parse_daily_summary(date: &str, content: &str) -> DailySummaryDto {
         reflections: extract_section("Reflections"),
         tomorrow_focus: extract_section("Tomorrow's Focus"),
         raw_content: content.to_string(),
+        file_path: String::new(), // Will be set by caller
     }
 }
 

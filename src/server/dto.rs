@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::jobs::{JobInfo, JobStatus};
+use crate::jobs::{JobInfo, JobStatus, JobType};
 
 /// Generic API response wrapper
 #[derive(Serialize)]
@@ -59,6 +59,7 @@ pub struct DailySummaryDto {
     pub reflections: Option<String>,
     pub tomorrow_focus: Option<String>,
     pub raw_content: String,
+    pub file_path: String,
 }
 
 /// Session detail DTO
@@ -67,6 +68,7 @@ pub struct SessionDetailDto {
     pub name: String,
     pub content: String,
     pub metadata: SessionMetadata,
+    pub file_path: String,
 }
 
 /// Session metadata extracted from frontmatter
@@ -88,6 +90,7 @@ pub struct JobDto {
     pub task_name: String,
     pub status: String,
     pub status_type: String,
+    pub job_type: String,
     pub started_at: String,
     pub finished_at: Option<String>,
     pub elapsed: String,
@@ -99,6 +102,12 @@ impl From<JobInfo> for JobDto {
             JobStatus::Running => ("Running".to_string(), "running".to_string()),
             JobStatus::Completed => ("Completed".to_string(), "completed".to_string()),
             JobStatus::Failed { error } => (format!("Failed: {}", error), "failed".to_string()),
+        };
+
+        let job_type = match &info.job_type {
+            JobType::SessionEnd => "session_end".to_string(),
+            JobType::AutoSummarize => "auto_summarize".to_string(),
+            JobType::Manual => "manual".to_string(),
         };
 
         // Compute elapsed before moving fields
@@ -114,6 +123,7 @@ impl From<JobInfo> for JobDto {
             task_name: info.task_name,
             status,
             status_type,
+            job_type,
             started_at,
             finished_at,
             elapsed,
