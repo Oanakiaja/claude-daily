@@ -49,44 +49,64 @@ pub async fn run_skill(
 
     // Determine output path
     let output_path = if let Some(path) = output {
+        // If user specified a path, use it as the skill directory
         path
     } else {
-        // Default to ~/.claude/skills/
-        let skills_dir = dirs::home_dir()
-            .unwrap_or_else(|| PathBuf::from("."))
-            .join(".claude")
-            .join("skills");
+        // Default to a temporary directory for review
+        // Don't auto-install to ~/.claude/skills/ - let user decide
+        let temp_dir = std::env::temp_dir().join("daily-skills");
+        fs::create_dir_all(&temp_dir)?;
 
         // Extract skill name from content
         let skill_name = extract_name_from_yaml(&skill_content, "extracted-skill");
-        skills_dir.join(&skill_name)
+        temp_dir.join(&skill_name)
     };
 
-    // Create directory and write file
+    // Create skill directory structure
     fs::create_dir_all(&output_path)?;
+
+    // Create optional resource directories (empty for now)
+    // Users can add scripts/references/assets as needed
+    fs::create_dir_all(output_path.join("scripts"))?;
+    fs::create_dir_all(output_path.join("references"))?;
+    fs::create_dir_all(output_path.join("assets"))?;
+
+    // Write SKILL.md
     let skill_file = output_path.join("SKILL.md");
     fs::write(&skill_file, &skill_content)?;
 
-    println!("[daily] Skill extracted to: {}", skill_file.display());
+    println!("[daily] ✓ Skill extracted to: {}", output_path.display());
     println!();
-    println!("Preview:");
+    println!("Skill structure created:");
+    println!("  {}/", output_path.display());
+    println!("  ├── SKILL.md (generated)");
+    println!("  ├── scripts/ (empty - add executable code if needed)");
+    println!("  ├── references/ (empty - add documentation if needed)");
+    println!("  └── assets/ (empty - add templates/files if needed)");
+    println!();
+    println!("Preview of SKILL.md:");
     println!("{}", "-".repeat(50));
 
     // Show first 20 lines
     for line in skill_content.lines().take(20) {
         println!("{}", line);
     }
-    println!("...");
+    if skill_content.lines().count() > 20 {
+        println!("...");
+    }
     println!("{}", "-".repeat(50));
 
     println!();
-    println!("To install this skill:");
+    println!("Next steps:");
+    println!("  1. Review and edit {} if needed", skill_file.display());
+    println!("  2. Add any scripts, references, or assets to the respective directories");
+    println!("  3. Install the skill:");
     println!(
-        "  User-level: mv {} ~/.claude/skills/",
+        "     User-level:    mv {} ~/.claude/skills/",
         output_path.display()
     );
     println!(
-        "  Project-level: mv {} .claude/skills/",
+        "     Project-level: mv {} .claude/skills/",
         output_path.display()
     );
 

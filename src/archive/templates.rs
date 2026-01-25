@@ -12,6 +12,7 @@ impl Templates {
         session_id: &str,
         cwd: &str,
         git_branch: Option<&str>,
+        transcript_path: Option<&str>,
         summary: &str,
         decisions: &str,
         code_changes: &str,
@@ -20,6 +21,7 @@ impl Templates {
     ) -> String {
         let created = Local::now().to_rfc3339();
         let git_branch_str = git_branch.unwrap_or("N/A");
+        let transcript_path_str = transcript_path.unwrap_or("N/A");
 
         format!(
             r#"---
@@ -28,6 +30,7 @@ date: {date}
 session_id: {session_id}
 cwd: "{cwd}"
 git_branch: "{git_branch_str}"
+transcript_path: "{transcript_path_str}"
 tags: [claude-code, session-archive]
 created: {created}
 ---
@@ -233,6 +236,7 @@ mod tests {
             "abc123",
             "/home/user/project",
             Some("main"),
+            Some("/path/to/transcript.jsonl"),
             "Test summary",
             "Test decisions",
             "Test changes",
@@ -242,6 +246,7 @@ mod tests {
 
         assert!(content.contains("title: \"Test Session\""));
         assert!(content.contains("session_id: abc123"));
+        assert!(content.contains("transcript_path:"));
     }
 
     #[test]

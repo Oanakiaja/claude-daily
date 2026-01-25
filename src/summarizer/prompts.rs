@@ -84,6 +84,8 @@ const SESSION_SUMMARY_ZH: &str = r#"你正在分析一个 Claude Code 会话记�
 // Default template constants for skill extraction
 const SKILL_EXTRACT_EN: &str = r#"You are extracting a reusable skill from a Claude Code session.
 
+IMPORTANT: A skill is a modular package that extends Claude's capabilities with specialized knowledge, workflows, and tools. Think of it as an "onboarding guide" for specific domains or tasks.
+
 ## Quality Gate - Answer these three questions first:
 
 1. **Did you hit a pitfall?** Was there trial-and-error, debugging, or a non-obvious discovery?
@@ -102,50 +104,80 @@ If ALL answers are YES, generate the skill.
 
 Skill Hint: {{skill_hint}}
 
+## Skill Structure
+
+A skill consists of:
+- **SKILL.md** (required): YAML frontmatter + markdown instructions
+- **scripts/** (optional): Executable code for deterministic tasks
+- **references/** (optional): Documentation loaded as needed
+- **assets/** (optional): Files used in output (templates, etc.)
+
+## Core Principles
+
+1. **Concise is Key**: Only add context Claude doesn't already have. Challenge each piece of information.
+2. **Set Appropriate Degrees of Freedom**:
+   - High freedom (text instructions) for flexible approaches
+   - Medium freedom (pseudocode) for preferred patterns
+   - Low freedom (specific scripts) for fragile operations
+3. **Progressive Disclosure**: Keep SKILL.md under 500 lines. Move detailed content to references/.
+
 ## Output Format:
+
+Generate ONLY the SKILL.md content. If you identify scripts, references, or assets that would be helpful, mention them in the instructions but don't generate them.
 
 ```markdown
 ---
 name: skill-name-kebab-case
-description: "Retrieval-optimized: include error messages, symptoms, or how user might describe the problem. Max 100 tokens."
-origin: "{{today}}/session-name"
-confidence: verified
+description: "Comprehensive description that serves as the PRIMARY TRIGGERING MECHANISM. Include: (1) What the skill does, (2) Specific triggers/contexts for when to use it. Mention error messages, symptoms, or how users might describe the problem. This is the ONLY field Claude reads to determine when the skill gets used."
 ---
 
-# Skill Name
+# Skill Title
 
-Brief description of what this skill solves.
+[Brief overview of what this skill provides]
 
-## When to Use
+## [Appropriate sections based on skill type]
 
-Trigger this skill when you encounter:
-- [Exact error message or symptom, e.g., "ECONNREFUSED on port 3000"]
-- [How user might describe it, e.g., "my dev server won't start"]
-- [Related scenarios]
+[Instructions and guidance for using this skill. Structure depends on what the skill does:]
 
-## Root Cause
+For troubleshooting skills:
+- Symptom description and triggers
+- Diagnostic steps
+- Solution workflow
+- Verification steps
 
-Why does this problem happen? Understanding the cause prevents future issues.
+For workflow skills:
+- When to use this workflow
+- Step-by-step instructions
+- Decision points and variations
 
-## Solution
+For tool integration skills:
+- Tool overview
+- Common operations
+- Examples and patterns
 
-Step-by-step resolution:
+[If scripts would be helpful, mention: "For deterministic execution, consider adding scripts/script-name.py"]
+[If detailed docs needed, mention: "For detailed reference, see references/topic.md"]
+[If templates needed, mention: "Template files in assets/"]
 
-1. [First step]
-2. [Second step]
-...
+## Examples
 
-## Verification
-
-How to confirm the problem is solved:
-- [Check command or expected output]
+[Concrete examples demonstrating the skill in action]
 ```
+
+CRITICAL GUIDELINES:
+- description field MUST be comprehensive - it's how Claude decides to use this skill
+- Keep SKILL.md focused on essential instructions, not exhaustive documentation
+- Use imperative/infinitive form for instructions
+- Only include information Claude doesn't already know
+- Prefer concise examples over verbose explanations
 
 Output ONLY the markdown content (or NOT_EXTRACTABLE message)."#;
 
 const SKILL_EXTRACT_ZH: &str = r#"你正在从一个 Claude Code 会话中提取可复用的技能。
 
-## 质量门禁 - 先回答这三个问题：
+重要：技能是一个模块化包，通过提供专业知识、工作流程和工具来扩展 Claude 的能力。把它看作是特定领域或任务的"入职指南"。
+
+## 质量门禁（沉淀三问）- 先回答这三个问题：
 
 1. **踩过坑吗？** 是否经历了试错、调试或非显而易见的发现？
 2. **下次还会遇到吗？** 这是一个反复出现的问题，还是一次性边缘案例？
@@ -163,44 +195,72 @@ NOT_EXTRACTABLE: [原因]
 
 技能提示：{{skill_hint}}
 
+## 技能结构
+
+一个技能包含：
+- **SKILL.md**（必需）：YAML frontmatter + markdown 指令
+- **scripts/**（可选）：用于确定性任务的可执行代码
+- **references/**（可选）：按需加载的文档
+- **assets/**（可选）：输出中使用的文件（模板等）
+
+## 核心原则
+
+1. **简洁是关键**：只添加 Claude 还不知道的上下文。挑战每一条信息。
+2. **设置适当的自由度**：
+   - 高自由度（文本指令）用于灵活方法
+   - 中等自由度（伪代码）用于首选模式
+   - 低自由度（具体脚本）用于脆弱操作
+3. **渐进式披露**：保持 SKILL.md 在 500 行以内。将详细内容移至 references/。
+
 ## 输出格式：
+
+仅生成 SKILL.md 内容。如果你识别出有用的 scripts、references 或 assets，在指令中提及它们但不生成它们。
 
 ```markdown
 ---
 name: skill-name-kebab-case
-description: "检索优化的描述：包含错误消息、症状或用户可能描述问题的方式。最多100个token。"
-origin: "{{today}}/session-name"
-confidence: verified
+description: "全面的描述，作为主要触发机制。包含：(1) 技能做什么，(2) 何时使用它的具体触发条件/上下文。提及错误消息、症状或用户可能描述问题的方式。这是 Claude 用来决定何时使用此技能的唯一字段。"
 ---
 
-# 技能名称
+# 技能标题
 
-简要描述这个技能解决什么问题。
+[简要概述这个技能提供什么]
 
-## 何时使用
+## [基于技能类型的适当章节]
 
-当你遇到以下情况时触发此技能：
-- [确切的错误消息或症状，例如 "ECONNREFUSED on port 3000"]
-- [用户可能描述的方式，例如 "我的开发服务器启动不了"]
-- [相关场景]
+[使用此技能的指令和指导。结构取决于技能的功能：]
 
-## 根本原因
+对于故障排除技能：
+- 症状描述和触发条件
+- 诊断步骤
+- 解决方案工作流
+- 验证步骤
 
-为什么会发生这个问题？理解原因可以防止未来的问题。
+对于工作流技能：
+- 何时使用此工作流
+- 逐步指令
+- 决策点和变体
 
-## 解决方案
+对于工具集成技能：
+- 工具概述
+- 常见操作
+- 示例和模式
 
-逐步解决：
+[如果脚本会有帮助，提及："对于确定性执行，考虑添加 scripts/script-name.py"]
+[如果需要详细文档，提及："详细参考见 references/topic.md"]
+[如果需要模板，提及："模板文件在 assets/"]
 
-1. [第一步]
-2. [第二步]
-...
+## 示例
 
-## 验证
-
-如何确认问题已解决：
-- [检查命令或预期输出]
+[演示技能实际应用的具体示例]
 ```
+
+关键指南：
+- description 字段必须全面 - 这是 Claude 决定使用此技能的方式
+- 保持 SKILL.md 专注于基本指令，而不是详尽的文档
+- 使用祈使句/不定式形式的指令
+- 只包含 Claude 还不知道的信息
+- 优先使用简洁的示例而不是冗长的解释
 
 仅输出 markdown 内容（或 NOT_EXTRACTABLE 消息）。"#;
 

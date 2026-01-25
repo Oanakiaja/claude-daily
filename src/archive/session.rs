@@ -14,6 +14,7 @@ pub struct SessionArchive {
     pub session_id: String,
     pub cwd: String,
     pub git_branch: Option<String>,
+    pub transcript_path: Option<String>,
     pub summary: String,
     pub decisions: String,
     pub code_changes: String,
@@ -30,12 +31,19 @@ impl SessionArchive {
             session_id,
             cwd,
             git_branch: None,
+            transcript_path: None,
             summary: String::new(),
             decisions: String::new(),
             code_changes: String::new(),
             learnings: String::new(),
             skill_hints: String::new(),
         }
+    }
+
+    /// Set the transcript path
+    pub fn with_transcript_path(mut self, path: impl Into<String>) -> Self {
+        self.transcript_path = Some(path.into());
+        self
     }
 
     /// Fill in data from transcript
@@ -78,6 +86,7 @@ impl SessionArchive {
             &self.session_id,
             &self.cwd,
             self.git_branch.as_deref(),
+            self.transcript_path.as_deref(),
             &self.summary,
             &self.decisions,
             &self.code_changes,

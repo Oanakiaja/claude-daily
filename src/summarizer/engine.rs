@@ -157,6 +157,7 @@ impl SummarizerEngine {
             .unwrap_or_else(|| "unknown".to_string());
 
         let archive = SessionArchive::new(title, today, session_id, cwd.to_string())
+            .with_transcript_path(transcript_path.to_string_lossy().to_string())
             .with_transcript_data(&transcript_data)
             .with_summary(
                 summary_response.summary,
