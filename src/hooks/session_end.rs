@@ -6,7 +6,7 @@ use std::os::unix::process::CommandExt;
 
 use crate::config::load_config;
 use crate::hooks::read_hook_input;
-use crate::jobs::JobManager;
+use crate::jobs::{JobManager, JobType};
 use crate::transcript::TranscriptParser;
 
 /// Handle SessionEnd hook from Claude Code
@@ -100,9 +100,13 @@ pub async fn handle() -> Result<()> {
     match cmd.spawn() {
         Ok(child) => {
             // Register the job
-            if let Err(e) =
-                job_manager.register(&job_id, child.id(), &task_name, &input.transcript_path)
-            {
+            if let Err(e) = job_manager.register(
+                &job_id,
+                child.id(),
+                &task_name,
+                &input.transcript_path,
+                JobType::SessionEnd,
+            ) {
                 eprintln!("[daily] Failed to register job: {}", e);
             }
             eprintln!(

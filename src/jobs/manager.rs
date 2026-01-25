@@ -26,6 +26,24 @@ impl std::fmt::Display for JobStatus {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+pub enum JobType {
+    SessionEnd,
+    AutoSummarize,
+    #[default]
+    Manual,
+}
+
+impl std::fmt::Display for JobType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            JobType::SessionEnd => write!(f, "Session End"),
+            JobType::AutoSummarize => write!(f, "Auto Summarize"),
+            JobType::Manual => write!(f, "Manual"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JobInfo {
     pub id: String,
@@ -35,6 +53,8 @@ pub struct JobInfo {
     pub started_at: DateTime<Local>,
     pub finished_at: Option<DateTime<Local>>,
     pub status: JobStatus,
+    #[serde(default)]
+    pub job_type: JobType,
 }
 
 impl JobInfo {
@@ -101,6 +121,7 @@ impl JobManager {
         pid: u32,
         task_name: &str,
         transcript_path: &Path,
+        job_type: JobType,
     ) -> Result<JobInfo> {
         let info = JobInfo {
             id: job_id.to_string(),
@@ -110,6 +131,7 @@ impl JobManager {
             started_at: Local::now(),
             finished_at: None,
             status: JobStatus::Running,
+            job_type,
         };
 
         self.save_job(&info)?;

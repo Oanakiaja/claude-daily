@@ -44,6 +44,15 @@ pub struct SummarizationConfig {
     /// Language for summary output ("en" for English, "zh" for Chinese)
     #[serde(default = "default_summary_language")]
     pub summary_language: String,
+    /// Enable auto-summarization of unsummarized sessions on daily show
+    #[serde(default = "default_auto_summarize_enabled")]
+    pub auto_summarize_enabled: bool,
+    /// Time to trigger auto-summarization (format: "HH:MM", default: "06:00")
+    #[serde(default = "default_auto_summarize_time")]
+    pub auto_summarize_time: String,
+    /// Last time auto-summarization check was performed (ISO 8601 format)
+    #[serde(default)]
+    pub last_auto_summarize_check: Option<String>,
 }
 
 fn default_summary_language() -> String {
@@ -56,6 +65,14 @@ fn default_digest_time() -> String {
 
 fn default_auto_digest() -> bool {
     true
+}
+
+fn default_auto_summarize_enabled() -> bool {
+    false // Disabled by default to prevent fork bomb until transcript tracking is fixed
+}
+
+fn default_auto_summarize_time() -> String {
+    "06:00".into()
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -115,6 +132,9 @@ impl Default for Config {
                 digest_time: "06:00".into(),
                 auto_digest_enabled: true,
                 summary_language: "en".into(),
+                auto_summarize_enabled: true,
+                auto_summarize_time: "06:00".into(),
+                last_auto_summarize_check: None,
             },
             hooks: HooksConfig {
                 enable_session_start: true,

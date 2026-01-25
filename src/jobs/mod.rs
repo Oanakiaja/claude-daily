@@ -1,3 +1,3 @@
 mod manager;
 
-pub use manager::{JobInfo, JobManager, JobStatus};
+pub use manager::{JobInfo, JobManager, JobStatus, JobType};

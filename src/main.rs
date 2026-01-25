@@ -1,4 +1,5 @@
 mod archive;
+mod auto_summarize;
 mod cli;
 mod config;
 mod hooks;
