@@ -7,6 +7,7 @@ pub mod jobs;
 pub mod show;
 pub mod skills;
 pub mod summarize;
+pub mod trash;
 pub mod uninstall;
 pub mod update;
 pub mod view;
