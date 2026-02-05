@@ -13,53 +13,46 @@ interface DateNodeState {
 }
 
 type NavItem =
-  | { type: 'date'; date: string }
   | { type: 'daily'; date: string; path: string }
   | { type: 'session'; date: string; name: string; path: string }
 
 export function ArchiveTree() {
   const [dates, setDates] = useState<DateItem[]>([])
   const [dateStates, setDateStates] = useState<Record<string, DateNodeState>>({})
-  const [focusedIndex, setFocusedIndex] = useState<number>(-1)
   const { fetchDates, fetchSessions, loading } = useApi()
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Build flat navigation list from tree structure
+  // Build flat navigation list (only navigable items: daily summaries and sessions)
   const navItems = useMemo<NavItem[]>(() => {
     const items: NavItem[] = []
     dates.forEach(dateItem => {
-      items.push({ type: 'date', date: dateItem.date })
       const state = dateStates[dateItem.date]
-      if (state?.expanded) {
-        items.push({ type: 'daily', date: dateItem.date, path: `/day/${dateItem.date}` })
-        if (state.sessionsLoaded && state.sessions.length > 0) {
-          state.sessions.forEach(session => {
-            items.push({
-              type: 'session',
-              date: dateItem.date,
-              name: session.name,
-              path: `/day/${dateItem.date}/session/${encodeURIComponent(session.name)}`
-            })
+      // Always include daily summary path for each date
+      items.push({ type: 'daily', date: dateItem.date, path: `/day/${dateItem.date}` })
+      // Include sessions if expanded and loaded
+      if (state?.expanded && state.sessionsLoaded && state.sessions.length > 0) {
+        state.sessions.forEach(session => {
+          items.push({
+            type: 'session',
+            date: dateItem.date,
+            name: session.name,
+            path: `/day/${dateItem.date}/session/${encodeURIComponent(session.name)}`
           })
-        }
+        })
       }
     })
     return items
   }, [dates, dateStates])
 
-  // Find current focused index based on location
+  // Find current index based on location
   const findCurrentIndex = useCallback(() => {
     const path = location.pathname
-    return navItems.findIndex(item => {
-      if (item.type === 'daily' || item.type === 'session') {
-        return item.path === path
-      }
-      return false
-    })
+    const idx = navItems.findIndex(item => item.path === path)
+    return idx >= 0 ? idx : 0
   }, [navItems, location.pathname])
 
-  // Keyboard navigation
+  // Keyboard navigation - directly navigate on arrow key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Only handle when on Archives page
@@ -71,36 +64,39 @@ export function ArchiveTree() {
         return
       }
 
+      if (navItems.length === 0) return
+
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         e.preventDefault()
 
-        setFocusedIndex(prev => {
-          const currentIdx = prev === -1 ? findCurrentIndex() : prev
-          if (e.key === 'ArrowUp') {
-            return currentIdx > 0 ? currentIdx - 1 : navItems.length - 1
-          } else {
-            return currentIdx < navItems.length - 1 ? currentIdx + 1 : 0
-          }
-        })
-      } else if (e.key === 'Enter' && focusedIndex >= 0) {
-        e.preventDefault()
-        const item = navItems[focusedIndex]
-        if (item.type === 'date') {
-          toggleDate(item.date)
+        const currentIdx = findCurrentIndex()
+        let nextIdx: number
+
+        if (e.key === 'ArrowUp') {
+          nextIdx = currentIdx > 0 ? currentIdx - 1 : navItems.length - 1
         } else {
-          navigate(item.path)
+          nextIdx = currentIdx < navItems.length - 1 ? currentIdx + 1 : 0
         }
+
+        const nextItem = navItems[nextIdx]
+        // Auto-expand the date if navigating to it
+        if (!dateStates[nextItem.date]?.expanded) {
+          setDateStates(prev => ({
+            ...prev,
+            [nextItem.date]: {
+              expanded: true,
+              sessions: prev[nextItem.date]?.sessions || [],
+              sessionsLoaded: prev[nextItem.date]?.sessionsLoaded || false
+            }
+          }))
+        }
+        navigate(nextItem.path)
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [navItems, focusedIndex, findCurrentIndex, location.pathname, navigate])
-
-  // Reset focus when navigating
-  useEffect(() => {
-    setFocusedIndex(-1)
-  }, [location.pathname])
+  }, [navItems, findCurrentIndex, location.pathname, navigate, dateStates])
 
   // Load dates on mount
   useEffect(() => {
@@ -167,23 +163,10 @@ export function ArchiveTree() {
     )
   }
 
-  // Get focused item index for a specific item
-  const getItemIndex = (type: NavItem['type'], date: string, sessionName?: string) => {
-    return navItems.findIndex(item => {
-      if (item.type !== type) return false
-      if (item.date !== date) return false
-      if (type === 'session' && item.type === 'session') {
-        return item.name === sessionName
-      }
-      return true
-    })
-  }
-
   return (
     <div className="h-full overflow-y-auto p-4 space-y-1">
       {dates.map((dateItem) => {
         const state = dateStates[dateItem.date] || { expanded: false, sessions: [], sessionsLoaded: false }
-        const dateIndex = getItemIndex('date', dateItem.date)
 
         return (
           <div key={dateItem.date}>
@@ -192,8 +175,7 @@ export function ArchiveTree() {
               onClick={() => toggleDate(dateItem.date)}
               className={cn(
                 'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors',
-                'hover:bg-gray-100 dark:hover:bg-daily-light',
-                focusedIndex === dateIndex && 'ring-2 ring-orange-500 bg-orange-500/10'
+                'hover:bg-gray-100 dark:hover:bg-daily-light'
               )}
             >
               <svg
@@ -237,8 +219,7 @@ export function ArchiveTree() {
                         'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm transition-colors',
                         isActive(`/day/${dateItem.date}`)
                           ? 'bg-orange-500/20 text-orange-500 dark:text-orange-400 border border-orange-500/30'
-                          : 'hover:bg-gray-100 dark:hover:bg-daily-light text-gray-700 dark:text-gray-300',
-                        focusedIndex === getItemIndex('daily', dateItem.date) && 'ring-2 ring-orange-500'
+                          : 'hover:bg-gray-100 dark:hover:bg-daily-light text-gray-700 dark:text-gray-300'
                       )}
                     >
                       <span className="text-base">📝</span>
@@ -260,8 +241,7 @@ export function ArchiveTree() {
                                 'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm transition-colors',
                                 isActive(`/day/${dateItem.date}/session/${encodeURIComponent(session.name)}`)
                                   ? 'bg-orange-500/20 text-orange-500 dark:text-orange-400 border border-orange-500/30'
-                                  : 'hover:bg-gray-100 dark:hover:bg-daily-light text-gray-500 dark:text-gray-400',
-                                focusedIndex === getItemIndex('session', dateItem.date, session.name) && 'ring-2 ring-orange-500'
+                                  : 'hover:bg-gray-100 dark:hover:bg-daily-light text-gray-500 dark:text-gray-400'
                               )}
                               title={session.title || session.name}
                             >
