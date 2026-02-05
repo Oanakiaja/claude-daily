@@ -13,6 +13,7 @@ interface TemplateEditorProps {
   defaultValue: string
   availableVariables: VariableInfo[]
   exampleData: Record<string, string>
+  realData?: Record<string, string> | null
   onSave: (value: string | null) => Promise<void>
   disabled?: boolean
 }
@@ -24,6 +25,7 @@ export function TemplateEditor({
   defaultValue,
   availableVariables,
   exampleData,
+  realData,
   onSave,
   disabled,
 }: TemplateEditorProps) {
@@ -32,21 +34,32 @@ export function TemplateEditor({
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [preview, setPreview] = useState('')
+  const [useRealData, setUseRealData] = useState(!!realData)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Generate preview with example data
+  // Auto-switch to real data when it becomes available
+  useEffect(() => {
+    if (realData && !useRealData) {
+      setUseRealData(true)
+    }
+  }, [realData])
+
+  // Generate preview with selected data source
   useEffect(() => {
     const template = isUsingDefault ? defaultValue : value
     let rendered = template
 
-    // Replace all variables with example data
-    Object.entries(exampleData).forEach(([key, val]) => {
+    // Choose data source based on toggle
+    const dataSource = useRealData && realData ? realData : exampleData
+
+    // Replace all variables with data
+    Object.entries(dataSource).forEach(([key, val]) => {
       const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
       rendered = rendered.replace(regex, val)
     })
 
     setPreview(rendered)
-  }, [value, isUsingDefault, defaultValue, exampleData])
+  }, [value, isUsingDefault, defaultValue, exampleData, realData, useRealData])
 
   const insertVariable = (varName: string) => {
     if (textareaRef.current && !isUsingDefault) {
@@ -208,7 +221,35 @@ export function TemplateEditor({
         {/* Right: Preview */}
         <div className="w-1/2 flex flex-col bg-gray-50 dark:bg-daily-dark/30 transition-colors">
           <div className="flex-shrink-0 bg-gray-100 dark:bg-daily-dark/50 border-b border-gray-200 dark:border-gray-800 px-4 py-3 transition-colors">
-            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Preview (with example data)</h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Preview</h4>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setUseRealData(false)}
+                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                    !useRealData
+                      ? 'bg-orange-500/20 text-orange-500 dark:text-orange-400'
+                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  }`}
+                >
+                  Example
+                </button>
+                <button
+                  onClick={() => setUseRealData(true)}
+                  disabled={!realData}
+                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                    useRealData && realData
+                      ? 'bg-orange-500/20 text-orange-500 dark:text-orange-400'
+                      : realData
+                        ? 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                        : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                  }`}
+                  title={!realData ? 'No real archive data available' : 'Use real archive data'}
+                >
+                  Real Data
+                </button>
+              </div>
+            </div>
           </div>
           <div className="flex-1 p-6 overflow-y-auto">
             <div className="prose dark:prose-invert max-w-none

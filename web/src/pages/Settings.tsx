@@ -6,6 +6,14 @@ import { TemplateEditor } from '../components/TemplateEditor'
 import { EXAMPLE_DATA } from '../data/templateExamples'
 import { cn } from '../lib/utils'
 
+// Real data state for template preview
+interface RealPreviewData {
+  session_summary: Record<string, string> | null
+  daily_summary: Record<string, string> | null
+  skill_extract: Record<string, string> | null
+  command_extract: Record<string, string> | null
+}
+
 // Variable definitions for each template type
 const TEMPLATE_VARIABLES = {
   session_summary: [
@@ -61,8 +69,14 @@ export function Settings() {
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [authorInput, setAuthorInput] = useState('')
   const [activeSection, setActiveSection] = useState('language')
+  const [realPreviewData, setRealPreviewData] = useState<RealPreviewData>({
+    session_summary: null,
+    daily_summary: null,
+    skill_extract: null,
+    command_extract: null,
+  })
   const contentRef = useRef<HTMLDivElement>(null)
-  const { fetchConfig, updateConfig, fetchDefaultTemplates, error } = useApi()
+  const { fetchConfig, updateConfig, fetchDefaultTemplates, fetchDates, fetchSessions, fetchSession, fetchDailySummary, error } = useApi()
 
   const loadConfig = useCallback(() => {
     fetchConfig()
@@ -79,10 +93,93 @@ export function Settings() {
       .catch(console.error)
   }, [fetchDefaultTemplates])
 
+  // Load real archive data for template preview
+  const loadRealPreviewData = useCallback(async () => {
+    try {
+      // Get all dates
+      const dates = await fetchDates()
+      if (!dates || dates.length === 0) return
+
+      // Get the most recent date
+      const recentDate = dates[0].date
+
+      // Get sessions for that date
+      const sessions = await fetchSessions(recentDate)
+
+      // Try to get session detail for session_summary preview
+      if (sessions && sessions.length > 0) {
+        const sessionDetail = await fetchSession(recentDate, sessions[0].name)
+        if (sessionDetail) {
+          const sessionData: Record<string, string> = {
+            transcript: sessionDetail.content || '',
+            cwd: sessionDetail.metadata?.cwd || '',
+            git_branch: sessionDetail.metadata?.git_branch || '',
+            language: config?.summary_language || 'en',
+          }
+          setRealPreviewData(prev => ({
+            ...prev,
+            session_summary: sessionData,
+            // Also use session content for skill/command extract
+            skill_extract: {
+              session_content: sessionDetail.content || '',
+              skill_hint: '',
+              today: recentDate,
+              language: config?.summary_language || 'en',
+            },
+            command_extract: {
+              session_content: sessionDetail.content || '',
+              command_hint: '',
+              language: config?.summary_language || 'en',
+            },
+          }))
+        }
+      }
+
+      // Try to get daily summary for daily_summary preview
+      const dailySummary = await fetchDailySummary(recentDate)
+      if (dailySummary && (dailySummary.overview || dailySummary.insights)) {
+        const now = new Date()
+        const hours = now.getHours()
+        const currentPeriod = hours < 12 ? 'morning' : hours < 18 ? 'afternoon' : 'evening'
+        const currentTime = `${String(hours).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+
+        const existingContent = [
+          dailySummary.overview ? `## Overview\n\n${dailySummary.overview}` : '',
+          dailySummary.insights ? `## Insights\n\n${dailySummary.insights}` : '',
+          dailySummary.tomorrow_focus ? `## Tomorrow Focus\n\n${dailySummary.tomorrow_focus}` : '',
+        ].filter(Boolean).join('\n\n')
+
+        const dailyData: Record<string, string> = {
+          date: recentDate,
+          current_time: currentTime,
+          current_period: currentPeriod,
+          periods_desc: 'morning (before 12:00), afternoon (12:00-18:00), evening (after 18:00)',
+          existing_section: existingContent,
+          sessions_section: '',
+          sessions_json: JSON.stringify(sessions?.map(s => ({
+            title: s.title || s.name,
+            summary: s.summary_preview || '',
+          })) || [], null, 2),
+          language: config?.summary_language || 'en',
+        }
+        setRealPreviewData(prev => ({ ...prev, daily_summary: dailyData }))
+      }
+    } catch (err) {
+      console.error('Failed to load real preview data:', err)
+    }
+  }, [fetchDates, fetchSessions, fetchSession, fetchDailySummary, config?.summary_language])
+
   useEffect(() => {
     loadConfig()
     loadDefaultTemplates()
   }, [loadConfig, loadDefaultTemplates])
+
+  // Load real preview data when entering template sections
+  useEffect(() => {
+    if (activeSection.includes('template') && config) {
+      loadRealPreviewData()
+    }
+  }, [activeSection, config, loadRealPreviewData])
 
   const handleChange = async (field: string, value: string | boolean) => {
     if (!config) return
@@ -200,6 +297,7 @@ export function Settings() {
             }
             availableVariables={TEMPLATE_VARIABLES.session_summary}
             exampleData={EXAMPLE_DATA.session_summary}
+            realData={realPreviewData.session_summary}
             onSave={async (value) => {
               const updated = await updateConfig({
                 prompt_templates: { session_summary: value },
@@ -222,6 +320,7 @@ export function Settings() {
             }
             availableVariables={TEMPLATE_VARIABLES.daily_summary}
             exampleData={EXAMPLE_DATA.daily_summary}
+            realData={realPreviewData.daily_summary}
             onSave={async (value) => {
               const updated = await updateConfig({
                 prompt_templates: { daily_summary: value },
@@ -244,6 +343,7 @@ export function Settings() {
             }
             availableVariables={TEMPLATE_VARIABLES.skill_extract}
             exampleData={EXAMPLE_DATA.skill_extract}
+            realData={realPreviewData.skill_extract}
             onSave={async (value) => {
               const updated = await updateConfig({
                 prompt_templates: { skill_extract: value },
@@ -266,6 +366,7 @@ export function Settings() {
             }
             availableVariables={TEMPLATE_VARIABLES.command_extract}
             exampleData={EXAMPLE_DATA.command_extract}
+            realData={realPreviewData.command_extract}
             onSave={async (value) => {
               const updated = await updateConfig({
                 prompt_templates: { command_extract: value },

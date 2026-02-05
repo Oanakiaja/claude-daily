@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { format, parseISO, isToday, isYesterday } from 'date-fns'
+import { format, parseISO, isToday } from 'date-fns'
 import { useApi } from '../hooks/useApi'
 import type { DateItem, DailySummary } from '../hooks/useApi'
 import { cn } from '../lib/utils'
@@ -50,13 +50,6 @@ export function Welcome() {
 
     loadData()
   }, [fetchDates, fetchDailySummary])
-
-  const getDateLabel = (dateStr: string) => {
-    const date = parseISO(dateStr)
-    if (isToday(date)) return 'Today'
-    if (isYesterday(date)) return 'Yesterday'
-    return format(date, 'EEEE, MMM d')
-  }
 
   const getWeekday = (dateStr: string) => {
     return format(parseISO(dateStr), 'EEEE')
@@ -116,7 +109,7 @@ export function Welcome() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {days.map((day, index) => (
+        {days.map((day) => (
           <motion.div
             key={day.date}
             initial={{ opacity: 0, y: 20 }}

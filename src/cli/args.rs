@@ -198,6 +198,17 @@ pub enum Commands {
         scope: String,
     },
 
+    /// Uninstall plugin from Claude Code (removes hooks and commands only, keeps archive data)
+    Uninstall {
+        /// Scope: user or project
+        #[arg(short, long, default_value = "user")]
+        scope: String,
+
+        /// Also delete the daily binary itself
+        #[arg(long)]
+        binary: bool,
+    },
+
     /// Update daily to the latest version
     Update {
         /// Only check for updates, don't install

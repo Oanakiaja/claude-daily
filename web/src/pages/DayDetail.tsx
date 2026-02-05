@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useApi } from '../hooks/useApi'
 import type { DailySummary } from '../hooks/useApi'
@@ -8,7 +8,6 @@ import { cn } from '../lib/utils'
 
 export function DayDetail() {
   const { date } = useParams<{ date: string }>()
-  const navigate = useNavigate()
   const [summary, setSummary] = useState<DailySummary | null>(null)
   const [digestContent, setDigestContent] = useState<string | null>(null)
   const [digestLoading, setDigestLoading] = useState(false)
