@@ -14,18 +14,19 @@ import {
   subMonths,
 } from 'date-fns'
 import { useApi } from '../hooks/useApi'
-import type { DateItem, Job } from '../hooks/useApi'
+import type { DateItem, DailySummary, Job } from '../hooks/useApi'
 import { cn } from '../lib/utils'
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export function Welcome() {
   const [days, setDays] = useState<DateItem[]>([])
+  const [summaries, setSummaries] = useState<Map<string, DailySummary>>(new Map())
   const [loading, setLoading] = useState(true)
   const [autoSummarizeJobs, setAutoSummarizeJobs] = useState<Job[]>([])
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left')
-  const { fetchDates, fetchJobs } = useApi()
+  const { fetchDates, fetchDailySummary, fetchJobs } = useApi()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -33,6 +34,26 @@ export function Welcome() {
       try {
         const dates = await fetchDates()
         setDays(dates)
+
+        // Load summaries for dates that have digest
+        const results = await Promise.all(
+          dates
+            .filter(d => d.has_digest)
+            .map(async (d) => {
+              try {
+                const summary = await fetchDailySummary(d.date)
+                return [d.date, summary] as const
+              } catch {
+                return null
+              }
+            })
+        )
+
+        const map = new Map<string, DailySummary>()
+        for (const r of results) {
+          if (r) map.set(r[0], r[1])
+        }
+        setSummaries(map)
       } catch (err) {
         console.error('Failed to load data:', err)
       } finally {
@@ -41,7 +62,7 @@ export function Welcome() {
     }
 
     loadData()
-  }, [fetchDates])
+  }, [fetchDates, fetchDailySummary])
 
   // Poll for auto-summarize jobs
   useEffect(() => {
@@ -115,7 +136,7 @@ export function Welcome() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-bold mb-2">
           <span className="text-orange-500 dark:text-orange-400">Daily</span> Archives
         </h1>
@@ -124,14 +145,14 @@ export function Welcome() {
           <div className="h-8 w-40 bg-gray-200 dark:bg-daily-light rounded animate-pulse" />
           <div className="h-8 w-20 bg-gray-200 dark:bg-daily-light rounded animate-pulse" />
         </div>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1.5">
           {WEEKDAYS.map(d => (
             <div key={d} className="text-center text-xs font-medium text-gray-400 dark:text-gray-500 py-2">
               {d}
             </div>
           ))}
           {[...Array(35)].map((_, i) => (
-            <div key={i} className="aspect-square bg-gray-200 dark:bg-daily-light rounded-lg animate-pulse" />
+            <div key={i} className="h-24 bg-gray-200 dark:bg-daily-light rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -163,7 +184,7 @@ export function Welcome() {
   const monthKey = format(currentMonth, 'yyyy-MM')
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
+    <div className="max-w-6xl mx-auto px-6 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
           <span className="text-orange-500 dark:text-orange-400">Daily</span> Archives
@@ -232,7 +253,7 @@ export function Welcome() {
       </div>
 
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-1 mb-1">
+      <div className="grid grid-cols-7 gap-1.5 mb-1">
         {WEEKDAYS.map(d => (
           <div key={d} className="text-center text-xs font-medium text-gray-400 dark:text-gray-500 py-2">
             {d}
@@ -250,11 +271,12 @@ export function Welcome() {
           animate="center"
           exit="exit"
           transition={{ duration: 0.2, ease: 'easeInOut' }}
-          className="grid grid-cols-7 gap-1"
+          className="grid grid-cols-7 gap-1.5"
         >
           {calendarDays.map(day => {
             const dateStr = format(day, 'yyyy-MM-dd')
             const archive = archiveMap.get(dateStr)
+            const summary = summaries.get(dateStr)
             const isCurrentMonth = isSameMonth(day, currentMonth)
             const today = isToday(day)
             const hasArchive = !!archive
@@ -265,35 +287,45 @@ export function Welcome() {
                 onClick={() => hasArchive && navigate(`/day/${dateStr}`)}
                 disabled={!hasArchive}
                 className={cn(
-                  'aspect-square rounded-lg p-1.5 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 relative',
+                  'h-24 rounded-lg p-2 flex flex-col items-start text-left transition-all duration-150 relative overflow-hidden',
                   !isCurrentMonth && 'opacity-30',
-                  hasArchive && 'cursor-pointer hover:bg-orange-500/10 hover:scale-105 active:scale-95',
+                  hasArchive && 'cursor-pointer hover:ring-1 hover:ring-orange-500/50 hover:scale-[1.02] active:scale-[0.98]',
                   !hasArchive && 'cursor-default',
-                  hasArchive && 'bg-orange-500/5 dark:bg-orange-500/10',
+                  hasArchive
+                    ? 'bg-orange-500/5 dark:bg-orange-500/10 border border-orange-500/20 dark:border-orange-500/15'
+                    : 'border border-transparent',
                 )}
               >
-                {/* Day number */}
-                <span
-                  className={cn(
-                    'text-sm font-medium leading-none',
-                    today && 'bg-orange-500 text-white rounded-full size-6 flex items-center justify-center',
-                    !today && hasArchive && 'text-gray-900 dark:text-gray-100',
-                    !today && !hasArchive && 'text-gray-400 dark:text-gray-600',
-                  )}
-                >
-                  {format(day, 'd')}
-                </span>
-
-                {/* Session count */}
-                {hasArchive && (
-                  <span className="text-[10px] font-medium text-orange-500 dark:text-orange-400 leading-none">
-                    {archive.session_count}s
+                {/* Header row: day number + session count */}
+                <div className="flex items-center justify-between w-full mb-1">
+                  <span
+                    className={cn(
+                      'text-xs font-semibold leading-none',
+                      today && 'bg-orange-500 text-white rounded-full size-5 flex items-center justify-center text-[10px]',
+                      !today && hasArchive && 'text-gray-900 dark:text-gray-100',
+                      !today && !hasArchive && 'text-gray-400 dark:text-gray-600',
+                    )}
+                  >
+                    {format(day, 'd')}
                   </span>
-                )}
 
-                {/* Digest dot */}
-                {archive?.has_digest && (
-                  <span className="size-1 rounded-full bg-orange-500 dark:bg-orange-400" />
+                  {hasArchive && (
+                    <div className="flex items-center gap-1">
+                      {archive.has_digest && (
+                        <span className="size-1.5 rounded-full bg-orange-500 dark:bg-orange-400" />
+                      )}
+                      <span className="text-[10px] font-medium text-orange-500 dark:text-orange-400 leading-none">
+                        {archive.session_count}s
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Summary preview */}
+                {hasArchive && summary?.overview && (
+                  <p className="text-[10px] leading-tight text-gray-500 dark:text-gray-400 line-clamp-3 w-full">
+                    {summary.overview}
+                  </p>
                 )}
               </button>
             )
