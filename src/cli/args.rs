@@ -203,11 +203,10 @@ pub enum Commands {
         /// Scope: user or project
         #[arg(short, long, default_value = "user")]
         scope: String,
-
-        /// Also delete the daily binary itself
-        #[arg(long)]
-        binary: bool,
     },
+
+    /// Delete the daily binary itself
+    Trash,
 
     /// Update daily to the latest version
     Update {
