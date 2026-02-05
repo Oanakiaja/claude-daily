@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format, parseISO, isToday, isYesterday } from 'date-fns'
@@ -19,6 +19,7 @@ type NavItem =
 export function ArchiveTree() {
   const [dates, setDates] = useState<DateItem[]>([])
   const [dateStates, setDateStates] = useState<Record<string, DateNodeState>>({})
+  const dateRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const { fetchDates, fetchSessions, loading } = useApi()
   const navigate = useNavigate()
   const location = useLocation()
@@ -79,16 +80,9 @@ export function ArchiveTree() {
         }
 
         const nextItem = navItems[nextIdx]
-        // Auto-expand the date if navigating to it
+        // Auto-expand the date if navigating to it (collapse others)
         if (!dateStates[nextItem.date]?.expanded) {
-          setDateStates(prev => ({
-            ...prev,
-            [nextItem.date]: {
-              expanded: true,
-              sessions: prev[nextItem.date]?.sessions || [],
-              sessionsLoaded: prev[nextItem.date]?.sessionsLoaded || false
-            }
-          }))
+          expandOnly(nextItem.date)
         }
         navigate(nextItem.path)
       }
@@ -115,6 +109,32 @@ export function ArchiveTree() {
       .catch(console.error)
   }, [fetchDates])
 
+  // Auto-expand and scroll to date when navigating from calendar
+  useEffect(() => {
+    const match = location.pathname.match(/^\/day\/(\d{4}-\d{2}-\d{2})/)
+    if (!match || dates.length === 0) return
+    const date = match[1]
+    if (!dates.some(d => d.date === date)) return
+
+    // Expand the date node (collapse others)
+    setDateStates(prev => {
+      if (prev[date]?.expanded) return prev
+      const next: Record<string, DateNodeState> = {}
+      for (const [key, state] of Object.entries(prev)) {
+        next[key] = { ...state, expanded: key === date }
+      }
+      if (!next[date]) {
+        next[date] = { expanded: true, sessions: [], sessionsLoaded: false }
+      }
+      return next
+    })
+
+    // Scroll into view after a brief delay for DOM update
+    requestAnimationFrame(() => {
+      dateRefs.current[date]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    })
+  }, [location.pathname, dates])
+
   // Load sessions when a date is expanded
   useEffect(() => {
     const expandedDates = Object.entries(dateStates)
@@ -133,15 +153,30 @@ export function ArchiveTree() {
     })
   }, [dateStates, fetchSessions])
 
-  const toggleDate = (date: string) => {
-    setDateStates(prev => ({
-      ...prev,
-      [date]: {
-        expanded: !prev[date]?.expanded,
-        sessions: prev[date]?.sessions || [],
-        sessionsLoaded: prev[date]?.sessionsLoaded || false
+  const expandOnly = (date: string) => {
+    setDateStates(prev => {
+      const next: Record<string, DateNodeState> = {}
+      for (const [key, state] of Object.entries(prev)) {
+        next[key] = { ...state, expanded: key === date }
       }
-    }))
+      if (!next[date]) {
+        next[date] = { expanded: true, sessions: [], sessionsLoaded: false }
+      }
+      return next
+    })
+  }
+
+  const toggleDate = (date: string) => {
+    const wasExpanded = dateStates[date]?.expanded
+    if (wasExpanded) {
+      setDateStates(prev => ({
+        ...prev,
+        [date]: { ...prev[date], expanded: false }
+      }))
+    } else {
+      expandOnly(date)
+      navigate(`/day/${date}`)
+    }
   }
 
   const getDateLabel = (dateStr: string) => {
@@ -169,7 +204,7 @@ export function ArchiveTree() {
         const state = dateStates[dateItem.date] || { expanded: false, sessions: [], sessionsLoaded: false }
 
         return (
-          <div key={dateItem.date}>
+          <div key={dateItem.date} ref={el => { dateRefs.current[dateItem.date] = el }}>
             {/* Date header */}
             <button
               onClick={() => toggleDate(dateItem.date)}
