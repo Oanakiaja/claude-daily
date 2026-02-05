@@ -39,10 +39,10 @@ export function JobCard({ job, onKill }: JobCardProps) {
     <div
       className={cn(
         'p-4 rounded-lg border transition-colors',
-        'bg-daily-light',
-        isRunning && 'border-orange-500/40',
-        isFailed && 'border-red-500/40',
-        !isRunning && !isFailed && 'border-gray-700'
+        'bg-gray-50 dark:bg-daily-light',
+        isRunning && 'border-orange-400 dark:border-orange-500/40',
+        isFailed && 'border-red-400 dark:border-red-500/40',
+        !isRunning && !isFailed && 'border-gray-200 dark:border-gray-700'
       )}
     >
       <div className="flex items-start justify-between">
@@ -57,7 +57,7 @@ export function JobCard({ job, onKill }: JobCardProps) {
                 !isRunning && !isFailed && 'bg-green-500'
               )}
             />
-            <span className="font-medium text-gray-100 truncate">
+            <span className="font-medium text-gray-900 dark:text-gray-100 truncate">
               {job.task_name}
             </span>
             {/* Job type badge */}

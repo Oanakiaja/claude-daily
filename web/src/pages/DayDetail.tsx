@@ -78,9 +78,9 @@ export function DayDetail() {
     return (
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 bg-daily-light rounded" />
-          <div className="h-32 bg-daily-light rounded-lg" />
-          <div className="h-24 bg-daily-light rounded-lg" />
+          <div className="h-8 w-48 bg-gray-200 dark:bg-daily-light rounded" />
+          <div className="h-32 bg-gray-200 dark:bg-daily-light rounded-lg" />
+          <div className="h-24 bg-gray-200 dark:bg-daily-light rounded-lg" />
         </div>
       </div>
     )
@@ -90,11 +90,11 @@ export function DayDetail() {
     <div className="max-w-4xl mx-auto px-6 py-8">
       {/* Breadcrumb */}
       <nav className="mb-6 text-sm">
-        <Link to="/" className="text-gray-500 hover:text-gray-300">
+        <Link to="/" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
           Archives
         </Link>
-        <span className="text-gray-600 mx-2">/</span>
-        <span className="text-orange-400">{date}</span>
+        <span className="text-gray-400 dark:text-gray-600 mx-2">/</span>
+        <span className="text-orange-500 dark:text-orange-400">{date}</span>
       </nav>
 
       <div className="flex items-center justify-between mb-8">
@@ -188,7 +188,7 @@ export function DayDetail() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-daily-light rounded-lg p-6 border border-orange-500/20"
+          className="bg-gray-50 dark:bg-daily-light rounded-lg p-6 border border-gray-200 dark:border-orange-500/20"
         >
           <div className="markdown-content">
             <MarkdownRenderer content={digestContent} />

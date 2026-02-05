@@ -47,7 +47,7 @@ export function JobsMonitor() {
 
       {/* Running Jobs */}
       <section className="mb-8">
-        <h2 className="text-xl font-semibold text-orange-400 mb-4">
+        <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">
           Running ({runningJobs.length})
         </h2>
         <AnimatePresence mode="popLayout">

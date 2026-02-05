@@ -78,7 +78,7 @@ export function ArchiveTree() {
     return (
       <div className="p-4 space-y-2">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-12 bg-daily-light rounded animate-pulse" />
+          <div key={i} className="h-12 bg-gray-200 dark:bg-daily-light rounded animate-pulse" />
         ))}
       </div>
     )
@@ -96,7 +96,7 @@ export function ArchiveTree() {
               onClick={() => toggleDate(dateItem.date)}
               className={cn(
                 'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors',
-                'hover:bg-daily-light'
+                'hover:bg-gray-100 dark:hover:bg-daily-light'
               )}
             >
               <svg
@@ -139,8 +139,8 @@ export function ArchiveTree() {
                       className={cn(
                         'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm transition-colors',
                         isActive(`/day/${dateItem.date}`)
-                          ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                          : 'hover:bg-daily-light text-gray-300'
+                          ? 'bg-orange-500/20 text-orange-500 dark:text-orange-400 border border-orange-500/30'
+                          : 'hover:bg-gray-100 dark:hover:bg-daily-light text-gray-700 dark:text-gray-300'
                       )}
                     >
                       <span className="text-base">📝</span>
@@ -161,8 +161,8 @@ export function ArchiveTree() {
                               className={cn(
                                 'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm transition-colors',
                                 isActive(`/day/${dateItem.date}/session/${encodeURIComponent(session.name)}`)
-                                  ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                                  : 'hover:bg-daily-light text-gray-400'
+                                  ? 'bg-orange-500/20 text-orange-500 dark:text-orange-400 border border-orange-500/30'
+                                  : 'hover:bg-gray-100 dark:hover:bg-daily-light text-gray-500 dark:text-gray-400'
                               )}
                               title={session.title || session.name}
                             >
