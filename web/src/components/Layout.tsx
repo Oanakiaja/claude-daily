@@ -21,6 +21,9 @@ export function Layout() {
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Skip if modifier key held (allow browser back/forward)
+      if (e.metaKey || e.ctrlKey) return
+
       // Skip if user is typing in an input/textarea
       const target = e.target as HTMLElement
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {

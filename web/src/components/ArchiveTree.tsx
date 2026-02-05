@@ -56,6 +56,9 @@ export function ArchiveTree() {
   // Keyboard navigation - directly navigate on arrow key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Skip if modifier key held (allow browser back/forward)
+      if (e.metaKey || e.ctrlKey) return
+
       // Only handle when on Archives page
       if (!location.pathname.startsWith('/day') && location.pathname !== '/') return
 
