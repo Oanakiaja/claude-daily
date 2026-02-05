@@ -1,47 +1,38 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { format, parseISO, isToday } from 'date-fns'
+import {
+  format,
+  isToday,
+  isSameMonth,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  addMonths,
+  subMonths,
+} from 'date-fns'
 import { useApi } from '../hooks/useApi'
-import type { DateItem, DailySummary, Job } from '../hooks/useApi'
+import type { DateItem, Job } from '../hooks/useApi'
 import { cn } from '../lib/utils'
 
-interface DayCardData extends DateItem {
-  summary?: DailySummary
-}
+const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export function Welcome() {
-  const [days, setDays] = useState<DayCardData[]>([])
+  const [days, setDays] = useState<DateItem[]>([])
   const [loading, setLoading] = useState(true)
   const [autoSummarizeJobs, setAutoSummarizeJobs] = useState<Job[]>([])
-  const { fetchDates, fetchDailySummary, fetchJobs } = useApi()
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left')
+  const { fetchDates, fetchJobs } = useApi()
   const navigate = useNavigate()
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const dates = await fetchDates()
-        setDays(dates.map(d => ({ ...d })))
-
-        // Load summaries for dates that have digest
-        const summaryPromises = dates
-          .filter(d => d.has_digest)
-          .map(async (d) => {
-            try {
-              const summary = await fetchDailySummary(d.date)
-              return { date: d.date, summary }
-            } catch {
-              return { date: d.date, summary: undefined }
-            }
-          })
-
-        const summaries = await Promise.all(summaryPromises)
-        const summaryMap = new Map(summaries.map(s => [s.date, s.summary]))
-
-        setDays(dates.map(d => ({
-          ...d,
-          summary: summaryMap.get(d.date)
-        })))
+        setDays(dates)
       } catch (err) {
         console.error('Failed to load data:', err)
       } finally {
@@ -50,7 +41,7 @@ export function Welcome() {
     }
 
     loadData()
-  }, [fetchDates, fetchDailySummary])
+  }, [fetchDates])
 
   // Poll for auto-summarize jobs
   useEffect(() => {
@@ -71,24 +62,76 @@ export function Welcome() {
     return () => clearInterval(interval)
   }, [fetchJobs])
 
-  const getWeekday = (dateStr: string) => {
-    return format(parseISO(dateStr), 'EEEE')
+  const archiveMap = useMemo(() => {
+    const map = new Map<string, DateItem>()
+    for (const day of days) {
+      map.set(day.date, day)
+    }
+    return map
+  }, [days])
+
+  const calendarDays = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth)
+    const monthEnd = endOfMonth(currentMonth)
+    const calStart = startOfWeek(monthStart, { weekStartsOn: 1 })
+    const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 })
+    return eachDayOfInterval({ start: calStart, end: calEnd })
+  }, [currentMonth])
+
+  const goToPrevMonth = () => {
+    setSlideDirection('right')
+    setCurrentMonth(prev => subMonths(prev, 1))
   }
 
-  const truncateText = (text: string, maxLength: number = 150) => {
-    if (text.length <= maxLength) return text
-    return text.slice(0, maxLength).trim() + '...'
+  const goToNextMonth = () => {
+    setSlideDirection('left')
+    setCurrentMonth(prev => addMonths(prev, 1))
+  }
+
+  const goToToday = () => {
+    const today = new Date()
+    if (currentMonth > today) {
+      setSlideDirection('right')
+    } else {
+      setSlideDirection('left')
+    }
+    setCurrentMonth(today)
+  }
+
+  const slideVariants = {
+    enter: (direction: 'left' | 'right') => ({
+      x: direction === 'left' ? 80 : -80,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: 'left' | 'right') => ({
+      x: direction === 'left' ? -80 : 80,
+      opacity: 0,
+    }),
   }
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <h1 className="text-3xl font-bold mb-8">
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        <h1 className="text-3xl font-bold mb-2">
           <span className="text-orange-500 dark:text-orange-400">Daily</span> Archives
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-48 bg-gray-200 dark:bg-daily-light rounded-xl animate-pulse" />
+        <p className="text-gray-400 mb-8 h-5 w-48 bg-gray-200 dark:bg-daily-light rounded animate-pulse" />
+        <div className="flex items-center justify-between mb-6">
+          <div className="h-8 w-40 bg-gray-200 dark:bg-daily-light rounded animate-pulse" />
+          <div className="h-8 w-20 bg-gray-200 dark:bg-daily-light rounded animate-pulse" />
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {WEEKDAYS.map(d => (
+            <div key={d} className="text-center text-xs font-medium text-gray-400 dark:text-gray-500 py-2">
+              {d}
+            </div>
+          ))}
+          {[...Array(35)].map((_, i) => (
+            <div key={i} className="aspect-square bg-gray-200 dark:bg-daily-light rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -117,8 +160,10 @@ export function Welcome() {
     )
   }
 
+  const monthKey = format(currentMonth, 'yyyy-MM')
+
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8">
+    <div className="max-w-4xl mx-auto px-6 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
           <span className="text-orange-500 dark:text-orange-400">Daily</span> Archives
@@ -153,64 +198,108 @@ export function Welcome() {
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {days.map((day) => (
-          <motion.div
-            key={day.date}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
+      {/* Month navigation */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={goToPrevMonth}
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-daily-light transition-colors"
+            aria-label="Previous month"
           >
-            <button
-              onClick={() => navigate(`/day/${day.date}`)}
-              className={cn(
-                'w-full h-44 text-left p-5 rounded-xl border transition-all duration-200',
-                'bg-gray-50 dark:bg-daily-light',
-                'border-gray-200 dark:border-gray-800',
-                'hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10',
-                'hover:scale-[1.02] active:scale-[0.98]',
-                'group flex flex-col'
-              )}
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg font-semibold tabular-nums">{day.date}</span>
-                    {isToday(parseISO(day.date)) && (
-                      <span className="px-2 py-0.5 text-xs font-medium bg-orange-500/20 text-orange-500 dark:text-orange-400 rounded-full">
-                        Today
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-sm text-gray-500">{getWeekday(day.date)}</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-2xl font-bold text-orange-500 dark:text-orange-400">
-                    {day.session_count}
-                  </span>
-                  <p className="text-xs text-gray-500">
-                    {day.session_count === 1 ? 'session' : 'sessions'}
-                  </p>
-                </div>
-              </div>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-gray-500 dark:text-gray-400">
+              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <h2 className="text-lg font-semibold min-w-[180px] text-center">
+            {format(currentMonth, 'MMMM yyyy')}
+          </h2>
+          <button
+            onClick={goToNextMonth}
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-daily-light transition-colors"
+            aria-label="Next month"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-gray-500 dark:text-gray-400">
+              <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+        <button
+          onClick={goToToday}
+          className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-daily-light transition-colors text-gray-600 dark:text-gray-300"
+        >
+          Today
+        </button>
+      </div>
 
-              {/* Summary Preview */}
-              <div className="flex-1 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 overflow-hidden">
-                {day.summary?.overview ? (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                    {truncateText(day.summary.overview, 100)}
-                  </p>
-                ) : (
-                  <p className="text-sm text-gray-400 dark:text-gray-600 italic">
-                    No summary yet
-                  </p>
-                )}
-              </div>
-            </button>
-          </motion.div>
+      {/* Weekday headers */}
+      <div className="grid grid-cols-7 gap-1 mb-1">
+        {WEEKDAYS.map(d => (
+          <div key={d} className="text-center text-xs font-medium text-gray-400 dark:text-gray-500 py-2">
+            {d}
+          </div>
         ))}
       </div>
+
+      {/* Calendar grid */}
+      <AnimatePresence mode="wait" custom={slideDirection}>
+        <motion.div
+          key={monthKey}
+          custom={slideDirection}
+          variants={slideVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+          className="grid grid-cols-7 gap-1"
+        >
+          {calendarDays.map(day => {
+            const dateStr = format(day, 'yyyy-MM-dd')
+            const archive = archiveMap.get(dateStr)
+            const isCurrentMonth = isSameMonth(day, currentMonth)
+            const today = isToday(day)
+            const hasArchive = !!archive
+
+            return (
+              <button
+                key={dateStr}
+                onClick={() => hasArchive && navigate(`/day/${dateStr}`)}
+                disabled={!hasArchive}
+                className={cn(
+                  'aspect-square rounded-lg p-1.5 flex flex-col items-center justify-center gap-0.5 transition-all duration-150 relative',
+                  !isCurrentMonth && 'opacity-30',
+                  hasArchive && 'cursor-pointer hover:bg-orange-500/10 hover:scale-105 active:scale-95',
+                  !hasArchive && 'cursor-default',
+                  hasArchive && 'bg-orange-500/5 dark:bg-orange-500/10',
+                )}
+              >
+                {/* Day number */}
+                <span
+                  className={cn(
+                    'text-sm font-medium leading-none',
+                    today && 'bg-orange-500 text-white rounded-full size-6 flex items-center justify-center',
+                    !today && hasArchive && 'text-gray-900 dark:text-gray-100',
+                    !today && !hasArchive && 'text-gray-400 dark:text-gray-600',
+                  )}
+                >
+                  {format(day, 'd')}
+                </span>
+
+                {/* Session count */}
+                {hasArchive && (
+                  <span className="text-[10px] font-medium text-orange-500 dark:text-orange-400 leading-none">
+                    {archive.session_count}s
+                  </span>
+                )}
+
+                {/* Digest dot */}
+                {archive?.has_digest && (
+                  <span className="size-1 rounded-full bg-orange-500 dark:bg-orange-400" />
+                )}
+              </button>
+            )
+          })}
+        </motion.div>
+      </AnimatePresence>
     </div>
   )
 }
