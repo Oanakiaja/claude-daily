@@ -186,9 +186,28 @@ After digest, individual session files are removed, keeping only the consolidate
 
 Note: After running `daily digest`, individual session files are removed and consolidated into `daily.md`.
 
+## Development
+
+```bash
+# First time setup: build web assets (required before cargo run)
+cd web && npm install && npm run build && cd ..
+
+# Web dashboard (requires two terminals)
+cargo run -- show --no-open    # Terminal 1: API server
+cd web && npm run dev          # Terminal 2: Vite dev server → http://localhost:5173
+
+# Marketing site
+cd site && npm run dev
+
+# Build & test
+cargo build --release
+cargo test
+```
+
 ## Requirements
 
 - Rust 1.70+ (for building)
+- Node.js 18+ (for web/site development)
 - Claude Code CLI
 
 ## License
