@@ -4,7 +4,10 @@ use std::sync::{Arc, RwLock};
 use tokio::net::TcpListener;
 use tokio::signal;
 
-use crate::auto_summarize::{find_unsummarized_transcripts, should_trigger_auto_summarize};
+use crate::auto_summarize::{
+    find_unsummarized_transcripts, should_trigger_auto_summarize,
+    should_trigger_auto_summarize_on_show,
+};
 use crate::config::{load_config, save_config};
 use crate::server::{create_router, handlers::AppState};
 
@@ -16,7 +19,11 @@ pub async fn run(port: Option<u16>, host: String, open_browser: bool) -> Result<
     let mut config = load_config()?;
 
     // Check if we should trigger auto-summarization
-    if should_trigger_auto_summarize(&config)? {
+    // Either: on_show is enabled (triggers every time) OR time-based trigger is due
+    let should_trigger =
+        should_trigger_auto_summarize_on_show(&config) || should_trigger_auto_summarize(&config)?;
+
+    if should_trigger {
         // Spawn background jobs for unsummarized transcripts
         match trigger_auto_summarize(&config).await {
             Ok(count) => {
@@ -37,9 +44,12 @@ pub async fn run(port: Option<u16>, host: String, open_browser: bool) -> Result<
             }
         }
 
-        // Update last check time
-        config.summarization.last_auto_summarize_check = Some(chrono::Local::now().to_rfc3339());
-        save_config(&config)?;
+        // Update last check time (only for time-based trigger tracking)
+        if !should_trigger_auto_summarize_on_show(&config) {
+            config.summarization.last_auto_summarize_check =
+                Some(chrono::Local::now().to_rfc3339());
+            save_config(&config)?;
+        }
     }
 
     let state = Arc::new(AppState {

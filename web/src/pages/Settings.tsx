@@ -512,6 +512,57 @@ export function Settings() {
                     className="w-5 h-5 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500"
                   />
                 </label>
+
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3">Auto Summarize on Show</h3>
+                  <p className="text-gray-500 text-xs mb-4">
+                    Automatically summarize sessions that missed the session_end hook when opening daily show
+                  </p>
+
+                  <label className="flex items-center justify-between cursor-pointer mb-4">
+                    <div>
+                      <span className="text-gray-700 dark:text-gray-200">Enable Auto Summarize</span>
+                      <p className="text-gray-500 text-sm">Master switch for auto-summarization</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={config.auto_summarize_enabled}
+                      onChange={(e) => handleChange('auto_summarize_enabled', e.target.checked)}
+                      disabled={saving}
+                      className="w-5 h-5 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between cursor-pointer mb-4">
+                    <div>
+                      <span className="text-gray-700 dark:text-gray-200">Trigger on Show</span>
+                      <p className="text-gray-500 text-sm">Check for missed sessions every time daily show is opened</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={config.auto_summarize_on_show}
+                      onChange={(e) => handleChange('auto_summarize_on_show', e.target.checked)}
+                      disabled={saving || !config.auto_summarize_enabled}
+                      className="w-5 h-5 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500 disabled:opacity-50"
+                    />
+                  </label>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-gray-700 dark:text-gray-200">Inactive Threshold</span>
+                      <p className="text-gray-500 text-sm">Minutes of inactivity before a session is considered ended</p>
+                    </div>
+                    <input
+                      type="number"
+                      min="5"
+                      max="480"
+                      value={config.auto_summarize_inactive_minutes}
+                      onChange={(e) => handleChange('auto_summarize_inactive_minutes', parseInt(e.target.value) || 30)}
+                      disabled={saving || !config.auto_summarize_enabled}
+                      className="w-20 bg-white dark:bg-daily-dark border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1 text-gray-700 dark:text-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none disabled:opacity-50 text-center"
+                    />
+                  </div>
+                </div>
               </div>
             </section>
 

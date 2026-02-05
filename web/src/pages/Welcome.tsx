@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { format, parseISO, isToday } from 'date-fns'
 import { useApi } from '../hooks/useApi'
-import type { DateItem, DailySummary } from '../hooks/useApi'
+import type { DateItem, DailySummary, Job } from '../hooks/useApi'
 import { cn } from '../lib/utils'
 
 interface DayCardData extends DateItem {
@@ -13,7 +13,8 @@ interface DayCardData extends DateItem {
 export function Welcome() {
   const [days, setDays] = useState<DayCardData[]>([])
   const [loading, setLoading] = useState(true)
-  const { fetchDates, fetchDailySummary } = useApi()
+  const [autoSummarizeJobs, setAutoSummarizeJobs] = useState<Job[]>([])
+  const { fetchDates, fetchDailySummary, fetchJobs } = useApi()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -50,6 +51,25 @@ export function Welcome() {
 
     loadData()
   }, [fetchDates, fetchDailySummary])
+
+  // Poll for auto-summarize jobs
+  useEffect(() => {
+    const loadJobs = async () => {
+      try {
+        const jobs = await fetchJobs()
+        const runningAutoJobs = jobs.filter(
+          (j) => j.job_type === 'auto_summarize' && j.status_type === 'running'
+        )
+        setAutoSummarizeJobs(runningAutoJobs)
+      } catch {
+        // Silently ignore job fetch errors
+      }
+    }
+
+    loadJobs()
+    const interval = setInterval(loadJobs, 3000)
+    return () => clearInterval(interval)
+  }, [fetchJobs])
 
   const getWeekday = (dateStr: string) => {
     return format(parseISO(dateStr), 'EEEE')
@@ -107,6 +127,31 @@ export function Welcome() {
           {days.length} {days.length === 1 ? 'day' : 'days'} of Claude Code sessions
         </p>
       </div>
+
+      {/* Auto-summarize notification */}
+      <AnimatePresence>
+        {autoSummarizeJobs.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 p-4 rounded-lg border border-blue-500/30 bg-blue-500/10"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-blue-400 text-lg">🤖</span>
+              <div className="flex-1">
+                <p className="text-blue-400 font-medium">
+                  Auto-summarizing {autoSummarizeJobs.length} missed session{autoSummarizeJobs.length > 1 ? 's' : ''}
+                </p>
+                <p className="text-blue-400/70 text-sm mt-1">
+                  Sessions without session_end hook are being summarized automatically
+                </p>
+              </div>
+              <div className="size-2 bg-blue-400 rounded-full animate-pulse" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {days.map((day) => (

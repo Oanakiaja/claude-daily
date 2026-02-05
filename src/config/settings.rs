@@ -53,6 +53,12 @@ pub struct SummarizationConfig {
     /// Last time auto-summarization check was performed (ISO 8601 format)
     #[serde(default)]
     pub last_auto_summarize_check: Option<String>,
+    /// Trigger auto-summarization every time `daily show` is opened (ignores time-based trigger)
+    #[serde(default = "default_auto_summarize_on_show")]
+    pub auto_summarize_on_show: bool,
+    /// Minutes of inactivity before a transcript is considered "inactive" and eligible for auto-summarization
+    #[serde(default = "default_auto_summarize_inactive_minutes")]
+    pub auto_summarize_inactive_minutes: u64,
 }
 
 fn default_summary_language() -> String {
@@ -73,6 +79,14 @@ fn default_auto_summarize_enabled() -> bool {
 
 fn default_auto_summarize_time() -> String {
     "06:00".into()
+}
+
+fn default_auto_summarize_on_show() -> bool {
+    false // Disabled by default, user must opt-in
+}
+
+fn default_auto_summarize_inactive_minutes() -> u64 {
+    30 // 30 minutes of inactivity before considering a session ended
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -135,6 +149,8 @@ impl Default for Config {
                 auto_summarize_enabled: true,
                 auto_summarize_time: "06:00".into(),
                 last_auto_summarize_check: None,
+                auto_summarize_on_show: false,
+                auto_summarize_inactive_minutes: 30,
             },
             hooks: HooksConfig {
                 enable_session_start: true,

@@ -168,6 +168,9 @@ pub struct ConfigDto {
     pub digest_time: String,
     pub author: Option<String>,
     pub prompt_templates: PromptTemplatesDto,
+    pub auto_summarize_enabled: bool,
+    pub auto_summarize_on_show: bool,
+    pub auto_summarize_inactive_minutes: u64,
 }
 
 /// Config update request
@@ -181,6 +184,9 @@ pub struct ConfigUpdateRequest {
     pub digest_time: Option<String>,
     pub author: Option<String>,
     pub prompt_templates: Option<PromptTemplatesUpdateRequest>,
+    pub auto_summarize_enabled: Option<bool>,
+    pub auto_summarize_on_show: Option<bool>,
+    pub auto_summarize_inactive_minutes: Option<u64>,
 }
 
 /// Prompt templates DTO for API responses

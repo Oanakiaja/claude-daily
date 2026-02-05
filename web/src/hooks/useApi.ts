@@ -82,6 +82,9 @@ export interface Config {
   digest_time: string
   author: string | null
   prompt_templates: PromptTemplates
+  auto_summarize_enabled: boolean
+  auto_summarize_on_show: boolean
+  auto_summarize_inactive_minutes: number
 }
 
 export interface ConfigUpdate {
@@ -93,6 +96,9 @@ export interface ConfigUpdate {
   digest_time?: string
   author?: string
   prompt_templates?: PromptTemplatesUpdate
+  auto_summarize_enabled?: boolean
+  auto_summarize_on_show?: boolean
+  auto_summarize_inactive_minutes?: number
 }
 
 interface ApiResponse<T> {

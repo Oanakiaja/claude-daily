@@ -97,14 +97,14 @@ fn get_archived_transcript_paths(config: &Config) -> Result<HashSet<String>> {
     Ok(archived_paths)
 }
 
-/// Check if a transcript has been recently modified (within the last 2 hours)
+/// Check if a transcript has been recently modified (within the configured inactive threshold)
 /// This helps avoid processing active sessions
-fn is_transcript_active(path: &std::path::Path) -> bool {
+fn is_transcript_active(path: &std::path::Path, inactive_minutes: u64) -> bool {
     if let Ok(metadata) = fs::metadata(path) {
         if let Ok(modified) = metadata.modified() {
             if let Ok(elapsed) = modified.elapsed() {
-                // Consider active if modified within last 2 hours
-                return elapsed.as_secs() < 2 * 3600;
+                // Consider active if modified within the threshold
+                return elapsed.as_secs() < inactive_minutes * 60;
             }
         }
     }
@@ -153,8 +153,11 @@ pub fn find_unsummarized_transcripts(config: &Config) -> Result<Vec<Unsummarized
             continue;
         }
 
-        // Skip if transcript is still active (modified within last 2 hours)
-        if is_transcript_active(&transcript_path) {
+        // Skip if transcript is still active (modified within the configured threshold)
+        if is_transcript_active(
+            &transcript_path,
+            config.summarization.auto_summarize_inactive_minutes,
+        ) {
             continue;
         }
 
@@ -197,7 +200,18 @@ pub fn find_unsummarized_transcripts(config: &Config) -> Result<Vec<Unsummarized
     Ok(unsummarized)
 }
 
-/// Check if auto-summarization should be triggered
+/// Check if auto-summarization should be triggered on `daily show`
+///
+/// Returns true if:
+/// 1. auto_summarize_enabled is true (master switch)
+/// 2. auto_summarize_on_show is true
+///
+/// This bypasses time-based checks and triggers on every `daily show` invocation.
+pub fn should_trigger_auto_summarize_on_show(config: &Config) -> bool {
+    config.summarization.auto_summarize_enabled && config.summarization.auto_summarize_on_show
+}
+
+/// Check if auto-summarization should be triggered (time-based)
 ///
 /// Returns true if:
 /// 1. auto_summarize_enabled is true

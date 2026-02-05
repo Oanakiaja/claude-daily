@@ -266,6 +266,9 @@ pub async fn get_config(State(state): State<Arc<AppState>>) -> impl IntoResponse
             skill_extract: config.prompt_templates.skill_extract.clone(),
             command_extract: config.prompt_templates.command_extract.clone(),
         },
+        auto_summarize_enabled: config.summarization.auto_summarize_enabled,
+        auto_summarize_on_show: config.summarization.auto_summarize_on_show,
+        auto_summarize_inactive_minutes: config.summarization.auto_summarize_inactive_minutes,
     };
     Json(ApiResponse::success(config_dto))
 }
@@ -340,6 +343,20 @@ pub async fn update_config(
         }
     }
 
+    // Update auto-summarize settings
+    if let Some(enable) = req.auto_summarize_enabled {
+        config.summarization.auto_summarize_enabled = enable;
+    }
+    if let Some(on_show) = req.auto_summarize_on_show {
+        config.summarization.auto_summarize_on_show = on_show;
+    }
+    if let Some(minutes) = req.auto_summarize_inactive_minutes {
+        // Validate range: 5 minutes to 8 hours
+        if (5..=480).contains(&minutes) {
+            config.summarization.auto_summarize_inactive_minutes = minutes;
+        }
+    }
+
     // Save config to file
     if let Err(e) = save_config(&config) {
         return Json(ApiResponse::<ConfigDto>::error(format!(
@@ -364,6 +381,9 @@ pub async fn update_config(
             skill_extract: config.prompt_templates.skill_extract.clone(),
             command_extract: config.prompt_templates.command_extract.clone(),
         },
+        auto_summarize_enabled: config.summarization.auto_summarize_enabled,
+        auto_summarize_on_show: config.summarization.auto_summarize_on_show,
+        auto_summarize_inactive_minutes: config.summarization.auto_summarize_inactive_minutes,
     };
     Json(ApiResponse::success(config_dto))
 }
