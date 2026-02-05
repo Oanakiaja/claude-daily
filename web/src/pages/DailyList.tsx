@@ -28,7 +28,7 @@ export function DailyList() {
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="animate-pulse space-y-4">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-20 bg-daily-light rounded-lg" />
+            <div key={i} className="h-20 bg-gray-200 dark:bg-daily-light rounded-lg" />
           ))}
         </div>
       </div>
@@ -69,7 +69,7 @@ export function DailyList() {
                 to={`/day/${item.date}`}
                 className={cn(
                   'block p-4 rounded-lg border transition-colors',
-                  'bg-daily-light border-orange-500/20 hover:border-orange-500/40'
+                  'bg-gray-50 dark:bg-daily-light border-gray-200 dark:border-orange-500/20 hover:border-orange-400 dark:hover:border-orange-500/40'
                 )}
               >
                 <div className="flex justify-between items-start">

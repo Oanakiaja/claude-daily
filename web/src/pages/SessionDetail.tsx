@@ -39,8 +39,8 @@ export function SessionDetail() {
     return (
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-64 bg-daily-light rounded" />
-          <div className="h-64 bg-daily-light rounded-lg" />
+          <div className="h-8 w-64 bg-gray-200 dark:bg-daily-light rounded" />
+          <div className="h-64 bg-gray-200 dark:bg-daily-light rounded-lg" />
         </div>
       </div>
     )
@@ -50,17 +50,17 @@ export function SessionDetail() {
     <div className="max-w-4xl mx-auto px-6 py-8">
       {/* Breadcrumb */}
       <nav className="mb-6 text-sm">
-        <Link to="/" className="text-gray-500 hover:text-gray-300">
+        <Link to="/" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
           Archives
         </Link>
-        <span className="text-gray-600 mx-2">/</span>
-        <Link to={`/day/${date}`} className="text-gray-500 hover:text-gray-300">
+        <span className="text-gray-400 dark:text-gray-600 mx-2">/</span>
+        <Link to={`/day/${date}`} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
           {date}
         </Link>
-        <span className="text-gray-600 mx-2">/</span>
+        <span className="text-gray-400 dark:text-gray-600 mx-2">/</span>
         <span className="text-gray-500">Sessions</span>
-        <span className="text-gray-600 mx-2">/</span>
-        <span className="text-orange-400 truncate">{session?.metadata?.title || decodeURIComponent(name || '')}</span>
+        <span className="text-gray-400 dark:text-gray-600 mx-2">/</span>
+        <span className="text-orange-500 dark:text-orange-400 truncate">{session?.metadata?.title || decodeURIComponent(name || '')}</span>
       </nav>
 
       {error && (
@@ -143,7 +143,7 @@ export function SessionDetail() {
           </div>
 
           {/* Session Content */}
-          <div className="bg-daily-light rounded-lg p-6 border border-orange-500/20">
+          <div className="bg-gray-50 dark:bg-daily-light rounded-lg p-6 border border-gray-200 dark:border-orange-500/20 transition-colors">
             <div className="markdown-content">
               <MarkdownRenderer content={session.content} />
             </div>

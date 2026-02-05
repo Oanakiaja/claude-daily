@@ -22,23 +22,23 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
       components={{
         // Custom heading rendering
         h1: ({ children }: { children?: ReactNode }) => (
-          <h1 className="text-2xl font-bold text-orange-400 mb-4 text-balance">
+          <h1 className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-4 text-balance">
             {children}
           </h1>
         ),
         h2: ({ children }: { children?: ReactNode }) => (
-          <h2 className="text-xl font-semibold text-orange-300 mt-6 mb-3 text-balance">
+          <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-300 mt-6 mb-3 text-balance">
             {children}
           </h2>
         ),
         h3: ({ children }: { children?: ReactNode }) => (
-          <h3 className="text-lg font-medium text-gray-200 mt-4 mb-2 text-balance">
+          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mt-4 mb-2 text-balance">
             {children}
           </h3>
         ),
         // Paragraphs
         p: ({ children }: { children?: ReactNode }) => (
-          <p className="text-gray-300 mb-3 leading-relaxed text-pretty">
+          <p className="text-gray-700 dark:text-gray-300 mb-3 leading-relaxed text-pretty">
             {children}
           </p>
         ),
@@ -54,14 +54,14 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           </ol>
         ),
         li: ({ children }: { children?: ReactNode }) => (
-          <li className="text-gray-300">{children}</li>
+          <li className="text-gray-700 dark:text-gray-300">{children}</li>
         ),
         // Code
         code: ({ children, className }: { children?: ReactNode; className?: string }) => {
           const isInline = !className
           if (isInline) {
             return (
-              <code className="bg-daily-dark px-1.5 py-0.5 rounded text-orange-300 text-sm">
+              <code className="bg-gray-100 dark:bg-daily-dark px-1.5 py-0.5 rounded text-orange-600 dark:text-orange-300 text-sm">
                 {children}
               </code>
             )
@@ -71,7 +71,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           )
         },
         pre: ({ children }: { children?: ReactNode }) => (
-          <pre className="bg-daily-dark p-4 rounded-lg overflow-x-auto mb-4 text-sm">
+          <pre className="bg-gray-100 dark:bg-daily-dark p-4 rounded-lg overflow-x-auto mb-4 text-sm">
             {children}
           </pre>
         ),
@@ -79,7 +79,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
         a: ({ href, children }: { href?: string; children?: ReactNode }) => (
           <a
             href={href}
-            className="text-orange-400 hover:text-orange-300 underline"
+            className="text-orange-600 dark:text-orange-400 hover:text-orange-500 dark:hover:text-orange-300 underline"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -88,17 +88,17 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
         ),
         // Blockquote
         blockquote: ({ children }: { children?: ReactNode }) => (
-          <blockquote className="border-l-4 border-orange-500 pl-4 italic text-gray-400 my-4">
+          <blockquote className="border-l-4 border-orange-500 pl-4 italic text-gray-500 dark:text-gray-400 my-4">
             {children}
           </blockquote>
         ),
         // Strong/Bold
         strong: ({ children }: { children?: ReactNode }) => (
-          <strong className="font-semibold text-gray-200">{children}</strong>
+          <strong className="font-semibold text-gray-800 dark:text-gray-200">{children}</strong>
         ),
         // Emphasis/Italic
         em: ({ children }: { children?: ReactNode }) => (
-          <em className="italic text-gray-300">{children}</em>
+          <em className="italic text-gray-600 dark:text-gray-300">{children}</em>
         ),
       }}
     >

@@ -129,9 +129,9 @@ export function Settings() {
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
       {/* Left Navigation */}
-      <aside className="w-64 shrink-0 border-r border-gray-800 bg-black overflow-y-auto">
-        <div className="p-4 border-b border-gray-800">
-          <h2 className="text-lg font-semibold text-orange-400">Settings</h2>
+      <aside className="w-64 shrink-0 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-black overflow-y-auto transition-colors">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+          <h2 className="text-lg font-semibold text-orange-500 dark:text-orange-400">Settings</h2>
           <p className="text-xs text-gray-500 mt-1">Configure Daily options</p>
         </div>
         <nav className="p-3">
@@ -148,8 +148,8 @@ export function Settings() {
                   className={cn(
                     'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm transition-colors',
                     activeSection === item.id
-                      ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                      : 'hover:bg-daily-light text-gray-400 hover:text-gray-200'
+                      ? 'bg-orange-500/20 text-orange-500 dark:text-orange-400 border border-orange-500/30'
+                      : 'hover:bg-gray-100 dark:hover:bg-daily-light text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                   )}
                 >
                   <span className="text-base">{item.icon}</span>
@@ -172,8 +172,8 @@ export function Settings() {
                   className={cn(
                     'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm transition-colors',
                     activeSection === item.id
-                      ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                      : 'hover:bg-daily-light text-gray-400 hover:text-gray-200'
+                      ? 'bg-orange-500/20 text-orange-500 dark:text-orange-400 border border-orange-500/30'
+                      : 'hover:bg-gray-100 dark:hover:bg-daily-light text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                   )}
                 >
                   <span className="text-base">{item.icon}</span>
@@ -299,9 +299,9 @@ export function Settings() {
 
               <div className="space-y-6">
             {/* Summary Language */}
-            <section id="language" className="bg-daily-card border border-orange-500/20 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-orange-400 mb-4">Summary Language</h2>
-              <p className="text-gray-400 text-sm mb-4">
+            <section id="language" className="bg-gray-50 dark:bg-daily-light border border-gray-200 dark:border-orange-500/20 rounded-xl p-6 transition-colors">
+              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">Summary Language</h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
                 Choose the language for AI-generated summaries and digests
               </p>
               <div className="flex gap-4">
@@ -313,9 +313,9 @@ export function Settings() {
                     checked={config.summary_language === 'en'}
                     onChange={(e) => handleChange('summary_language', e.target.value)}
                     disabled={saving}
-                    className="w-4 h-4 text-orange-500 bg-daily-dark border-gray-600 focus:ring-orange-500 focus:ring-offset-daily-dark"
+                    className="w-4 h-4 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 focus:ring-orange-500"
                   />
-                  <span className="text-gray-200">English</span>
+                  <span className="text-gray-700 dark:text-gray-200">English</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -325,17 +325,17 @@ export function Settings() {
                     checked={config.summary_language === 'zh'}
                     onChange={(e) => handleChange('summary_language', e.target.value)}
                     disabled={saving}
-                    className="w-4 h-4 text-orange-500 bg-daily-dark border-gray-600 focus:ring-orange-500 focus:ring-offset-daily-dark"
+                    className="w-4 h-4 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 focus:ring-orange-500"
                   />
-                  <span className="text-gray-200">Chinese / 中文</span>
+                  <span className="text-gray-700 dark:text-gray-200">Chinese / 中文</span>
                 </label>
               </div>
             </section>
 
             {/* Model Selection */}
-            <section id="model" className="bg-daily-card border border-orange-500/20 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-orange-400 mb-4">Summarization Model</h2>
-              <p className="text-gray-400 text-sm mb-4">
+            <section id="model" className="bg-gray-50 dark:bg-daily-light border border-gray-200 dark:border-orange-500/20 rounded-xl p-6 transition-colors">
+              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">Summarization Model</h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
                 Choose the Claude model for generating summaries
               </p>
               <div className="flex gap-4">
@@ -347,9 +347,9 @@ export function Settings() {
                     checked={config.model === 'sonnet'}
                     onChange={(e) => handleChange('model', e.target.value)}
                     disabled={saving}
-                    className="w-4 h-4 text-orange-500 bg-daily-dark border-gray-600 focus:ring-orange-500 focus:ring-offset-daily-dark"
+                    className="w-4 h-4 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 focus:ring-orange-500"
                   />
-                  <span className="text-gray-200">Sonnet (smarter)</span>
+                  <span className="text-gray-700 dark:text-gray-200">Sonnet (smarter)</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -359,20 +359,20 @@ export function Settings() {
                     checked={config.model === 'haiku'}
                     onChange={(e) => handleChange('model', e.target.value)}
                     disabled={saving}
-                    className="w-4 h-4 text-orange-500 bg-daily-dark border-gray-600 focus:ring-orange-500 focus:ring-offset-daily-dark"
+                    className="w-4 h-4 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 focus:ring-orange-500"
                   />
-                  <span className="text-gray-200">Haiku (faster, cheaper)</span>
+                  <span className="text-gray-700 dark:text-gray-200">Haiku (faster, cheaper)</span>
                 </label>
               </div>
             </section>
 
             {/* Feature Toggles */}
-            <section id="features" className="bg-daily-card border border-orange-500/20 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-orange-400 mb-4">Features</h2>
+            <section id="features" className="bg-gray-50 dark:bg-daily-light border border-gray-200 dark:border-orange-500/20 rounded-xl p-6 transition-colors">
+              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">Features</h2>
               <div className="space-y-4">
                 <label className="flex items-center justify-between cursor-pointer">
                   <div>
-                    <span className="text-gray-200">Enable Daily Summary</span>
+                    <span className="text-gray-700 dark:text-gray-200">Enable Daily Summary</span>
                     <p className="text-gray-500 text-sm">Generate daily digest from session summaries</p>
                   </div>
                   <input
@@ -380,13 +380,13 @@ export function Settings() {
                     checked={config.enable_daily_summary}
                     onChange={(e) => handleChange('enable_daily_summary', e.target.checked)}
                     disabled={saving}
-                    className="w-5 h-5 text-orange-500 bg-daily-dark border-gray-600 rounded focus:ring-orange-500 focus:ring-offset-daily-dark"
+                    className="w-5 h-5 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500"
                   />
                 </label>
 
                 <label className="flex items-center justify-between cursor-pointer">
                   <div>
-                    <span className="text-gray-200">Enable Extraction Hints</span>
+                    <span className="text-gray-700 dark:text-gray-200">Enable Extraction Hints</span>
                     <p className="text-gray-500 text-sm">Suggest potential skills and commands to extract</p>
                   </div>
                   <input
@@ -394,13 +394,13 @@ export function Settings() {
                     checked={config.enable_extraction_hints}
                     onChange={(e) => handleChange('enable_extraction_hints', e.target.checked)}
                     disabled={saving}
-                    className="w-5 h-5 text-orange-500 bg-daily-dark border-gray-600 rounded focus:ring-orange-500 focus:ring-offset-daily-dark"
+                    className="w-5 h-5 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500"
                   />
                 </label>
 
                 <label className="flex items-center justify-between cursor-pointer">
                   <div>
-                    <span className="text-gray-200">Auto Digest</span>
+                    <span className="text-gray-700 dark:text-gray-200">Auto Digest</span>
                     <p className="text-gray-500 text-sm">Automatically digest previous day's sessions on session start</p>
                   </div>
                   <input
@@ -408,16 +408,16 @@ export function Settings() {
                     checked={config.auto_digest_enabled}
                     onChange={(e) => handleChange('auto_digest_enabled', e.target.checked)}
                     disabled={saving}
-                    className="w-5 h-5 text-orange-500 bg-daily-dark border-gray-600 rounded focus:ring-orange-500 focus:ring-offset-daily-dark"
+                    className="w-5 h-5 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500"
                   />
                 </label>
               </div>
             </section>
 
             {/* Digest Time */}
-            <section id="digest-time" className="bg-daily-card border border-orange-500/20 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-orange-400 mb-4">Digest Time</h2>
-              <p className="text-gray-400 text-sm mb-4">
+            <section id="digest-time" className="bg-gray-50 dark:bg-daily-light border border-gray-200 dark:border-orange-500/20 rounded-xl p-6 transition-colors">
+              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">Digest Time</h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
                 Time to auto-digest previous day's sessions (format: HH:MM)
               </p>
               <input
@@ -425,14 +425,14 @@ export function Settings() {
                 value={config.digest_time}
                 onChange={(e) => handleChange('digest_time', e.target.value)}
                 disabled={saving}
-                className="bg-daily-dark border border-gray-600 rounded-lg px-4 py-2 text-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+                className="bg-white dark:bg-daily-dark border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-700 dark:text-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
               />
             </section>
 
             {/* Author */}
-            <section id="author" className="bg-daily-card border border-orange-500/20 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-orange-400 mb-4">Author</h2>
-              <p className="text-gray-400 text-sm mb-4">
+            <section id="author" className="bg-gray-50 dark:bg-daily-light border border-gray-200 dark:border-orange-500/20 rounded-xl p-6 transition-colors">
+              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">Author</h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
                 Author name for archive metadata (optional)
               </p>
               <input
@@ -451,21 +451,21 @@ export function Settings() {
                 }}
                 disabled={saving}
                 placeholder="Enter author name..."
-                className="w-full bg-daily-dark border border-gray-600 rounded-lg px-4 py-2 text-gray-200 placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+                className="w-full bg-white dark:bg-daily-dark border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
               />
             </section>
 
             {/* Info Section (read-only) */}
-            <section id="info" className="bg-daily-dark/50 border border-gray-700 rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-gray-400 mb-3">Storage Info</h2>
+            <section id="info" className="bg-gray-100 dark:bg-daily-dark/50 border border-gray-200 dark:border-gray-700 rounded-xl p-6 transition-colors">
+              <h2 className="text-lg font-semibold text-gray-500 dark:text-gray-400 mb-3">Storage Info</h2>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Storage Path</span>
-                  <span className="text-gray-300 font-mono text-xs">{config.storage_path}</span>
+                  <span className="text-gray-700 dark:text-gray-300 font-mono text-xs">{config.storage_path}</span>
                 </div>
               </div>
-              <p className="text-gray-600 text-xs mt-4">
-                Storage path can only be changed via CLI: <code className="bg-gray-800 px-1 rounded">daily config --set-storage &lt;path&gt;</code>
+              <p className="text-gray-500 dark:text-gray-600 text-xs mt-4">
+                Storage path can only be changed via CLI: <code className="bg-gray-200 dark:bg-gray-800 px-1 rounded">daily config --set-storage &lt;path&gt;</code>
               </p>
             </section>
               </div>

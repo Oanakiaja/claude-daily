@@ -13,14 +13,14 @@ export function SessionCard({ session, date }: SessionCardProps) {
       <div
         className={cn(
           'p-4 rounded-lg border transition-colors',
-          'bg-daily-light border-orange-500/20 hover:border-orange-500/40'
+          'bg-gray-50 dark:bg-daily-light border-gray-200 dark:border-orange-500/20 hover:border-orange-400 dark:hover:border-orange-500/40'
         )}
       >
-        <h3 className="font-medium text-gray-100 mb-2 line-clamp-1">
+        <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2 line-clamp-1">
           {session.title || session.name}
         </h3>
         {session.summary_preview && (
-          <p className="text-sm text-gray-400 line-clamp-2 text-pretty">
+          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 text-pretty">
             {session.summary_preview}
           </p>
         )}
