@@ -212,9 +212,9 @@ export function InsightsProblemView({ sessionDetails }: InsightsProblemViewProps
         Session Details
       </h2>
 
-      {/* Filter tabs */}
+      {/* Filter tabs - only show tabs that have matching sessions */}
       <div className="flex flex-wrap gap-2 mb-5">
-        {FILTER_TABS.map(tab => {
+        {FILTER_TABS.filter(tab => tab.key === 'all' || (counts[tab.key] ?? 0) > 0).map(tab => {
           const count = counts[tab.key]
           const isActive = activeFilter === tab.key
           return (

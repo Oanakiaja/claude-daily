@@ -250,6 +250,115 @@ pub async fn health_check() -> impl IntoResponse {
     (StatusCode::OK, "OK")
 }
 
+/// Install a skill or command from a daily summary card
+pub async fn install_card(Json(req): Json<InstallCardRequest>) -> impl IntoResponse {
+    let name = to_kebab_case(&req.title);
+
+    let home = match dirs::home_dir() {
+        Some(h) => h,
+        None => {
+            return Json(ApiResponse::<InstallCardResponse>::error(
+                "Cannot determine home directory",
+            ))
+        }
+    };
+
+    let (path, file_content) = match req.card_type.as_str() {
+        "skill" => {
+            let dir = home.join(".claude").join("skills").join(&name);
+            let path = dir.join("SKILL.md");
+            let content = format!(
+                "---\nname: {name}\ndescription: \"{title}\"\n---\n\n{content}\n",
+                name = name,
+                title = req.title.replace('"', "'"),
+                content = req.content,
+            );
+            (path, content)
+        }
+        "command" => {
+            let dir = home.join(".claude").join("commands");
+            let path = dir.join(format!("{}.md", name));
+            let content = format!(
+                "---\ndescription: \"{title}\"\n---\n\n{content}\n",
+                title = req.title.replace('"', "'"),
+                content = req.content,
+            );
+            (path, content)
+        }
+        _ => {
+            return Json(ApiResponse::<InstallCardResponse>::error(
+                "Invalid card_type: must be 'skill' or 'command'",
+            ))
+        }
+    };
+
+    // Create parent directory
+    if let Some(parent) = path.parent() {
+        if let Err(e) = std::fs::create_dir_all(parent) {
+            return Json(ApiResponse::<InstallCardResponse>::error(format!(
+                "Failed to create directory: {}",
+                e
+            )));
+        }
+    }
+
+    // Write the file
+    if let Err(e) = std::fs::write(&path, &file_content) {
+        return Json(ApiResponse::<InstallCardResponse>::error(format!(
+            "Failed to write file: {}",
+            e
+        )));
+    }
+
+    let type_label = if req.card_type == "skill" {
+        "Skill"
+    } else {
+        "Command"
+    };
+
+    Json(ApiResponse::success(InstallCardResponse {
+        name: name.clone(),
+        path: path.to_string_lossy().to_string(),
+        message: format!("{} '{}' installed successfully", type_label, name),
+    }))
+}
+
+/// Convert a title string to kebab-case
+fn to_kebab_case(title: &str) -> String {
+    // Remove markdown formatting like backticks and /
+    let cleaned: String = title
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                c
+            } else if c == ' ' || c == '/' {
+                '-'
+            } else if c.is_alphanumeric() {
+                // Keep non-ASCII alphanumeric (CJK etc.)
+                c
+            } else {
+                '-'
+            }
+        })
+        .collect();
+
+    // Collapse multiple dashes and trim
+    let mut result = String::new();
+    let mut prev_dash = false;
+    for c in cleaned.chars() {
+        if c == '-' {
+            if !prev_dash && !result.is_empty() {
+                result.push('-');
+            }
+            prev_dash = true;
+        } else {
+            result.push(c.to_ascii_lowercase());
+            prev_dash = false;
+        }
+    }
+    result.trim_matches('-').to_string()
+}
+
 /// Get current configuration
 pub async fn get_config(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let config = state.config.read().unwrap();
@@ -428,6 +537,8 @@ pub async fn get_insights(
                         date: s.date,
                         session_count: s.session_count,
                         has_digest: s.has_digest,
+                        total_tokens: s.total_tokens,
+                        total_cost: s.total_cost,
                     })
                     .collect(),
                 goal_distribution: data
@@ -485,6 +596,7 @@ pub async fn get_insights(
                         satisfaction: s.satisfaction,
                         claude_helpfulness: s.claude_helpfulness,
                         session_type: s.session_type,
+                        token_usage: s.token_usage.map(map_session_usage_dto),
                     })
                     .collect(),
                 trends: data.trends.map(|t| TrendDto {
@@ -510,6 +622,35 @@ pub async fn get_insights(
                             session_count: w.session_count,
                             friction_rate: w.friction_rate,
                             success_rate: w.success_rate,
+                        })
+                        .collect(),
+                }),
+                usage_summary: data.usage_summary.map(|u| UsageSummaryDto {
+                    total_input_tokens: u.total_input_tokens,
+                    total_output_tokens: u.total_output_tokens,
+                    total_cache_creation_tokens: u.total_cache_creation_tokens,
+                    total_cache_read_tokens: u.total_cache_read_tokens,
+                    total_cost_usd: u.total_cost_usd,
+                    total_sessions: u.total_sessions,
+                    model_distribution: u
+                        .model_distribution
+                        .into_iter()
+                        .map(|m| ModelUsageCountDto {
+                            model: m.model,
+                            count: m.count,
+                        })
+                        .collect(),
+                    daily_usage: u
+                        .daily_usage
+                        .into_iter()
+                        .map(|d| DailyUsageDto {
+                            date: d.date,
+                            input_tokens: d.input_tokens,
+                            output_tokens: d.output_tokens,
+                            cache_creation_tokens: d.cache_creation_tokens,
+                            cache_read_tokens: d.cache_read_tokens,
+                            total_cost_usd: d.total_cost_usd,
+                            session_count: d.session_count,
                         })
                         .collect(),
                 }),
@@ -543,6 +684,7 @@ pub async fn get_date_insights(
                         friction_detail: s.friction_detail,
                         satisfaction: s.satisfaction,
                         claude_helpfulness: s.claude_helpfulness,
+                        token_usage: s.token_usage.map(map_session_usage_dto),
                     })
                     .collect(),
                 day_summary: DayInsightSummaryDto {
@@ -552,6 +694,14 @@ pub async fn get_date_insights(
                     top_goals: data.day_summary.top_goals,
                     top_frictions: data.day_summary.top_frictions,
                     recommendations: data.day_summary.recommendations,
+                    total_tokens: data.day_summary.total_tokens,
+                    total_cost: data.day_summary.total_cost_usd,
+                    model_distribution: data
+                        .day_summary
+                        .model_distribution
+                        .into_iter()
+                        .map(|(model, count)| ModelUsageCountDto { model, count })
+                        .collect(),
                 },
             };
             Json(ApiResponse::success(dto))
@@ -644,6 +794,59 @@ fn parse_daily_summary(date: &str, content: &str) -> DailySummaryDto {
         }
     };
 
+    // Parse a section into cards by splitting on ### subsections.
+    // Backward compat: if no ### found, wrap entire section as a single card.
+    let extract_cards = |header: &str| -> Vec<SummaryCardDto> {
+        let section = match extract_section(header) {
+            Some(s) => s,
+            None => return Vec::new(),
+        };
+
+        let mut cards: Vec<SummaryCardDto> = Vec::new();
+        let mut current_title: Option<String> = None;
+        let mut current_lines: Vec<String> = Vec::new();
+
+        for line in section.lines() {
+            if let Some(title) = line.strip_prefix("### ") {
+                // Flush previous card
+                if let Some(prev_title) = current_title.take() {
+                    let body = current_lines.join("\n").trim().to_string();
+                    if !body.is_empty() {
+                        cards.push(SummaryCardDto {
+                            title: prev_title,
+                            content: body,
+                        });
+                    }
+                }
+                current_title = Some(title.trim().to_string());
+                current_lines.clear();
+            } else {
+                current_lines.push(line.to_string());
+            }
+        }
+
+        // Flush last card
+        if let Some(prev_title) = current_title {
+            let body = current_lines.join("\n").trim().to_string();
+            if !body.is_empty() {
+                cards.push(SummaryCardDto {
+                    title: prev_title,
+                    content: body,
+                });
+            }
+        }
+
+        // Backward compatibility: if no ### subsections found, wrap as single card
+        if cards.is_empty() && !section.is_empty() {
+            cards.push(SummaryCardDto {
+                title: header.to_string(),
+                content: section,
+            });
+        }
+
+        cards
+    };
+
     // Extract session names from frontmatter or content
     let sessions: Vec<String> = if let Some(start) = content.find("sessions:") {
         let start = start + 9;
@@ -664,16 +867,120 @@ fn parse_daily_summary(date: &str, content: &str) -> DailySummaryDto {
         Vec::new()
     };
 
+    // Skills & Commands live under "## Skills & Commands Identified" with
+    // "### Potential Skills" and "### Potential Commands" as sub-markers.
+    // The LLM-generated card content may contain rogue ## headings (e.g. "## 可复用技能"),
+    // so we locate these markers directly in the full content rather than relying on
+    // extract_section which would be broken by embedded ## headings.
+    let extract_skills_commands = || -> (Vec<SummaryCardDto>, Vec<SummaryCardDto>) {
+        let skills_marker = "\n### Potential Skills\n";
+        let commands_marker = "\n### Potential Commands\n";
+
+        // Also support file starting with the marker (no leading newline)
+        let skills_start = content
+            .find(skills_marker)
+            .map(|i| i + skills_marker.len())
+            .or_else(|| {
+                content
+                    .strip_prefix("### Potential Skills\n")
+                    .map(|_| "### Potential Skills\n".len())
+            });
+        let commands_start = content
+            .find(commands_marker)
+            .map(|i| i + commands_marker.len());
+
+        // Find the footer marker: "---" followed by "*Generated" or "*Archived"
+        let find_footer = |from: usize| -> usize {
+            let mut search_from = from;
+            loop {
+                match content[search_from..].find("\n---\n") {
+                    Some(pos) => {
+                        let after = search_from + pos + 4; // skip past "\n---\n"
+                        if content[after..].starts_with('*') {
+                            return search_from + pos;
+                        }
+                        // This "---" is a content separator (e.g. between cards), skip it
+                        search_from = after;
+                    }
+                    None => return content.len(),
+                }
+            }
+        };
+
+        // Skills section: from after "### Potential Skills\n" to "### Potential Commands\n" (or footer)
+        let skills_text = skills_start.map(|start| {
+            let end = content[start..]
+                .find(commands_marker)
+                .map(|i| start + i)
+                .unwrap_or_else(|| find_footer(start));
+            content[start..end].trim()
+        });
+
+        // Commands section: from after "### Potential Commands\n" to the footer
+        let commands_text = commands_start.map(|start| {
+            let end = find_footer(start);
+            content[start..end].trim()
+        });
+
+        let parse_cards_from_text = |text: Option<&str>| -> Vec<SummaryCardDto> {
+            let section = match text {
+                Some(s) if !s.is_empty() => s,
+                _ => return Vec::new(),
+            };
+            let mut cards: Vec<SummaryCardDto> = Vec::new();
+            let mut current_title: Option<String> = None;
+            let mut current_lines: Vec<String> = Vec::new();
+
+            for line in section.lines() {
+                // Card titles are ### level; skip any ## lines (LLM noise)
+                if let Some(title) = line.strip_prefix("### ") {
+                    if let Some(prev_title) = current_title.take() {
+                        let body = current_lines.join("\n").trim().to_string();
+                        if !body.is_empty() {
+                            cards.push(SummaryCardDto {
+                                title: prev_title,
+                                content: body,
+                            });
+                        }
+                    }
+                    current_title = Some(title.trim().to_string());
+                    current_lines.clear();
+                } else if line.starts_with("## ") {
+                    // Skip rogue H2 headings embedded in LLM content
+                    continue;
+                } else {
+                    current_lines.push(line.to_string());
+                }
+            }
+            if let Some(prev_title) = current_title {
+                let body = current_lines.join("\n").trim().to_string();
+                if !body.is_empty() {
+                    cards.push(SummaryCardDto {
+                        title: prev_title,
+                        content: body,
+                    });
+                }
+            }
+            cards
+        };
+
+        let skills = parse_cards_from_text(skills_text);
+        let commands = parse_cards_from_text(commands_text);
+        (skills, commands)
+    };
+
+    let (skills, commands) = extract_skills_commands();
+
     DailySummaryDto {
         date: date.to_string(),
         overview: extract_section("Overview").unwrap_or_default(),
         session_count: sessions.len(),
         sessions,
-        insights: extract_section("Key Insights"),
-        skills: extract_section("Skills"),
-        commands: extract_section("Commands"),
+        insights: extract_cards("Key Insights"),
+        skills,
+        commands,
         reflections: extract_section("Reflections"),
-        tomorrow_focus: extract_section("Tomorrow's Focus"),
+        tomorrow_focus: extract_cards("Tomorrow's Focus"),
         raw_content: content.to_string(),
         file_path: String::new(), // Will be set by caller
     }
@@ -1038,6 +1345,23 @@ fn truncate_json_value(value: serde_json::Value, max_str_len: usize) -> serde_js
                 .collect(),
         ),
         other => other,
+    }
+}
+
+/// Map a SessionUsage domain model to SessionUsageDto
+fn map_session_usage_dto(u: crate::usage::types::SessionUsage) -> SessionUsageDto {
+    SessionUsageDto {
+        session_id: u.session_id,
+        input_tokens: u.input_tokens,
+        output_tokens: u.output_tokens,
+        cache_creation_tokens: u.cache_creation_tokens,
+        cache_read_tokens: u.cache_read_tokens,
+        total_cost_usd: u.total_cost_usd,
+        model_calls: u
+            .model_calls
+            .into_iter()
+            .map(|(model, count)| ModelUsageCountDto { model, count })
+            .collect(),
     }
 }
 

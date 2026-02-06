@@ -14,19 +14,21 @@ import {
   subMonths,
 } from 'date-fns'
 import { useApi } from '../hooks/useApi'
-import type { DateItem, DailySummary, Job } from '../hooks/useApi'
+import type { DateItem, DailySummary, Job, DailyUsageData } from '../hooks/useApi'
 import { cn } from '../lib/utils'
+import { formatCost } from '../components/UsageCharts'
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export function Welcome() {
   const [days, setDays] = useState<DateItem[]>([])
   const [summaries, setSummaries] = useState<Map<string, DailySummary>>(new Map())
+  const [dailyCostMap, setDailyCostMap] = useState<Map<string, number>>(new Map())
   const [loading, setLoading] = useState(true)
   const [autoSummarizeJobs, setAutoSummarizeJobs] = useState<Job[]>([])
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left')
-  const { fetchDates, fetchDailySummary, fetchJobs } = useApi()
+  const { fetchDates, fetchDailySummary, fetchJobs, fetchInsights } = useApi()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -54,6 +56,20 @@ export function Welcome() {
           if (r) map.set(r[0], r[1])
         }
         setSummaries(map)
+
+        // Load usage data for cost display
+        try {
+          const insights = await fetchInsights(365)
+          if (insights.usage_summary?.daily_usage) {
+            const costMap = new Map<string, number>()
+            for (const du of insights.usage_summary.daily_usage) {
+              costMap.set(du.date, du.total_cost_usd)
+            }
+            setDailyCostMap(costMap)
+          }
+        } catch {
+          // Usage data is optional
+        }
       } catch (err) {
         console.error('Failed to load data:', err)
       } finally {
@@ -62,7 +78,7 @@ export function Welcome() {
     }
 
     loadData()
-  }, [fetchDates, fetchDailySummary])
+  }, [fetchDates, fetchDailySummary, fetchInsights])
 
   // Poll for auto-summarize jobs
   useEffect(() => {
@@ -98,6 +114,19 @@ export function Welcome() {
     const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 })
     return eachDayOfInterval({ start: calStart, end: calEnd })
   }, [currentMonth])
+
+  const monthKey = useMemo(() => format(currentMonth, 'yyyy-MM'), [currentMonth])
+
+  // Compute monthly cost for the current month
+  const monthlyCost = useMemo(() => {
+    let total = 0
+    for (const [date, cost] of dailyCostMap) {
+      if (date.startsWith(monthKey)) {
+        total += cost
+      }
+    }
+    return total
+  }, [dailyCostMap, monthKey])
 
   const goToPrevMonth = () => {
     setSlideDirection('right')
@@ -181,8 +210,6 @@ export function Welcome() {
     )
   }
 
-  const monthKey = format(currentMonth, 'yyyy-MM')
-
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
       <div className="mb-8">
@@ -244,12 +271,19 @@ export function Welcome() {
             </svg>
           </button>
         </div>
-        <button
-          onClick={goToToday}
-          className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-daily-light transition-colors text-gray-600 dark:text-gray-300"
-        >
-          Today
-        </button>
+        <div className="flex items-center gap-3">
+          {monthlyCost > 0 && (
+            <span className="text-sm font-medium text-purple-500">
+              {formatCost(monthlyCost)}
+            </span>
+          )}
+          <button
+            onClick={goToToday}
+            className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-daily-light transition-colors text-gray-600 dark:text-gray-300"
+          >
+            Today
+          </button>
+        </div>
       </div>
 
       {/* Weekday headers */}
@@ -277,6 +311,7 @@ export function Welcome() {
             const dateStr = format(day, 'yyyy-MM-dd')
             const archive = archiveMap.get(dateStr)
             const summary = summaries.get(dateStr)
+            const dayCost = dailyCostMap.get(dateStr)
             const isCurrentMonth = isSameMonth(day, currentMonth)
             const today = isToday(day)
             const hasArchive = !!archive
@@ -321,9 +356,16 @@ export function Welcome() {
                   )}
                 </div>
 
+                {/* Daily cost */}
+                {dayCost != null && dayCost > 0 && (
+                  <span className="text-[10px] font-medium text-purple-500 dark:text-purple-400 leading-none mb-0.5">
+                    {formatCost(dayCost)}
+                  </span>
+                )}
+
                 {/* Summary preview */}
                 {hasArchive && summary?.overview && (
-                  <p className="text-[10px] leading-tight text-gray-500 dark:text-gray-400 line-clamp-3 w-full">
+                  <p className="text-[10px] leading-tight text-gray-500 dark:text-gray-400 line-clamp-2 w-full">
                     {summary.overview}
                   </p>
                 )}

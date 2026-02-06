@@ -75,6 +75,61 @@ pub async fn run(scope: String) -> Result<()> {
     Ok(())
 }
 
+/// Uninstall hooks only (disable automatic summarization, keep commands)
+pub async fn run_hooks_only(scope: String) -> Result<()> {
+    let target_dir = match scope.as_str() {
+        "user" => dirs::home_dir()
+            .context("Failed to get home directory")?
+            .join(".claude"),
+        "project" => std::env::current_dir()
+            .context("Failed to get current directory")?
+            .join(".claude"),
+        _ => {
+            anyhow::bail!("Invalid scope: {}. Use 'user' or 'project'", scope);
+        }
+    };
+
+    println!("[daily] Removing hooks from: {}", target_dir.display());
+
+    let mut removed_count = 0;
+
+    // Remove hooks configuration file
+    let hooks_file = target_dir.join("hooks").join("daily-hooks.json");
+    if hooks_file.exists() {
+        fs::remove_file(&hooks_file)?;
+        println!("[daily] Removed: {}", hooks_file.display());
+        removed_count += 1;
+    }
+
+    // Remove daily hooks from settings.json
+    let settings_file = target_dir.join("settings.json");
+    if settings_file.exists() {
+        let content = fs::read_to_string(&settings_file).context("Failed to read settings.json")?;
+        let mut settings: Value =
+            serde_json::from_str(&content).context("Failed to parse settings.json")?;
+
+        if remove_daily_hooks(&mut settings) {
+            let output = serde_json::to_string_pretty(&settings)?;
+            fs::write(&settings_file, output)?;
+            println!("[daily] Removed hooks from: {}", settings_file.display());
+            removed_count += 1;
+        }
+    }
+
+    println!();
+    if removed_count > 0 {
+        println!("[daily] Hooks removed! Automatic summarization is now disabled.");
+        println!(
+            "[daily] Slash commands (/daily-view, /daily-get-skill, etc.) are still available."
+        );
+        println!("[daily] Tip: Use 'daily install-hooks' to re-enable automatic summarization.");
+    } else {
+        println!("[daily] No hooks found. Automatic summarization was not enabled.");
+    }
+
+    Ok(())
+}
+
 /// Remove daily hooks from settings, returns true if changes were made
 fn remove_daily_hooks(settings: &mut Value) -> bool {
     let mut changed = false;

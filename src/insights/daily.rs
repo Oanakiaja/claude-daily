@@ -3,6 +3,8 @@ use std::collections::HashMap;
 
 use crate::archive::ArchiveManager;
 use crate::config::Config;
+use crate::usage::scanner;
+use crate::usage::types::SessionUsage;
 
 use super::facets::SessionFacet;
 
@@ -27,6 +29,8 @@ pub struct SessionInsight {
     pub satisfaction: Option<String>,
     /// Claude helpfulness rating
     pub claude_helpfulness: Option<String>,
+    /// Token usage data for this session
+    pub token_usage: Option<SessionUsage>,
 }
 
 /// Aggregated day-level insight summary
@@ -44,6 +48,12 @@ pub struct DayInsightSummary {
     pub top_frictions: Vec<String>,
     /// Programmatically generated recommendations
     pub recommendations: Vec<String>,
+    /// Total tokens used this day (input + output + cache)
+    pub total_tokens: Option<u64>,
+    /// Total cost in USD this day
+    pub total_cost_usd: Option<f64>,
+    /// Model distribution for the day
+    pub model_distribution: Vec<(String, usize)>,
 }
 
 /// Complete date insights response
@@ -65,12 +75,35 @@ impl DateInsights {
         let all_facets = SessionFacet::load_all().unwrap_or_default();
         let facet_map: HashMap<String, SessionFacet> = all_facets.into_iter().collect();
 
+        // Collect session IDs for this date to filter usage scanning
+        let mut date_session_ids: Vec<String> = Vec::new();
+        for name in &session_names {
+            if let Ok(content) = manager.read_session(date, name) {
+                if let Some(sid) = extract_session_id(&content) {
+                    date_session_ids.push(sid);
+                }
+            }
+        }
+
+        // Scan usage for only the sessions belonging to this date
+        let usage_map = if !date_session_ids.is_empty() {
+            scanner::scan_all_sessions(Some(&date_session_ids))
+        } else {
+            HashMap::new()
+        };
+
         let mut sessions: Vec<SessionInsight> = Vec::new();
         let mut day_goal_counts: HashMap<String, usize> = HashMap::new();
         let mut day_friction_counts: HashMap<String, usize> = HashMap::new();
         let mut day_satisfaction_counts: HashMap<String, usize> = HashMap::new();
         let mut day_outcome_counts: HashMap<String, usize> = HashMap::new();
         let mut sessions_with_friction = 0;
+
+        // Accumulators for daily usage
+        let mut day_total_tokens: u64 = 0;
+        let mut day_total_cost: f64 = 0.0;
+        let mut day_model_counts: HashMap<String, usize> = HashMap::new();
+        let mut has_any_usage = false;
 
         for name in &session_names {
             // Read session content and extract session_id from frontmatter
@@ -138,6 +171,19 @@ impl DateInsights {
                 (Vec::new(), Vec::new(), None, None, None, None, None)
             };
 
+            let token_usage = usage_map.get(&session_id).cloned();
+            if let Some(ref tu) = token_usage {
+                day_total_tokens += tu.input_tokens
+                    + tu.output_tokens
+                    + tu.cache_creation_tokens
+                    + tu.cache_read_tokens;
+                day_total_cost += tu.total_cost_usd;
+                for (model, count) in &tu.model_calls {
+                    *day_model_counts.entry(model.clone()).or_insert(0) += count;
+                }
+                has_any_usage = true;
+            }
+
             sessions.push(SessionInsight {
                 name: name.clone(),
                 session_id,
@@ -148,6 +194,7 @@ impl DateInsights {
                 friction_detail,
                 satisfaction,
                 claude_helpfulness,
+                token_usage,
             });
         }
 
@@ -166,6 +213,9 @@ impl DateInsights {
             session_names.len(),
         );
 
+        let mut model_distribution: Vec<(String, usize)> = day_model_counts.into_iter().collect();
+        model_distribution.sort_by(|a, b| b.1.cmp(&a.1));
+
         let day_summary = DayInsightSummary {
             total_sessions: session_names.len(),
             sessions_with_friction,
@@ -173,6 +223,17 @@ impl DateInsights {
             top_goals,
             top_frictions,
             recommendations,
+            total_tokens: if has_any_usage {
+                Some(day_total_tokens)
+            } else {
+                None
+            },
+            total_cost_usd: if has_any_usage {
+                Some(day_total_cost)
+            } else {
+                None
+            },
+            model_distribution,
         };
 
         Ok(DateInsights {

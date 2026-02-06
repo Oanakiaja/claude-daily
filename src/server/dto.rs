@@ -46,6 +46,13 @@ pub struct SessionBrief {
     pub summary_preview: String,
 }
 
+/// A single card within a daily summary section
+#[derive(Serialize)]
+pub struct SummaryCardDto {
+    pub title: String,
+    pub content: String,
+}
+
 /// Daily summary DTO
 #[derive(Serialize)]
 pub struct DailySummaryDto {
@@ -53,11 +60,11 @@ pub struct DailySummaryDto {
     pub overview: String,
     pub session_count: usize,
     pub sessions: Vec<String>,
-    pub insights: Option<String>,
-    pub skills: Option<String>,
-    pub commands: Option<String>,
+    pub insights: Vec<SummaryCardDto>,
+    pub skills: Vec<SummaryCardDto>,
+    pub commands: Vec<SummaryCardDto>,
     pub reflections: Option<String>,
-    pub tomorrow_focus: Option<String>,
+    pub tomorrow_focus: Vec<SummaryCardDto>,
     pub raw_content: String,
     pub file_path: String,
 }
@@ -234,6 +241,8 @@ pub struct InsightsDto {
     pub session_details: Vec<SessionInsightDto>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trends: Option<TrendDto>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub usage_summary: Option<UsageSummaryDto>,
 }
 
 /// Trend analysis data for period-over-period comparison
@@ -270,6 +279,10 @@ pub struct DailyStatDto {
     pub date: String,
     pub session_count: usize,
     pub has_digest: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub total_tokens: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub total_cost: Option<f64>,
 }
 
 #[derive(Serialize)]
@@ -292,6 +305,8 @@ pub struct SessionInsightDto {
     pub satisfaction: Option<String>,
     pub claude_helpfulness: Option<String>,
     pub session_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub token_usage: Option<SessionUsageDto>,
 }
 
 /// Per-session insight for a specific date's insights endpoint
@@ -306,6 +321,8 @@ pub struct DateSessionInsightDto {
     pub friction_detail: Option<String>,
     pub satisfaction: Option<String>,
     pub claude_helpfulness: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub token_usage: Option<SessionUsageDto>,
 }
 
 /// Aggregated day-level insight summary
@@ -317,6 +334,11 @@ pub struct DayInsightSummaryDto {
     pub top_goals: Vec<String>,
     pub top_frictions: Vec<String>,
     pub recommendations: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub total_tokens: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub total_cost: Option<f64>,
+    pub model_distribution: Vec<ModelUsageCountDto>,
 }
 
 /// Complete date insights response
@@ -324,6 +346,67 @@ pub struct DayInsightSummaryDto {
 pub struct DateInsightsDto {
     pub sessions: Vec<DateSessionInsightDto>,
     pub day_summary: DayInsightSummaryDto,
+}
+
+/// Token usage for a single session
+#[derive(Serialize)]
+pub struct SessionUsageDto {
+    pub session_id: String,
+    pub input_tokens: u64,
+    pub output_tokens: u64,
+    pub cache_creation_tokens: u64,
+    pub cache_read_tokens: u64,
+    pub total_cost_usd: f64,
+    pub model_calls: Vec<ModelUsageCountDto>,
+}
+
+/// Model usage count entry
+#[derive(Serialize)]
+pub struct ModelUsageCountDto {
+    pub model: String,
+    pub count: usize,
+}
+
+/// Daily usage data for charts
+#[derive(Serialize)]
+pub struct DailyUsageDto {
+    pub date: String,
+    pub input_tokens: u64,
+    pub output_tokens: u64,
+    pub cache_creation_tokens: u64,
+    pub cache_read_tokens: u64,
+    pub total_cost_usd: f64,
+    pub session_count: usize,
+}
+
+/// Global usage summary
+#[derive(Serialize)]
+pub struct UsageSummaryDto {
+    pub total_input_tokens: u64,
+    pub total_output_tokens: u64,
+    pub total_cache_creation_tokens: u64,
+    pub total_cache_read_tokens: u64,
+    pub total_cost_usd: f64,
+    pub total_sessions: usize,
+    pub model_distribution: Vec<ModelUsageCountDto>,
+    pub daily_usage: Vec<DailyUsageDto>,
+}
+
+/// Request to install a skill or command from daily summary card
+#[derive(Deserialize)]
+pub struct InstallCardRequest {
+    pub title: String,
+    pub content: String,
+    /// "skill" or "command"
+    pub card_type: String,
+}
+
+/// Response after installing a skill or command
+#[derive(Serialize)]
+pub struct InstallCardResponse {
+    pub name: String,
+    pub path: String,
+    pub message: String,
 }
 
 /// A single content block within a conversation message

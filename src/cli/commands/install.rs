@@ -226,6 +226,97 @@ Ask the user where they want to install the command and make any requested modif
     Ok(())
 }
 
+/// Install hooks only (re-enable automatic summarization)
+pub async fn run_hooks_only(scope: String) -> Result<()> {
+    let _config = load_config()?;
+
+    let target_dir = match scope.as_str() {
+        "user" => dirs::home_dir()
+            .context("Failed to get home directory")?
+            .join(".claude"),
+        "project" => std::env::current_dir()
+            .context("Failed to get current directory")?
+            .join(".claude"),
+        _ => {
+            anyhow::bail!("Invalid scope: {}. Use 'user' or 'project'", scope);
+        }
+    };
+
+    println!("[daily] Installing hooks to: {}", target_dir.display());
+
+    // Create hooks directory
+    let hooks_dir = target_dir.join("hooks");
+    fs::create_dir_all(&hooks_dir)?;
+
+    // Write hooks configuration
+    let hooks_config = r#"{
+  "description": "Daily Context Archive hooks for automatic session archiving",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "daily hook session-start"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "daily hook session-end"
+          }
+        ]
+      }
+    ]
+  }
+}
+"#;
+
+    let hooks_file = hooks_dir.join("daily-hooks.json");
+    fs::write(&hooks_file, hooks_config)?;
+    println!("[daily] Hooks installed: {}", hooks_file.display());
+
+    // Update settings.json to enable hooks
+    let settings_file = target_dir.join("settings.json");
+    let daily_hooks = create_daily_hooks();
+
+    if settings_file.exists() {
+        let content =
+            fs::read_to_string(&settings_file).context("Failed to read existing settings.json")?;
+        let mut settings: Value =
+            serde_json::from_str(&content).context("Failed to parse settings.json")?;
+
+        let merged = merge_hooks(&mut settings, &daily_hooks);
+        if merged {
+            let output = serde_json::to_string_pretty(&settings)?;
+            fs::write(&settings_file, output)?;
+            println!("[daily] Hooks merged into: {}", settings_file.display());
+        } else {
+            println!(
+                "[daily] Hooks already configured in: {}",
+                settings_file.display()
+            );
+        }
+    } else {
+        let settings = json!({
+            "hooks": daily_hooks
+        });
+        let output = serde_json::to_string_pretty(&settings)?;
+        fs::write(&settings_file, output)?;
+        println!("[daily] Settings installed: {}", settings_file.display());
+    }
+
+    println!();
+    println!("[daily] Hooks installed! Automatic summarization is now enabled.");
+    println!("[daily] Tip: Use 'daily uninstall-hooks' to disable automatic summarization.");
+
+    Ok(())
+}
+
 /// Create the daily hooks configuration
 fn create_daily_hooks() -> Map<String, Value> {
     let mut hooks = Map::new();

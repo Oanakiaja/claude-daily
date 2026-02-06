@@ -205,6 +205,20 @@ pub enum Commands {
         scope: String,
     },
 
+    /// Remove hooks only (disable automatic summarization, keep commands)
+    UninstallHooks {
+        /// Scope: user or project
+        #[arg(short, long, default_value = "user")]
+        scope: String,
+    },
+
+    /// Re-install hooks only (re-enable automatic summarization)
+    InstallHooks {
+        /// Scope: user or project
+        #[arg(short, long, default_value = "user")]
+        scope: String,
+    },
+
     /// Delete the daily binary itself
     Trash,
 
