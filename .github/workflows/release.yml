@@ -88,6 +88,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract tag body
+        id: tag_body
+        run: |
+          TAG_BODY=$(git tag -l --format='%(contents:body)' ${GITHUB_REF_NAME})
+          # Write to file to preserve newlines
+          echo "$TAG_BODY" > /tmp/tag_body.md
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -100,5 +109,5 @@ jobs:
           files: |
             artifacts/*/*
             scripts/install.sh
-          generate_release_notes: true
+          body_path: /tmp/tag_body.md
 
