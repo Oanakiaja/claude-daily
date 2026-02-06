@@ -7,7 +7,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Cell,
   AreaChart,
   Area,
   CartesianGrid,
@@ -17,9 +16,11 @@ import type { InsightsData } from '../hooks/useApi'
 import { InsightsProblemView } from '../components/InsightsProblemView'
 import { InsightsTrends } from '../components/InsightsTrends'
 import { UsageTimeline, CostTimeline, ModelPieChart, formatTokenCount, formatCost } from '../components/UsageCharts'
+import { cn } from '../lib/utils'
+
+type InsightTab = 'charts' | 'sessions'
 
 const COLORS = ['#f97316', '#fb923c', '#fdba74', '#fed7aa', '#ffedd5', '#a3e635', '#4ade80', '#2dd4bf', '#38bdf8', '#818cf8']
-const FRICTION_COLORS = ['#ef4444', '#f97316', '#eab308', '#a3a3a3']
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
@@ -63,6 +64,7 @@ export function Insights() {
   const [data, setData] = useState<InsightsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [days, setDays] = useState(30)
+  const [activeTab, setActiveTab] = useState<InsightTab>('charts')
   const { fetchInsights } = useApi()
 
   useEffect(() => {
@@ -144,235 +146,185 @@ export function Insights() {
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Total Days" value={data.total_days} />
-        <StatCard label="Total Sessions" value={data.total_sessions} />
-        <StatCard label="Avg Sessions/Day" value={avgSessions} />
-        <StatCard label="Digest Rate" value={`${digestRate}%`} sub="days with summary" />
+      {/* Tab bar */}
+      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 mb-6">
+        {([
+          { key: 'charts' as InsightTab, label: 'Charts' },
+          { key: 'sessions' as InsightTab, label: 'Session Details', count: data.session_details?.length },
+        ]).map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={cn(
+              'px-4 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5',
+              activeTab === tab.key
+                ? 'bg-white dark:bg-daily-light text-orange-500 dark:text-orange-400 shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+            )}
+          >
+            {tab.label}
+            {tab.count != null && tab.count > 0 && (
+              <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                {tab.count}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
-      {/* Trend Analysis */}
-      <InsightsTrends trends={data.trends} />
-
-      {/* Activity Timeline */}
-      <ChartCard title="Activity Timeline">
-        <ResponsiveContainer width="100%" height={200}>
-          <AreaChart data={data.daily_stats}>
-            <defs>
-              <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
-            <XAxis
-              dataKey="date"
-              tick={{ fontSize: 11, fill: '#9ca3af' }}
-              tickFormatter={(v: string) => v.slice(5)}
-            />
-            <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} allowDecimals={false} />
-            <Tooltip content={<CustomTooltip />} />
-            <Area
-              type="monotone"
-              dataKey="session_count"
-              stroke="#f97316"
-              strokeWidth={2}
-              fill="url(#colorSessions)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </ChartCard>
-
-      {/* Token Usage Section */}
-      {data.usage_summary && data.usage_summary.total_sessions > 0 && (
+      {/* === Charts Tab === */}
+      {activeTab === 'charts' && (
         <>
-          <div className="mt-8 mb-4">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Token Usage</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">API usage and cost analytics</p>
+          {/* Stats Overview */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <StatCard label="Total Days" value={data.total_days} />
+            <StatCard label="Total Sessions" value={data.total_sessions} />
+            <StatCard label="Avg Sessions/Day" value={avgSessions} />
+            <StatCard label="Digest Rate" value={`${digestRate}%`} sub="days with summary" />
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <StatCard
-              label="Total Tokens"
-              value={formatTokenCount(
-                data.usage_summary.total_input_tokens +
-                data.usage_summary.total_output_tokens +
-                data.usage_summary.total_cache_creation_tokens +
-                data.usage_summary.total_cache_read_tokens
+          {/* Token Usage Section */}
+          {data.usage_summary && data.usage_summary.total_sessions > 0 && (
+            <>
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Token Usage</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">API usage and cost analytics</p>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <StatCard
+                  label="Total Tokens"
+                  value={formatTokenCount(
+                    data.usage_summary.total_input_tokens +
+                    data.usage_summary.total_output_tokens +
+                    data.usage_summary.total_cache_creation_tokens +
+                    data.usage_summary.total_cache_read_tokens
+                  )}
+                  sub={`${data.usage_summary.total_sessions} sessions`}
+                />
+                <StatCard
+                  label="Input Tokens"
+                  value={formatTokenCount(data.usage_summary.total_input_tokens)}
+                />
+                <StatCard
+                  label="Output Tokens"
+                  value={formatTokenCount(data.usage_summary.total_output_tokens)}
+                />
+                <StatCard
+                  label="Total Cost"
+                  value={formatCost(data.usage_summary.total_cost_usd)}
+                  sub={`cache: ${formatTokenCount(data.usage_summary.total_cache_read_tokens)} read`}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <ChartCard title="Token Usage Timeline">
+                  <UsageTimeline data={data.usage_summary.daily_usage} />
+                </ChartCard>
+                <ChartCard title="Daily Cost">
+                  <CostTimeline data={data.usage_summary.daily_usage} />
+                </ChartCard>
+              </div>
+
+              {data.usage_summary.model_distribution.length > 0 && (
+                <ChartCard title="Model Distribution">
+                  <ModelPieChart data={data.usage_summary.model_distribution} />
+                </ChartCard>
               )}
-              sub={`${data.usage_summary.total_sessions} sessions`}
-            />
-            <StatCard
-              label="Input Tokens"
-              value={formatTokenCount(data.usage_summary.total_input_tokens)}
-            />
-            <StatCard
-              label="Output Tokens"
-              value={formatTokenCount(data.usage_summary.total_output_tokens)}
-            />
-            <StatCard
-              label="Total Cost"
-              value={formatCost(data.usage_summary.total_cost_usd)}
-              sub={`cache: ${formatTokenCount(data.usage_summary.total_cache_read_tokens)} read`}
-            />
+            </>
+          )}
+
+          {/* Trend Analysis */}
+          <InsightsTrends trends={data.trends} />
+
+          {/* Activity Timeline */}
+          <ChartCard title="Activity Timeline">
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={data.daily_stats}>
+                <defs>
+                  <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  tickFormatter={(v: string) => v.slice(5)}
+                />
+                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} allowDecimals={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area
+                  type="monotone"
+                  dataKey="session_count"
+                  stroke="#f97316"
+                  strokeWidth={2}
+                  fill="url(#colorSessions)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          {/* Distribution Charts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            {/* Languages */}
+            {data.language_distribution.length > 0 && (
+              <ChartCard title="Languages">
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={data.language_distribution.slice(0, 8)} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
+                    <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} allowDecimals={false} />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      tick={{ fontSize: 12, fill: '#9ca3af' }}
+                      width={100}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="count" fill="#38bdf8" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <ChartCard title="Token Usage Timeline">
-              <UsageTimeline data={data.usage_summary.daily_usage} />
-            </ChartCard>
-            <ChartCard title="Daily Cost">
-              <CostTimeline data={data.usage_summary.daily_usage} />
-            </ChartCard>
-          </div>
-
-          {data.usage_summary.model_distribution.length > 0 && (
-            <ChartCard title="Model Distribution">
-              <ModelPieChart data={data.usage_summary.model_distribution} />
-            </ChartCard>
+          {/* Session Types */}
+          {data.session_type_distribution.length > 0 && (
+            <div className="mt-4">
+              <ChartCard title="Session Types">
+                <div className="flex flex-wrap gap-3">
+                  {data.session_type_distribution.map((item, i) => (
+                    <div
+                      key={item.name}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                    >
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                      />
+                      <span className="text-sm text-gray-600 dark:text-gray-300">{item.name}</span>
+                      <span className="text-sm font-bold text-orange-500 dark:text-orange-400">{item.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </ChartCard>
+            </div>
           )}
         </>
       )}
 
-      {/* Distribution Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        {/* Goal Distribution */}
-        {data.goal_distribution.length > 0 && (
-          <ChartCard title="Goal Distribution">
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={data.goal_distribution}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: 11, fill: '#9ca3af' }}
-                  interval={0}
-                  angle={-30}
-                  textAnchor="end"
-                  height={60}
-                />
-                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} allowDecimals={false} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                  {data.goal_distribution.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        )}
-
-        {/* Satisfaction Distribution */}
-        {data.satisfaction_distribution.length > 0 && (
-          <ChartCard title="Satisfaction">
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={data.satisfaction_distribution} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} allowDecimals={false} />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tick={{ fontSize: 12, fill: '#9ca3af' }}
-                  width={100}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                  {data.satisfaction_distribution.map((entry, i) => {
-                    const color = entry.name === 'happy' ? '#4ade80'
-                      : entry.name === 'satisfied' ? '#a3e635'
-                      : entry.name === 'neutral' ? '#eab308'
-                      : entry.name === 'frustrated' ? '#ef4444'
-                      : COLORS[i % COLORS.length]
-                    return <Cell key={i} fill={color} />
-                  })}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        )}
-
-        {/* Friction Points */}
-        {data.friction_distribution.length > 0 && (
-          <ChartCard title="Friction Points">
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={data.friction_distribution} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} allowDecimals={false} />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tick={{ fontSize: 12, fill: '#9ca3af' }}
-                  width={120}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                  {data.friction_distribution.map((_, i) => (
-                    <Cell key={i} fill={FRICTION_COLORS[i % FRICTION_COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        )}
-
-        {/* Languages */}
-        {data.language_distribution.length > 0 && (
-          <ChartCard title="Languages">
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={data.language_distribution.slice(0, 8)} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} allowDecimals={false} />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tick={{ fontSize: 12, fill: '#9ca3af' }}
-                  width={100}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="count" fill="#38bdf8" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        )}
-      </div>
-
-      {/* Session Types */}
-      {data.session_type_distribution.length > 0 && (
-        <div className="mt-4">
-          <ChartCard title="Session Types">
-            <div className="flex flex-wrap gap-3">
-              {data.session_type_distribution.map((item, i) => (
-                <div
-                  key={item.name}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-                >
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: COLORS[i % COLORS.length] }}
-                  />
-                  <span className="text-sm text-gray-600 dark:text-gray-300">{item.name}</span>
-                  <span className="text-sm font-bold text-orange-500 dark:text-orange-400">{item.count}</span>
-                </div>
-              ))}
+      {/* === Session Details Tab === */}
+      {activeTab === 'sessions' && (
+        <>
+          {data.session_details && data.session_details.length > 0 ? (
+            <InsightsProblemView sessionDetails={data.session_details} />
+          ) : (
+            <div className="text-center py-12 bg-gray-50 dark:bg-daily-light rounded-xl border border-gray-200 dark:border-gray-800">
+              <p className="text-gray-500 dark:text-gray-400">No session details available yet</p>
             </div>
-          </ChartCard>
-        </div>
-      )}
-
-      {/* Empty state for facets */}
-      {data.goal_distribution.length === 0 && data.friction_distribution.length === 0 && (
-        <div className="mt-8 text-center py-12 bg-gray-50 dark:bg-daily-light rounded-xl border border-gray-200 dark:border-gray-800">
-          <p className="text-gray-500 dark:text-gray-400 mb-2">No facet data available yet</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500">
-            Run <code className="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-orange-500">/insights</code> in Claude Code to generate detailed analysis
-          </p>
-        </div>
-      )}
-
-      {/* Problem-focused session details */}
-      {data.session_details && data.session_details.length > 0 && (
-        <InsightsProblemView sessionDetails={data.session_details} />
+          )}
+        </>
       )}
     </div>
   )
