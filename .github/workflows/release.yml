@@ -91,12 +91,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Fetch annotated tag data
+        run: git fetch --tags --force
+
       - name: Extract tag body
         id: tag_body
         run: |
-          TAG_BODY=$(git tag -l --format='%(contents:body)' ${GITHUB_REF_NAME})
-          # Write to file to preserve newlines
-          echo "$TAG_BODY" > /tmp/tag_body.md
+          # Use %(contents) to get full tag message (%(contents:body) strips the first paragraph)
+          git tag -l --format='%(contents)' ${GITHUB_REF_NAME} > /tmp/tag_body.md
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
