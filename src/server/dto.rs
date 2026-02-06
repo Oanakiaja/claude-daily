@@ -219,3 +219,153 @@ pub struct DefaultTemplatesDto {
     pub command_extract_en: String,
     pub command_extract_zh: String,
 }
+
+/// Insights data for the dashboard
+#[derive(Serialize)]
+pub struct InsightsDto {
+    pub total_days: usize,
+    pub total_sessions: usize,
+    pub daily_stats: Vec<DailyStatDto>,
+    pub goal_distribution: Vec<CategoryCountDto>,
+    pub friction_distribution: Vec<CategoryCountDto>,
+    pub satisfaction_distribution: Vec<CategoryCountDto>,
+    pub language_distribution: Vec<CategoryCountDto>,
+    pub session_type_distribution: Vec<CategoryCountDto>,
+    pub session_details: Vec<SessionInsightDto>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trends: Option<TrendDto>,
+}
+
+/// Trend analysis data for period-over-period comparison
+#[derive(Serialize)]
+pub struct TrendDto {
+    pub period_label: String,
+    pub comparison_label: String,
+    pub current_sessions: usize,
+    pub previous_sessions: usize,
+    pub sessions_change_pct: f64,
+    pub current_friction_rate: f64,
+    pub previous_friction_rate: f64,
+    pub friction_change_pct: f64,
+    pub current_success_rate: f64,
+    pub previous_success_rate: f64,
+    pub success_change_pct: f64,
+    pub current_satisfaction_score: f64,
+    pub previous_satisfaction_score: f64,
+    pub satisfaction_change_pct: f64,
+    pub weekly_stats: Vec<WeeklyStatDto>,
+}
+
+/// Weekly breakdown statistics
+#[derive(Serialize)]
+pub struct WeeklyStatDto {
+    pub week_label: String,
+    pub session_count: usize,
+    pub friction_rate: f64,
+    pub success_rate: f64,
+}
+
+#[derive(Serialize)]
+pub struct DailyStatDto {
+    pub date: String,
+    pub session_count: usize,
+    pub has_digest: bool,
+}
+
+#[derive(Serialize)]
+pub struct CategoryCountDto {
+    pub name: String,
+    pub count: usize,
+}
+
+/// Per-session insight combining archive metadata with facet analysis data
+#[derive(Serialize)]
+pub struct SessionInsightDto {
+    pub session_id: String,
+    pub date: String,
+    pub session_name: String,
+    pub brief_summary: Option<String>,
+    pub outcome: Option<String>,
+    pub goal_categories: Vec<String>,
+    pub friction_types: Vec<String>,
+    pub friction_detail: Option<String>,
+    pub satisfaction: Option<String>,
+    pub claude_helpfulness: Option<String>,
+    pub session_type: Option<String>,
+}
+
+/// Per-session insight for a specific date's insights endpoint
+#[derive(Serialize)]
+pub struct DateSessionInsightDto {
+    pub name: String,
+    pub session_id: String,
+    pub brief_summary: Option<String>,
+    pub outcome: Option<String>,
+    pub goal_categories: Vec<String>,
+    pub friction_types: Vec<String>,
+    pub friction_detail: Option<String>,
+    pub satisfaction: Option<String>,
+    pub claude_helpfulness: Option<String>,
+}
+
+/// Aggregated day-level insight summary
+#[derive(Serialize)]
+pub struct DayInsightSummaryDto {
+    pub total_sessions: usize,
+    pub sessions_with_friction: usize,
+    pub overall_satisfaction: Option<String>,
+    pub top_goals: Vec<String>,
+    pub top_frictions: Vec<String>,
+    pub recommendations: Vec<String>,
+}
+
+/// Complete date insights response
+#[derive(Serialize)]
+pub struct DateInsightsDto {
+    pub sessions: Vec<DateSessionInsightDto>,
+    pub day_summary: DayInsightSummaryDto,
+}
+
+/// A single content block within a conversation message
+#[derive(Serialize, Clone)]
+#[serde(tag = "type")]
+pub enum ConversationContentBlock {
+    /// Plain text content
+    #[serde(rename = "text")]
+    Text { text: String },
+
+    /// A tool invocation by the assistant
+    #[serde(rename = "tool_use")]
+    ToolUse {
+        tool_use_id: String,
+        name: String,
+        input: serde_json::Value,
+    },
+
+    /// Result returned from a tool
+    #[serde(rename = "tool_result")]
+    ToolResult {
+        tool_use_id: String,
+        content: String,
+    },
+}
+
+/// A conversation message (one turn in the chat)
+#[derive(Serialize, Clone)]
+pub struct ConversationMessage {
+    pub role: String,
+    pub content: Vec<ConversationContentBlock>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timestamp: Option<String>,
+}
+
+/// Paginated conversation response
+#[derive(Serialize)]
+pub struct ConversationDto {
+    pub messages: Vec<ConversationMessage>,
+    pub total_entries: usize,
+    pub has_transcript: bool,
+    pub page: usize,
+    pub page_size: usize,
+    pub has_more: bool,
+}

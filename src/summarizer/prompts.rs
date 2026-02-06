@@ -326,105 +326,117 @@ description: "简要描述这个命令做什么"
 仅输出 markdown 内容。"#;
 
 // Default template constants for daily summary
-const DAILY_SUMMARY_EN: &str = r#"You are analyzing Claude Code sessions from {{date}}. Generate a daily summary.
+const DAILY_SUMMARY_EN: &str = r#"You are analyzing Claude Code sessions from {{date}}. Generate a daily digest.
 
 ## Time Context
 - Current time: {{current_time}} ({{current_period}})
-- Session names contain timestamps: e.g., "21_03-fix-bug" means 21:03 (evening), "09_30-add-feature" means 09:30 (morning)
 - Time periods: {{periods_desc}}
-
-CRITICAL: Parse the actual timestamps from session names to determine time periods. NEVER fabricate times like "morning...afternoon..." if all sessions are in the evening.
 {{existing_section}}
 {{sessions_section}}
 
 ## Your Task
 
-Generate a summary that answers: "What did I ask today? What did I discuss? What did I learn? What's next?"
+Generate a narrative digest that answers: "What did I accomplish today? What did I learn? What's next?"
+
+### Rules
+
+- **DO NOT** include any session names, session IDs, or timestamps like "17_48-fix-xxx" in your output
+- **DO NOT** list sessions individually — group related work by theme/area
+- Focus on substance: what was done, what was discovered, what was decided
+- Write in a natural narrative style, not a mechanical session log
 
 ### Output Structure
 
-1. **Overview**: 2-3 sentences describing what happened today. Use ACTUAL time periods based on session timestamps (e.g., "This evening I mainly worked on..." if all sessions are after 18:00).
+1. **Overview**: 3-5 sentences describing the day's work. Mention the general time period (morning/afternoon/evening) and the main themes. This should read like a brief journal entry.
 
-2. **Sessions**: List each session with:
-   - Session name with emoji indicating type (🔧 fix, 📚 research, 💬 chat, 🎨 UI, 📋 plan)
-   - One-line description of what was discussed/accomplished
+2. **Key Work**: Group all work by theme/area (e.g., "Feature Development", "Bug Fixes", "Research", "DevOps"). For each theme:
+   - Brief description of what was accomplished
+   - Key decisions made
+   - Problems solved
+   Do NOT reference individual session names.
 
-3. **Key Insights**: Valuable learnings worth remembering. Focus on:
-   - Technical discoveries (root causes, solutions found)
-   - Patterns observed
-   - Connections between topics
+3. **Key Insights**: Technical discoveries worth remembering:
+   - Root causes found and solutions implemented
+   - Patterns and connections observed
+   - Non-obvious learnings
 
-4. **Skills & Commands Identified**: Reusable patterns that could become skills or commands (if any, otherwise say "None identified")
+4. **Reflections**: Thoughts on work patterns, what went well, what could improve. 2-3 paragraphs.
 
-5. **Reflections**: Brief thoughts on work patterns, what went well, what could improve
-
-6. **Tomorrow's Focus**: High-value TODOs based on:
+5. **Tomorrow's Focus**: Prioritized action items:
    - Unfinished tasks
    - Problems discovered but not yet solved
    - Natural next steps
 
+6. **Skills & Commands**: Reusable patterns that could become skills or commands (if any, otherwise say "None identified"). Only include high-quality suggestions that pass the quality gate (was there a pitfall? will it recur? can you explain it clearly?).
+
 Output format (JSON):
 ```json
 {
-  "overview": "...",
-  "session_details": "markdown formatted list",
-  "insights": "markdown list of insights",
-  "skills": "markdown formatted skill suggestions (or 'None identified')",
-  "commands": "markdown formatted command suggestions (or 'None identified')",
-  "reflections": "thoughtful reflection paragraph",
-  "tomorrow_focus": "prioritized suggestions"
+  "overview": "narrative overview paragraph",
+  "session_details": "markdown: work grouped by theme, NO session names",
+  "insights": "markdown list of key insights",
+  "reflections": "thoughtful reflection paragraphs",
+  "tomorrow_focus": "prioritized action items",
+  "skills": "markdown skill suggestions (or 'None identified')",
+  "commands": "markdown command suggestions (or 'None identified')"
 }
 ```
 
 Output ONLY the JSON block. Ensure all strings in JSON are properly escaped (especially quotes and newlines)."#;
 
-const DAILY_SUMMARY_ZH: &str = r#"你正在分析 {{date}} 的 Claude Code 会话。生成日报摘要。
+const DAILY_SUMMARY_ZH: &str = r#"你正在分析 {{date}} 的 Claude Code 会话。生成日报。
 
 ## 时间上下文
 - 当前时间：{{current_time}}（{{current_period}}）
-- 会话名称包含时间戳：例如 "21_03-fix-bug" 表示 21:03（晚上），"09_30-add-feature" 表示 09:30（早上）
 - 时间段：{{periods_desc}}
-
-关键：从会话名称解析实际时间戳以确定时间段。如果所有会话都在晚上，不要捏造"上午...下午..."这样的时间。
 {{existing_section}}
 {{sessions_section}}
 
 ## 你的任务
 
-生成一个摘要来回答："今天问了什么？聊了什么？有什么收获？接下来要做什么？"
+生成一份叙事性日报来回答："今天做了什么？学到了什么？接下来要做什么？"
+
+### 规则
+
+- **禁止** 在输出中包含任何会话名称、会话 ID 或类似 "17_48-fix-xxx" 的时间戳标识
+- **禁止** 逐个列出会话 — 将相关工作按主题/领域归类
+- 聚焦于实质内容：做了什么、发现了什么、做了什么决策
+- 用自然的叙事风格撰写，而不是机械的会话日志
 
 ### 输出结构
 
-1. **概述**：2-3句话描述今天发生了什么。基于会话时间戳使用实际时间段（例如，如果所有会话都在18:00之后，就说"今晚主要在..."）。
+1. **概述**：3-5 句话描述今天的工作。提及大致的时间段（上午/下午/晚上）和主要主题。像简短的工作日记一样书写。
 
-2. **会话**：列出每个会话：
-   - 带有表示类型的 emoji 的会话名称（🔧 修复, 📚 研究, 💬 聊天, 🎨 界面, 📋 计划）
-   - 一行描述讨论/完成了什么
+2. **核心工作**：将所有工作按主题/领域分组（如「功能开发」「问题修复」「技术调研」「DevOps」「架构设计」）。每个主题：
+   - 简要描述完成了什么
+   - 做了哪些关键决策
+   - 解决了什么问题
+   不要引用具体的会话名称。
 
-3. **关键见解**：值得记住的宝贵学习。重点关注：
-   - 技术发现（根本原因、找到的解决方案）
-   - 观察到的模式
-   - 话题之间的联系
+3. **关键洞察**：值得记住的技术发现：
+   - 找到的根本原因和实施的解决方案
+   - 观察到的模式和联系
+   - 非显而易见的学习收获
 
-4. **识别的技能和命令**：可以成为技能或命令的可复用模式（如果有，否则说"暂未发现"）
+4. **反思**：关于工作模式、做得好的地方、可以改进的地方的思考。2-3 段。
 
-5. **反思**：关于工作模式、什么做得好、什么可以改进的简短想法
-
-6. **明日重点**：基于以下的高价值待办事项：
+5. **明日规划**：按优先级排列的行动项：
    - 未完成的任务
    - 发现但尚未解决的问题
    - 自然的下一步
 
+6. **技能与命令**：可复用的模式，可以沉淀为技能或命令（如果有的话，否则说「暂未发现」）。只包含通过质量门禁的高质量建议（踩过坑吗？会复现吗？能说清楚吗？）。
+
 输出格式（JSON）：
 ```json
 {
-  "overview": "...",
-  "session_details": "markdown 格式列表",
-  "insights": "markdown 格式的见解列表",
-  "skills": "markdown 格式的技能建议（或 '暂未发现'）",
-  "commands": "markdown 格式的命令建议（或 '暂未发现'）",
+  "overview": "叙事性概述段落",
+  "session_details": "markdown：按主题分组的工作内容，不含会话名称",
+  "insights": "markdown 格式的关键洞察列表",
   "reflections": "深思熟虑的反思段落",
-  "tomorrow_focus": "优先级排序的建议"
+  "tomorrow_focus": "按优先级排列的行动项",
+  "skills": "markdown 格式的技能建议（或「暂未发现」）",
+  "commands": "markdown 格式的命令建议（或「暂未发现」）"
 }
 ```
 

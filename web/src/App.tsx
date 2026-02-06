@@ -6,6 +6,7 @@ import { DayDetail } from './pages/DayDetail'
 import { SessionDetail } from './pages/SessionDetail'
 import { JobsMonitor } from './pages/JobsMonitor'
 import { Settings } from './pages/Settings'
+import { Insights } from './pages/Insights'
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         {/* Other routes without archive tree */}
         <Route path="jobs" element={<JobsMonitor />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="insights" element={<Insights />} />
       </Route>
     </Routes>
   )

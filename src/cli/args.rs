@@ -219,6 +219,13 @@ pub enum Commands {
         version: Option<String>,
     },
 
+    /// Generate insights and trend analysis from archives
+    Insights {
+        /// Number of days to analyze (default: 30)
+        #[arg(short, long, default_value = "30")]
+        days: usize,
+    },
+
     /// Handle Claude Code hooks (internal use)
     Hook {
         #[command(subcommand)]

@@ -4,12 +4,14 @@ import { motion } from 'framer-motion'
 import { useApi } from '../hooks/useApi'
 import type { SessionDetail as SessionDetailType } from '../hooks/useApi'
 import { MarkdownRenderer } from '../components/MarkdownRenderer'
+import { ChatView } from '../components/ChatView'
 import { cn } from '../lib/utils'
 
 export function SessionDetail() {
   const { date, name } = useParams<{ date: string; name: string }>()
   const [session, setSession] = useState<SessionDetailType | null>(null)
   const [copySuccess, setCopySuccess] = useState(false)
+  const [activeTab, setActiveTab] = useState<'summary' | 'conversation'>('summary')
   const { fetchSession, loading, error } = useApi()
 
   const handleCopyContent = async () => {
@@ -142,12 +144,47 @@ export function SessionDetail() {
             </div>
           </div>
 
-          {/* Session Content */}
-          <div className="bg-gray-50 dark:bg-daily-light rounded-lg p-6 border border-gray-200 dark:border-orange-500/20 transition-colors">
-            <div className="markdown-content">
-              <MarkdownRenderer content={session.content} />
-            </div>
+          {/* Tab Switcher */}
+          <div className="flex gap-1 mb-4 bg-gray-100 dark:bg-daily-dark/50 rounded-lg p-1 w-fit">
+            <button
+              onClick={() => setActiveTab('summary')}
+              className={cn(
+                'px-4 py-1.5 rounded-md text-sm font-medium transition-colors',
+                activeTab === 'summary'
+                  ? 'bg-white dark:bg-daily-light text-orange-500 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              )}
+            >
+              Summary
+            </button>
+            <button
+              onClick={() => setActiveTab('conversation')}
+              className={cn(
+                'px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5',
+                activeTab === 'conversation'
+                  ? 'bg-white dark:bg-daily-light text-orange-500 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              )}
+            >
+              <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              Conversation
+            </button>
           </div>
+
+          {/* Tab Content */}
+          {activeTab === 'summary' ? (
+            <div className="bg-gray-50 dark:bg-daily-light rounded-lg p-6 border border-gray-200 dark:border-orange-500/20 transition-colors">
+              <div className="markdown-content">
+                <MarkdownRenderer content={session.content} />
+              </div>
+            </div>
+          ) : (
+            <div className="bg-gray-50 dark:bg-daily-light rounded-lg border border-gray-200 dark:border-orange-500/20 transition-colors overflow-hidden">
+              <ChatView date={date!} name={name!} />
+            </div>
+          )}
         </motion.div>
       )}
     </div>
