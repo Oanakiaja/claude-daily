@@ -139,7 +139,7 @@ impl Default for Config {
                 include_git_info: true,
             },
             summarization: SummarizationConfig {
-                model: "sonnet".into(),
+                model: "haiku".into(),
                 max_tokens: 4096,
                 enable_daily_summary: true,
                 enable_extraction_hints: true,
@@ -223,7 +223,7 @@ mod tests {
             .path
             .to_string_lossy()
             .contains(".claude/daily"));
-        assert_eq!(config.summarization.model, "sonnet");
+        assert_eq!(config.summarization.model, "haiku");
     }
 
     #[test]
