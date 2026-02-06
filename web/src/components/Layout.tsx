@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { cn } from '../lib/utils'
 import { ThemeToggle } from './ThemeToggle'
 
-const TABS = ['/', '/jobs', '/settings'] as const
+const TABS = ['/', '/insights', '/jobs', '/settings'] as const
 
 export function Layout() {
   const location = useLocation()
@@ -13,8 +13,9 @@ export function Layout() {
   const getCurrentTabIndex = useCallback(() => {
     const path = location.pathname
     if (path === '/' || path.startsWith('/day')) return 0
-    if (path === '/jobs') return 1
-    if (path === '/settings') return 2
+    if (path === '/insights') return 1
+    if (path === '/jobs') return 2
+    if (path === '/settings') return 3
     return 0
   }, [location.pathname])
 
@@ -69,6 +70,19 @@ export function Layout() {
               }
             >
               Archives
+            </NavLink>
+            <NavLink
+              to="/insights"
+              className={({ isActive }) =>
+                cn(
+                  'text-sm transition-colors',
+                  isActive
+                    ? 'text-orange-500 dark:text-orange-400'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                )
+              }
+            >
+              Insights
             </NavLink>
             <NavLink
               to="/jobs"

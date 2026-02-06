@@ -2,6 +2,7 @@ pub mod config;
 pub mod digest;
 pub mod extract;
 pub mod init;
+pub mod insights;
 pub mod install;
 pub mod jobs;
 pub mod show;

@@ -16,8 +16,13 @@ pub fn create_router(state: Arc<AppState>) -> Router {
         .route("/dates", get(handlers::list_dates))
         .route("/dates/:date", get(handlers::get_daily_summary))
         .route("/dates/:date/digest", post(handlers::trigger_digest))
+        .route("/dates/:date/insights", get(handlers::get_date_insights))
         .route("/dates/:date/sessions", get(handlers::list_sessions))
         .route("/dates/:date/sessions/:name", get(handlers::get_session))
+        .route(
+            "/dates/:date/sessions/:name/conversation",
+            get(handlers::get_session_conversation),
+        )
         // Job routes
         .route("/jobs", get(handlers::list_jobs))
         .route("/jobs/:id", get(handlers::get_job))
@@ -31,7 +36,9 @@ pub fn create_router(state: Arc<AppState>) -> Router {
             get(handlers::get_default_templates),
         )
         // Health check
-        .route("/health", get(handlers::health_check));
+        .route("/health", get(handlers::health_check))
+        // Insights routes
+        .route("/insights", get(handlers::get_insights));
 
     // CORS layer for development
     let cors = CorsLayer::new()

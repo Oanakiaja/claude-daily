@@ -3,6 +3,7 @@ mod auto_summarize;
 mod cli;
 mod config;
 mod hooks;
+mod insights;
 mod jobs;
 mod server;
 mod summarizer;
@@ -84,6 +85,7 @@ async fn main() -> Result<()> {
                 cli::commands::jobs::cleanup(days, dry_run).await
             }
         },
+        Commands::Insights { days } => cli::commands::insights::run(days).await,
         Commands::Show {
             port,
             host,

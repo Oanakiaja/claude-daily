@@ -188,14 +188,17 @@ impl SummarizerEngine {
             return Ok(DailySummary::new(date.to_string()));
         }
 
-        // Collect session summaries (may be empty in force-regenerate mode)
+        // Collect session summaries, filtering out trivial sessions (1-2 turns)
         let mut session_data = Vec::new();
         for session_name in &sessions {
             if let Ok(content) = manager.read_session(date, session_name) {
                 // Extract summary from markdown (simplified extraction)
                 let summary = extract_summary_from_markdown(&content);
+                // Skip trivial sessions: very short summaries indicate 1-2 turn or empty sessions
+                if summary.len() < 80 {
+                    continue;
+                }
                 session_data.push(serde_json::json!({
-                    "name": session_name,
                     "content": summary
                 }));
             }

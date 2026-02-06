@@ -13,6 +13,7 @@ export interface DailySummary {
   insights?: string
   tomorrow_focus?: string
   file_path?: string
+  raw_content?: string
 }
 
 export interface Session {
@@ -99,6 +100,115 @@ export interface ConfigUpdate {
   auto_summarize_enabled?: boolean
   auto_summarize_on_show?: boolean
   auto_summarize_inactive_minutes?: number
+}
+
+export interface SessionInsight {
+  session_id: string
+  date: string
+  session_name: string
+  brief_summary: string | null
+  outcome: string | null
+  goal_categories: string[]
+  friction_types: string[]
+  friction_detail: string | null
+  satisfaction: string | null
+  claude_helpfulness: string | null
+  session_type: string | null
+}
+
+export interface WeeklyStat {
+  week_label: string
+  session_count: number
+  friction_rate: number
+  success_rate: number
+}
+
+export interface TrendData {
+  period_label: string
+  comparison_label: string
+  current_sessions: number
+  previous_sessions: number
+  sessions_change_pct: number
+  current_friction_rate: number
+  previous_friction_rate: number
+  friction_change_pct: number
+  current_success_rate: number
+  previous_success_rate: number
+  success_change_pct: number
+  current_satisfaction_score: number
+  previous_satisfaction_score: number
+  satisfaction_change_pct: number
+  weekly_stats: WeeklyStat[]
+}
+
+export interface InsightsData {
+  total_days: number
+  total_sessions: number
+  daily_stats: DailyStat[]
+  goal_distribution: CategoryCount[]
+  friction_distribution: CategoryCount[]
+  satisfaction_distribution: CategoryCount[]
+  language_distribution: CategoryCount[]
+  session_type_distribution: CategoryCount[]
+  session_details: SessionInsight[]
+  trends?: TrendData
+}
+
+export interface DailyStat {
+  date: string
+  session_count: number
+  has_digest: boolean
+}
+
+export interface CategoryCount {
+  name: string
+  count: number
+}
+
+export interface DateSessionInsight {
+  name: string
+  session_id: string
+  brief_summary: string | null
+  outcome: string | null
+  goal_categories: string[]
+  friction_types: string[]
+  friction_detail: string | null
+  satisfaction: string | null
+  claude_helpfulness: string | null
+}
+
+export interface DayInsightSummary {
+  total_sessions: number
+  sessions_with_friction: number
+  overall_satisfaction: string | null
+  top_goals: string[]
+  top_frictions: string[]
+  recommendations: string[]
+}
+
+export interface DateInsights {
+  sessions: DateSessionInsight[]
+  day_summary: DayInsightSummary
+}
+
+export type ConversationContentBlock =
+  | { type: 'text'; text: string }
+  | { type: 'tool_use'; tool_use_id: string; name: string; input: unknown }
+  | { type: 'tool_result'; tool_use_id: string; content: string }
+
+export interface ConversationMessage {
+  role: 'user' | 'assistant'
+  content: ConversationContentBlock[]
+  timestamp?: string
+}
+
+export interface ConversationData {
+  messages: ConversationMessage[]
+  total_entries: number
+  has_transcript: boolean
+  page: number
+  page_size: number
+  has_more: boolean
 }
 
 interface ApiResponse<T> {
@@ -195,6 +305,24 @@ export function useApi() {
     [request]
   )
 
+  const fetchInsights = useCallback(
+    (days: number = 30) => request<InsightsData>(`/insights?days=${days}`),
+    [request]
+  )
+
+  const fetchConversation = useCallback(
+    (date: string, name: string, page: number = 0, pageSize: number = 50) =>
+      request<ConversationData>(
+        `/dates/${date}/sessions/${encodeURIComponent(name)}/conversation?page=${page}&page_size=${pageSize}`
+      ),
+    [request]
+  )
+
+  const fetchDateInsights = useCallback(
+    (date: string) => request<DateInsights>(`/dates/${date}/insights`),
+    [request]
+  )
+
   return {
     loading,
     error,
@@ -210,5 +338,8 @@ export function useApi() {
     fetchConfig,
     updateConfig,
     fetchDefaultTemplates,
+    fetchInsights,
+    fetchConversation,
+    fetchDateInsights,
   }
 }
