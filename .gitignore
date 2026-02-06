@@ -18,6 +18,9 @@ Thumbs.db
 # Debug
 *.log
 
+# Large media files
+*.mp4
+
 # Claude Code local files
 .claude/
 .claude-plugin/

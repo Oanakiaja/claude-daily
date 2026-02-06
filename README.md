@@ -11,7 +11,7 @@ English | [中文](README.zh-CN.md)
 
 Daily is a context archive system for [Claude Code](https://claude.ai/code) that automatically records, summarizes, and distills reusable skills from your AI-assisted work sessions. The more you use it, the stronger your personal context library becomes.
 
-![Daily-show](assets/daily-show.png)
+![Daily-show](assets/daily-show.gif)
 
 ## Why Daily?
 
