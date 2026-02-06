@@ -7,8 +7,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
   Cell,
   AreaChart,
   Area,
@@ -18,6 +16,7 @@ import { useApi } from '../hooks/useApi'
 import type { InsightsData } from '../hooks/useApi'
 import { InsightsProblemView } from '../components/InsightsProblemView'
 import { InsightsTrends } from '../components/InsightsTrends'
+import { UsageTimeline, CostTimeline, ModelPieChart, formatTokenCount, formatCost } from '../components/UsageCharts'
 
 const COLORS = ['#f97316', '#fb923c', '#fdba74', '#fed7aa', '#ffedd5', '#a3e635', '#4ade80', '#2dd4bf', '#38bdf8', '#818cf8']
 const FRICTION_COLORS = ['#ef4444', '#f97316', '#eab308', '#a3a3a3']
@@ -185,29 +184,81 @@ export function Insights() {
         </ResponsiveContainer>
       </ChartCard>
 
+      {/* Token Usage Section */}
+      {data.usage_summary && data.usage_summary.total_sessions > 0 && (
+        <>
+          <div className="mt-8 mb-4">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Token Usage</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">API usage and cost analytics</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <StatCard
+              label="Total Tokens"
+              value={formatTokenCount(
+                data.usage_summary.total_input_tokens +
+                data.usage_summary.total_output_tokens +
+                data.usage_summary.total_cache_creation_tokens +
+                data.usage_summary.total_cache_read_tokens
+              )}
+              sub={`${data.usage_summary.total_sessions} sessions`}
+            />
+            <StatCard
+              label="Input Tokens"
+              value={formatTokenCount(data.usage_summary.total_input_tokens)}
+            />
+            <StatCard
+              label="Output Tokens"
+              value={formatTokenCount(data.usage_summary.total_output_tokens)}
+            />
+            <StatCard
+              label="Total Cost"
+              value={formatCost(data.usage_summary.total_cost_usd)}
+              sub={`cache: ${formatTokenCount(data.usage_summary.total_cache_read_tokens)} read`}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <ChartCard title="Token Usage Timeline">
+              <UsageTimeline data={data.usage_summary.daily_usage} />
+            </ChartCard>
+            <ChartCard title="Daily Cost">
+              <CostTimeline data={data.usage_summary.daily_usage} />
+            </ChartCard>
+          </div>
+
+          {data.usage_summary.model_distribution.length > 0 && (
+            <ChartCard title="Model Distribution">
+              <ModelPieChart data={data.usage_summary.model_distribution} />
+            </ChartCard>
+          )}
+        </>
+      )}
+
       {/* Distribution Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         {/* Goal Distribution */}
         {data.goal_distribution.length > 0 && (
           <ChartCard title="Goal Distribution">
             <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={data.goal_distribution}
-                  dataKey="count"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  labelLine={{ stroke: '#9ca3af' }}
-                >
+              <BarChart data={data.goal_distribution}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  interval={0}
+                  angle={-30}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} allowDecimals={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                   {data.goal_distribution.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </ChartCard>
         )}

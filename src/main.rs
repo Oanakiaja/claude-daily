@@ -8,6 +8,7 @@ mod jobs;
 mod server;
 mod summarizer;
 mod transcript;
+mod usage;
 
 use anyhow::Result;
 use clap::Parser;
@@ -71,6 +72,8 @@ async fn main() -> Result<()> {
         } => cli::commands::config::run(set_storage, show, interactive).await,
         Commands::Install { scope } => cli::commands::install::run(scope).await,
         Commands::Uninstall { scope } => cli::commands::uninstall::run(scope).await,
+        Commands::UninstallHooks { scope } => cli::commands::uninstall::run_hooks_only(scope).await,
+        Commands::InstallHooks { scope } => cli::commands::install::run_hooks_only(scope).await,
         Commands::Trash => cli::commands::trash::run().await,
         Commands::Update { check, version } => cli::commands::update::run(check, version).await,
         Commands::Jobs { action } => match action {

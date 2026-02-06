@@ -8,10 +8,17 @@ export interface DateItem {
   has_digest: boolean
 }
 
+export interface SummaryCard {
+  title: string
+  content: string
+}
+
 export interface DailySummary {
   overview?: string
-  insights?: string
-  tomorrow_focus?: string
+  insights: SummaryCard[]
+  skills: SummaryCard[]
+  commands: SummaryCard[]
+  tomorrow_focus: SummaryCard[]
   file_path?: string
   raw_content?: string
 }
@@ -102,6 +109,42 @@ export interface ConfigUpdate {
   auto_summarize_inactive_minutes?: number
 }
 
+export interface SessionUsage {
+  session_id: string
+  input_tokens: number
+  output_tokens: number
+  cache_creation_tokens: number
+  cache_read_tokens: number
+  total_cost_usd: number
+  model_calls: ModelUsageCount[]
+}
+
+export interface ModelUsageCount {
+  model: string
+  count: number
+}
+
+export interface DailyUsageData {
+  date: string
+  input_tokens: number
+  output_tokens: number
+  cache_creation_tokens: number
+  cache_read_tokens: number
+  total_cost_usd: number
+  session_count: number
+}
+
+export interface UsageSummary {
+  total_input_tokens: number
+  total_output_tokens: number
+  total_cache_creation_tokens: number
+  total_cache_read_tokens: number
+  total_cost_usd: number
+  total_sessions: number
+  model_distribution: ModelUsageCount[]
+  daily_usage: DailyUsageData[]
+}
+
 export interface SessionInsight {
   session_id: string
   date: string
@@ -114,6 +157,7 @@ export interface SessionInsight {
   satisfaction: string | null
   claude_helpfulness: string | null
   session_type: string | null
+  token_usage?: SessionUsage
 }
 
 export interface WeeklyStat {
@@ -152,12 +196,15 @@ export interface InsightsData {
   session_type_distribution: CategoryCount[]
   session_details: SessionInsight[]
   trends?: TrendData
+  usage_summary?: UsageSummary
 }
 
 export interface DailyStat {
   date: string
   session_count: number
   has_digest: boolean
+  total_tokens?: number
+  total_cost?: number
 }
 
 export interface CategoryCount {
@@ -175,6 +222,7 @@ export interface DateSessionInsight {
   friction_detail: string | null
   satisfaction: string | null
   claude_helpfulness: string | null
+  token_usage?: SessionUsage
 }
 
 export interface DayInsightSummary {
@@ -184,6 +232,9 @@ export interface DayInsightSummary {
   top_goals: string[]
   top_frictions: string[]
   recommendations: string[]
+  total_tokens?: number
+  total_cost?: number
+  model_distribution?: ModelUsageCount[]
 }
 
 export interface DateInsights {
@@ -209,6 +260,12 @@ export interface ConversationData {
   page: number
   page_size: number
   has_more: boolean
+}
+
+export interface InstallCardResponse {
+  name: string
+  path: string
+  message: string
 }
 
 interface ApiResponse<T> {
@@ -323,6 +380,15 @@ export function useApi() {
     [request]
   )
 
+  const installCard = useCallback(
+    (title: string, content: string, cardType: 'skill' | 'command') =>
+      request<InstallCardResponse>('/install', {
+        method: 'POST',
+        body: JSON.stringify({ title, content, card_type: cardType }),
+      }),
+    [request]
+  )
+
   return {
     loading,
     error,
@@ -341,5 +407,6 @@ export function useApi() {
     fetchInsights,
     fetchConversation,
     fetchDateInsights,
+    installCard,
   }
 }

@@ -5,6 +5,13 @@ use super::manager::ArchiveManager;
 use super::templates::Templates;
 use crate::config::Config;
 
+/// A single card within a daily summary section
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SummaryCard {
+    pub title: String,
+    pub content: String,
+}
+
 /// Represents a daily summary
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DailySummary {
@@ -12,11 +19,11 @@ pub struct DailySummary {
     pub sessions: Vec<String>,
     pub overview: String,
     pub session_details: String,
-    pub insights: String,
-    pub skills: String,
-    pub commands: String,
+    pub insights: Vec<SummaryCard>,
+    pub skills: Vec<SummaryCard>,
+    pub commands: Vec<SummaryCard>,
     pub reflections: String,
-    pub tomorrow_focus: String,
+    pub tomorrow_focus: Vec<SummaryCard>,
 }
 
 impl DailySummary {
@@ -27,11 +34,11 @@ impl DailySummary {
             sessions: Vec::new(),
             overview: "_No overview yet._".to_string(),
             session_details: String::new(),
-            insights: String::new(),
-            skills: String::new(),
-            commands: String::new(),
+            insights: Vec::new(),
+            skills: Vec::new(),
+            commands: Vec::new(),
             reflections: String::new(),
-            tomorrow_focus: String::new(),
+            tomorrow_focus: Vec::new(),
         }
     }
 
@@ -49,11 +56,11 @@ impl DailySummary {
         mut self,
         overview: String,
         session_details: String,
-        insights: String,
-        skills: String,
-        commands: String,
+        insights: Vec<SummaryCard>,
+        skills: Vec<SummaryCard>,
+        commands: Vec<SummaryCard>,
         reflections: String,
-        tomorrow_focus: String,
+        tomorrow_focus: Vec<SummaryCard>,
     ) -> Self {
         self.overview = overview;
         self.session_details = session_details;
@@ -78,6 +85,16 @@ impl DailySummary {
             &self.reflections,
             &self.tomorrow_focus,
         )
+    }
+
+    /// Render a slice of SummaryCards as markdown subsections
+    #[allow(dead_code)]
+    pub fn cards_to_markdown(cards: &[SummaryCard]) -> String {
+        cards
+            .iter()
+            .map(|card| format!("### {}\n\n{}", card.title, card.content))
+            .collect::<Vec<_>>()
+            .join("\n\n")
     }
 
     /// Save this summary to disk

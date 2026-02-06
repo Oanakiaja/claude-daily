@@ -374,13 +374,18 @@ Output format (JSON):
 {
   "overview": "narrative overview paragraph",
   "session_details": "markdown: work grouped by theme, NO session names",
-  "insights": "markdown list of key insights",
+  "insights": [{"title": "Short insight title", "content": "Detailed markdown explanation"}],
   "reflections": "thoughtful reflection paragraphs",
-  "tomorrow_focus": "prioritized action items",
-  "skills": "markdown skill suggestions (or 'None identified')",
-  "commands": "markdown command suggestions (or 'None identified')"
+  "tomorrow_focus": [{"title": "Short focus title", "content": "Details and action items"}],
+  "skills": [{"title": "Skill name", "content": "Markdown skill description"}],
+  "commands": [{"title": "Command name", "content": "Markdown command description"}]
 }
 ```
+
+IMPORTANT for card arrays (insights, skills, commands, tomorrow_focus):
+- Each item MUST be an object with "title" (short header) and "content" (markdown body)
+- If no items found, use an empty array []
+- For skills/commands, only include items that pass the quality gate; otherwise use []
 
 Output ONLY the JSON block. Ensure all strings in JSON are properly escaped (especially quotes and newlines)."#;
 
@@ -432,13 +437,18 @@ const DAILY_SUMMARY_ZH: &str = r#"你正在分析 {{date}} 的 Claude Code 会�
 {
   "overview": "叙事性概述段落",
   "session_details": "markdown：按主题分组的工作内容，不含会话名称",
-  "insights": "markdown 格式的关键洞察列表",
+  "insights": [{"title": "简短洞察标题", "content": "详细的 markdown 解释"}],
   "reflections": "深思熟虑的反思段落",
-  "tomorrow_focus": "按优先级排列的行动项",
-  "skills": "markdown 格式的技能建议（或「暂未发现」）",
-  "commands": "markdown 格式的命令建议（或「暂未发现」）"
+  "tomorrow_focus": [{"title": "简短重点标题", "content": "详细内容和行动项"}],
+  "skills": [{"title": "技能名称", "content": "markdown 格式的技能描述"}],
+  "commands": [{"title": "命令名称", "content": "markdown 格式的命令描述"}]
 }
 ```
+
+卡片数组（insights、skills、commands、tomorrow_focus）重要规则：
+- 每个项目必须是包含 "title"（简短标题）和 "content"（markdown 正文）的对象
+- 如果没有发现相关项目，使用空数组 []
+- 对于 skills/commands，只包含通过质量门禁的项目；否则使用 []
 
 仅输出 JSON 块。确保 JSON 中的所有字符串都正确转义（特别是引号和换行符）。"#;
 
@@ -614,12 +624,12 @@ impl Prompts {
                 }
             } else if language == "zh" {
                 format!(
-                    "\n## 现有日报摘要（来自之前的汇总）\n\n以下内容是从今天早些时候的会话生成的。你必须完整保留现有内容，并在每个 section 追加新内容：\n\n```\n{}\n```\n\n## 追加规则（非常重要）\n\n你的任务是**追加**，而不是**重写**。对于每个 section：\n\n1. **概述（overview）**：保留现有概述的完整内容，然后追加新会话的内容。格式：\"[现有概述内容] 后来，[新会话内容描述]\"\n\n2. **会话（session_details）**：保留现有的所有会话条目，在列表末尾追加新会话。不要重新排序或删除任何现有条目。\n\n3. **见解（insights）**：保留现有的所有见解条目，在列表末尾追加新的见解。如果新见解与现有见解重复，跳过不添加。\n\n4. **技能（skills）**：保留现有的所有技能建议，追加新发现的技能。\n\n5. **命令（commands）**：保留现有的所有命令建议，追加新发现的命令。\n\n6. **反思（reflections）**：保留现有反思，追加新的反思内容。可以用段落分隔。\n\n7. **明日重点（tomorrow_focus）**：保留现有的待办项，追加新发现的待办项。如果某项已完成，在其后标注 ✅。\n\n**绝对禁止**：删除、缩减、总结或重写任何现有内容。你只能追加。\n",
+                    "\n## 现有日报摘要（来自之前的汇总）\n\n以下内容是从今天早些时候的会话生成的。你必须完整保留现有内容，并在每个 section 追加新内容：\n\n```\n{}\n```\n\n## 追加规则（非常重要）\n\n你的任务是**追加**，而不是**重写**。对于每个 section：\n\n1. **概述（overview）**：保留现有概述的完整内容，然后追加新会话的内容。格式：\"[现有概述内容] 后来，[新会话内容描述]\"\n\n2. **会话（session_details）**：保留现有的所有会话条目，在列表末尾追加新会话。不要重新排序或删除任何现有条目。\n\n3. **见解（insights）**：保留现有数组中的所有卡片对象，在数组末尾追加新的卡片对象。如果新见解与现有见解重复，跳过不添加。\n\n4. **技能（skills）**：保留现有数组中的所有卡片对象，追加新发现的技能卡片。\n\n5. **命令（commands）**：保留现有数组中的所有卡片对象，追加新发现的命令卡片。\n\n6. **反思（reflections）**：保留现有反思，追加新的反思内容。可以用段落分隔。\n\n7. **明日重点（tomorrow_focus）**：保留现有数组中的所有卡片对象，追加新发现的待办项为卡片对象。如果某项已完成，在其标题中添加 ✅。\n\n**绝对禁止**：删除、缩减、总结或重写任何现有内容。你只能追加。\n",
                     existing
                 )
             } else {
                 format!(
-                    "\n## Existing Daily Summary (from previous digest)\n\nThe following content was generated from earlier sessions today. You MUST preserve the existing content IN FULL and APPEND new content to each section:\n\n```\n{}\n```\n\n## Append Rules (CRITICAL)\n\nYour task is to **APPEND**, not **REWRITE**. For each section:\n\n1. **Overview**: Keep existing overview content VERBATIM, then append new session content. Format: \"[existing overview content] Later, [new session content description]\"\n\n2. **Session Details**: Keep ALL existing session entries, append new sessions at the END of the list. Do NOT reorder or remove any existing entries.\n\n3. **Insights**: Keep ALL existing insight entries, append new insights at the END. If a new insight duplicates an existing one, skip it.\n\n4. **Skills**: Keep ALL existing skill suggestions, append newly discovered skills.\n\n5. **Commands**: Keep ALL existing command suggestions, append newly discovered commands.\n\n6. **Reflections**: Keep existing reflections, append new reflection content. Use paragraph breaks to separate.\n\n7. **Tomorrow's Focus**: Keep existing TODO items, append newly discovered items. If an item was completed, mark it with ✅.\n\n**STRICTLY FORBIDDEN**: Deleting, condensing, summarizing, or rewriting ANY existing content. You may ONLY append.\n",
+                    "\n## Existing Daily Summary (from previous digest)\n\nThe following content was generated from earlier sessions today. You MUST preserve the existing content IN FULL and APPEND new content to each section:\n\n```\n{}\n```\n\n## Append Rules (CRITICAL)\n\nYour task is to **APPEND**, not **REWRITE**. For each section:\n\n1. **Overview**: Keep existing overview content VERBATIM, then append new session content. Format: \"[existing overview content] Later, [new session content description]\"\n\n2. **Session Details**: Keep ALL existing session entries, append new sessions at the END of the list. Do NOT reorder or remove any existing entries.\n\n3. **Insights**: Keep ALL existing card objects in the array, append new card objects at the END. If a new insight duplicates an existing one, skip it.\n\n4. **Skills**: Keep ALL existing card objects in the array, append newly discovered skill cards.\n\n5. **Commands**: Keep ALL existing card objects in the array, append newly discovered command cards.\n\n6. **Reflections**: Keep existing reflections, append new reflection content. Use paragraph breaks to separate.\n\n7. **Tomorrow's Focus**: Keep ALL existing card objects in the array, append newly discovered items as card objects. If an item was completed, add ✅ to its title.\n\n**STRICTLY FORBIDDEN**: Deleting, condensing, summarizing, or rewriting ANY existing content. You may ONLY append.\n",
                     existing
                 )
             }

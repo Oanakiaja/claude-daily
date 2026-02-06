@@ -44,17 +44,17 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
         ),
         // Lists
         ul: ({ children }: { children?: ReactNode }) => (
-          <ul className="list-disc list-inside mb-3 space-y-1">
+          <ul className="list-disc list-outside pl-5 mb-3 space-y-1">
             {children}
           </ul>
         ),
         ol: ({ children }: { children?: ReactNode }) => (
-          <ol className="list-decimal list-inside mb-3 space-y-1">
+          <ol className="list-decimal list-outside pl-5 mb-3 space-y-1">
             {children}
           </ol>
         ),
         li: ({ children }: { children?: ReactNode }) => (
-          <li className="text-gray-700 dark:text-gray-300">{children}</li>
+          <li className="text-gray-700 dark:text-gray-300 [&>p]:inline [&>p]:mb-0">{children}</li>
         ),
         // Code
         code: ({ children, className }: { children?: ReactNode; className?: string }) => {

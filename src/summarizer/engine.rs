@@ -4,7 +4,7 @@ use std::io::Write;
 use std::process::{Command, Stdio};
 
 use super::prompts::Prompts;
-use crate::archive::{ArchiveManager, DailySummary, SessionArchive};
+use crate::archive::{ArchiveManager, DailySummary, SessionArchive, SummaryCard};
 use crate::config::Config;
 use crate::transcript::TranscriptParser;
 
@@ -23,11 +23,11 @@ struct SessionSummaryResponse {
 struct DailySummaryResponse {
     overview: String,
     session_details: String,
-    insights: String,
-    skills: String,
-    commands: String,
+    insights: Vec<SummaryCard>,
+    skills: Vec<SummaryCard>,
+    commands: Vec<SummaryCard>,
     reflections: String,
-    tomorrow_focus: String,
+    tomorrow_focus: Vec<SummaryCard>,
 }
 
 /// Engine for summarizing transcripts using Claude CLI
@@ -138,9 +138,38 @@ impl SummarizerEngine {
         let response = self.invoke_claude(&prompt)?;
         let json_str = self.extract_json(&response)?;
 
-        // Parse response
-        let summary_response: SessionSummaryResponse =
-            serde_json::from_str(&json_str).context("Failed to parse summary response")?;
+        // Parse response - use Value first for debugging on failure
+        let summary_response: SessionSummaryResponse = match serde_json::from_str(&json_str) {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!("[daily] Failed to parse JSON: {}", e);
+                eprintln!("[daily] Raw JSON: {}", json_str);
+                // Try flexible parsing: convert array fields to strings
+                let mut v: serde_json::Value =
+                    serde_json::from_str(&json_str).context("Failed to parse as JSON Value")?;
+                if let Some(obj) = v.as_object_mut() {
+                    for key in ["decisions", "learnings", "skill_hints", "summary", "topic"] {
+                        if let Some(val) = obj.get(key) {
+                            if val.is_array() {
+                                if let Some(arr) = val.as_array() {
+                                    let joined = arr
+                                        .iter()
+                                        .map(|item| {
+                                            item.as_str()
+                                                .map(|s| format!("- {}", s))
+                                                .unwrap_or_else(|| format!("- {}", item))
+                                        })
+                                        .collect::<Vec<_>>()
+                                        .join("\n");
+                                    obj.insert(key.to_string(), serde_json::Value::String(joined));
+                                }
+                            }
+                        }
+                    }
+                }
+                serde_json::from_value(v).context("Failed to parse summary response after fix")?
+            }
+        };
 
         // Build title from time + AI-generated topic
         // Format: HH_MM-topic (e.g., "14_55-fix-auth-bug")

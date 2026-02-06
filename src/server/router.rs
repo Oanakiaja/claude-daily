@@ -37,6 +37,8 @@ pub fn create_router(state: Arc<AppState>) -> Router {
         )
         // Health check
         .route("/health", get(handlers::health_check))
+        // Install skill/command from summary card
+        .route("/install", post(handlers::install_card))
         // Insights routes
         .route("/insights", get(handlers::get_insights));
 

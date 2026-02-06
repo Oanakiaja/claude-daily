@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useApi } from '../hooks/useApi'
-import type { DailySummary, DateInsights, DateSessionInsight } from '../hooks/useApi'
+import type { DailySummary, DateInsights, DateSessionInsight, SummaryCard } from '../hooks/useApi'
 import { MarkdownRenderer } from '../components/MarkdownRenderer'
 import { cn } from '../lib/utils'
+import { formatTokenCount, formatCost } from '../components/UsageCharts'
 
-type DayTab = 'summary' | 'insights'
+type DayTab = 'summary' | 'focus' | 'skills' | 'insights'
 
 // Extract displayable content from raw_content by stripping frontmatter, title header, and footer
 const extractContent = (raw: string): string => {
@@ -63,6 +64,274 @@ const getSatisfactionIndicator = (satisfaction: string | null): { label: string;
 const formatHelpfulness = (helpfulness: string | null): string => {
   if (!helpfulness) return 'N/A'
   return helpfulness.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
+// Collapsible summary card component
+function CollapsibleCard({ card, defaultOpen = true }: { card: SummaryCard; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  return (
+    <div className="border border-gray-200 dark:border-gray-700/50 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left bg-white dark:bg-daily-light hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+      >
+        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{card.title}</span>
+        <svg
+          className={cn('size-4 text-gray-400 transition-transform', open && 'rotate-180')}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pt-1 bg-white dark:bg-daily-light">
+          <div className="text-sm text-gray-600 dark:text-gray-400 markdown-content">
+            <MarkdownRenderer content={card.content} />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Card section component that groups cards under a heading
+function CardSection({ title, cards, icon }: { title: string; cards: SummaryCard[]; icon?: React.ReactNode }) {
+  if (cards.length === 0) return null
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        {icon}
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          {title}
+        </h3>
+        <span className="text-xs text-gray-400 dark:text-gray-500">({cards.length})</span>
+      </div>
+      <div className="space-y-2">
+        {cards.map((card, i) => (
+          <CollapsibleCard key={`${card.title}-${i}`} card={card} defaultOpen={i === 0} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Skill/Command card with distinctive visual style and action buttons
+function SkillCommandCard({
+  card,
+  type,
+  onInstall,
+}: {
+  card: SummaryCard
+  type: 'skill' | 'command'
+  onInstall: (title: string, content: string, cardType: 'skill' | 'command') => Promise<void>
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const [copyOk, setCopyOk] = useState(false)
+  const [installing, setInstalling] = useState(false)
+  const [installed, setInstalled] = useState(false)
+  const [installPath, setInstallPath] = useState<string | null>(null)
+  const isSkill = type === 'skill'
+  const colorClass = isSkill
+    ? 'border-green-200 dark:border-green-800/40 hover:border-green-300 dark:hover:border-green-700/60'
+    : 'border-purple-200 dark:border-purple-800/40 hover:border-purple-300 dark:hover:border-purple-700/60'
+  const badgeClass = isSkill
+    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+    : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+  const iconColor = isSkill ? 'text-green-500' : 'text-purple-500'
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const text = `# ${card.title}\n\n${card.content}`
+    await navigator.clipboard.writeText(text)
+    setCopyOk(true)
+    setTimeout(() => setCopyOk(false), 2000)
+  }
+
+  const handleInstall = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (installing || installed) return
+    setInstalling(true)
+    try {
+      await onInstall(card.title, card.content, type)
+      setInstalled(true)
+      // Show path briefly
+      const home = '~/.claude'
+      setInstallPath(
+        type === 'skill'
+          ? `${home}/skills/`
+          : `${home}/commands/`
+      )
+    } catch {
+      // error handled by parent
+    } finally {
+      setInstalling(false)
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={cn(
+        'bg-white dark:bg-daily-light rounded-xl border transition-colors',
+        colorClass
+      )}
+    >
+      <div
+        className="p-4 cursor-pointer"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-start gap-3">
+          <div className={cn('mt-0.5 flex-shrink-0', iconColor)}>
+            {isSkill ? (
+              <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            ) : (
+              <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                {card.title}
+              </h4>
+              <span className={cn('text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 uppercase tracking-wide', badgeClass)}>
+                {isSkill ? 'Skill' : 'Cmd'}
+              </span>
+            </div>
+            {!expanded && card.content && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                {card.content.replace(/[#*`\->\n]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120)}
+              </p>
+            )}
+          </div>
+          <svg
+            className={cn('size-4 text-gray-400 transition-transform flex-shrink-0 mt-0.5', expanded && 'rotate-180')}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+      {expanded && (
+        <div className="border-t border-gray-100 dark:border-gray-700/30">
+          <div className="px-4 pb-3 pt-3 text-sm text-gray-600 dark:text-gray-400 markdown-content">
+            <MarkdownRenderer content={card.content} />
+          </div>
+          {/* Action buttons */}
+          <div className="px-4 pb-3 flex items-center gap-2">
+            <button
+              onClick={handleCopy}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                'border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400',
+                'hover:bg-gray-50 dark:hover:bg-gray-800/50',
+                copyOk && 'border-green-300 dark:border-green-700 text-green-600 dark:text-green-400'
+              )}
+            >
+              {copyOk ? (
+                <>
+                  <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Copied
+                </>
+              ) : (
+                <>
+                  <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  Copy
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleInstall}
+              disabled={installing || installed}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                installed
+                  ? 'border border-green-300 dark:border-green-700 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/10'
+                  : isSkill
+                    ? 'border border-green-200 dark:border-green-800/40 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+                    : 'border border-purple-200 dark:border-purple-800/40 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20',
+                'disabled:opacity-50'
+              )}
+            >
+              {installing ? (
+                <>
+                  <svg className="animate-spin size-3.5" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Installing...
+                </>
+              ) : installed ? (
+                <>
+                  <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Installed
+                </>
+              ) : (
+                <>
+                  <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Install
+                </>
+              )}
+            </button>
+            {installed && installPath && (
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 truncate">
+                {installPath}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
+// Skills & Commands grid section
+function SkillsCommandsSection({
+  skills,
+  commands,
+  onInstall,
+}: {
+  skills: SummaryCard[]
+  commands: SummaryCard[]
+  onInstall: (title: string, content: string, cardType: 'skill' | 'command') => Promise<void>
+}) {
+  if (skills.length === 0 && commands.length === 0) return null
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <svg className="size-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+        </svg>
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Skills & Commands
+        </h3>
+        <span className="text-xs text-gray-400 dark:text-gray-500">({skills.length + commands.length})</span>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {skills.map((card, i) => (
+          <SkillCommandCard key={`skill-${card.title}-${i}`} card={card} type="skill" onInstall={onInstall} />
+        ))}
+        {commands.map((card, i) => (
+          <SkillCommandCard key={`cmd-${card.title}-${i}`} card={card} type="command" onInstall={onInstall} />
+        ))}
+      </div>
+    </div>
+  )
 }
 
 // Session insight card component
@@ -129,6 +398,27 @@ function SessionInsightCard({ session, date }: { session: DateSessionInsight; da
         )}
       </div>
 
+      {session.token_usage && (
+        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/30">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+            <span className="text-sky-500 font-medium">
+              {formatTokenCount(session.token_usage.input_tokens + session.token_usage.output_tokens)} tokens
+            </span>
+            <span className="text-purple-500 font-medium">
+              {formatCost(session.token_usage.total_cost_usd)}
+            </span>
+            {session.token_usage.model_calls.length > 0 && (
+              <span className="text-gray-400 dark:text-gray-500">
+                {session.token_usage.model_calls.map(m => {
+                  const name = m.model.includes('opus') ? 'Opus' : m.model.includes('haiku') ? 'Haiku' : 'Sonnet'
+                  return `${name}(${m.count})`
+                }).join(', ')}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {hasFriction && (
         <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/30">
           <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
@@ -160,7 +450,7 @@ export function DayDetail() {
   const [digestMessage, setDigestMessage] = useState<string | null>(null)
   const [copySuccess, setCopySuccess] = useState(false)
   const [insights, setInsights] = useState<DateInsights | null>(null)
-  const { fetchDailySummary, triggerDigest, fetchDateInsights, loading, error } = useApi()
+  const { fetchDailySummary, triggerDigest, fetchDateInsights, installCard, loading, error } = useApi()
 
   const handleCopyContent = async () => {
     if (!digestContent) return
@@ -187,10 +477,12 @@ export function DayDetail() {
           const content = extractContent(summary.raw_content)
           setDigestContent(content || null)
         } else {
+          const cardsToMd = (cards: SummaryCard[]) =>
+            cards.map(c => `### ${c.title}\n\n${c.content}`).join('\n\n')
           const content = [
             summary.overview && `## Overview\n\n${summary.overview}`,
-            summary.insights && `## Key Insights\n\n${summary.insights}`,
-            summary.tomorrow_focus && `## Tomorrow's Focus\n\n${summary.tomorrow_focus}`
+            summary.insights?.length && `## Key Insights\n\n${cardsToMd(summary.insights)}`,
+            summary.tomorrow_focus?.length && `## Tomorrow's Focus\n\n${cardsToMd(summary.tomorrow_focus)}`
           ].filter(Boolean).join('\n\n')
           setDigestContent(content || null)
         }
@@ -275,33 +567,35 @@ export function DayDetail() {
       {/* Tab bar */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-          <button
-            onClick={() => setActiveTab('summary')}
-            className={cn(
-              'px-4 py-1.5 text-sm font-medium rounded-md transition-colors',
-              activeTab === 'summary'
-                ? 'bg-white dark:bg-daily-light text-orange-500 dark:text-orange-400 shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            )}
-          >
-            Summary
-          </button>
-          <button
-            onClick={() => setActiveTab('insights')}
-            className={cn(
-              'px-4 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5',
-              activeTab === 'insights'
-                ? 'bg-white dark:bg-daily-light text-orange-500 dark:text-orange-400 shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            )}
-          >
-            Insights
-            {hasInsights && insights!.day_summary.sessions_with_friction > 0 && (
-              <span className="text-xs px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
-                {insights!.day_summary.sessions_with_friction}
-              </span>
-            )}
-          </button>
+          {([
+            { key: 'summary' as DayTab, label: 'Summary' },
+            { key: 'focus' as DayTab, label: 'Focus', count: summary?.tomorrow_focus?.length },
+            { key: 'skills' as DayTab, label: 'Skills', count: (summary?.skills?.length ?? 0) + (summary?.commands?.length ?? 0) },
+            { key: 'insights' as DayTab, label: 'Insights', badge: hasInsights && insights!.day_summary.sessions_with_friction > 0 ? insights!.day_summary.sessions_with_friction : undefined },
+          ]).map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                'px-4 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5',
+                activeTab === tab.key
+                  ? 'bg-white dark:bg-daily-light text-orange-500 dark:text-orange-400 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              )}
+            >
+              {tab.label}
+              {tab.count != null && tab.count > 0 && (
+                <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                  {tab.count}
+                </span>
+              )}
+              {tab.badge != null && (
+                <span className="text-xs px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
+                  {tab.badge}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
 
         {/* Action buttons - only show on Summary tab */}
@@ -409,7 +703,56 @@ export function DayDetail() {
               </button>
             </div>
           )}
+
+          {/* Key Insights - stays in summary */}
+          {summary && summary.insights.length > 0 && (
+            <div className="mt-6">
+              <CardSection
+                title="Key Insights"
+                cards={summary.insights}
+                icon={<svg className="size-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>}
+              />
+            </div>
+          )}
         </>
+      )}
+
+      {/* === Focus Tab === */}
+      {activeTab === 'focus' && (
+        <motion.div
+          key="focus-content"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {summary && summary.tomorrow_focus.length > 0 ? (
+            <div className="space-y-3">
+              {summary.tomorrow_focus.map((card, i) => (
+                <CollapsibleCard key={`focus-${card.title}-${i}`} card={card} defaultOpen={true} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-gray-50 dark:bg-daily-light rounded-xl border border-gray-200 dark:border-gray-800">
+              <p className="text-gray-500 dark:text-gray-400">No focus items identified for tomorrow</p>
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* === Skills & Commands Tab === */}
+      {activeTab === 'skills' && (
+        <motion.div
+          key="skills-content"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {summary && (summary.skills.length > 0 || summary.commands.length > 0) ? (
+            <SkillsCommandsSection skills={summary.skills} commands={summary.commands} onInstall={installCard} />
+          ) : (
+            <div className="text-center py-12 bg-gray-50 dark:bg-daily-light rounded-xl border border-gray-200 dark:border-gray-800">
+              <p className="text-gray-500 dark:text-gray-400">No skills or commands identified today</p>
+            </div>
+          )}
+        </motion.div>
       )}
 
       {/* === Insights Tab === */}
@@ -443,24 +786,46 @@ export function DayDetail() {
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">With Friction</div>
                   </div>
 
-                  <div className="text-center">
-                    <div className={cn(
-                      'text-2xl font-bold',
-                      getSatisfactionIndicator(insights!.day_summary.overall_satisfaction).className
-                    )}>
-                      {getSatisfactionIndicator(insights!.day_summary.overall_satisfaction).label}
+                  {insights!.day_summary.total_tokens != null && (
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-sky-500">
+                        {formatTokenCount(insights!.day_summary.total_tokens!)}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Tokens</div>
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Satisfaction</div>
-                  </div>
+                  )}
 
-                  <div className="text-center">
-                    <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 truncate" title={insights!.day_summary.top_goals[0] || 'N/A'}>
-                      {insights!.day_summary.top_goals[0]
-                        ? insights!.day_summary.top_goals[0].replace(/_/g, ' ')
-                        : 'N/A'}
+                  {insights!.day_summary.total_cost != null && (
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-500">
+                        {formatCost(insights!.day_summary.total_cost!)}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Cost</div>
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Top Goal</div>
-                  </div>
+                  )}
+
+                  {insights!.day_summary.total_tokens == null && (
+                    <div className="text-center">
+                      <div className={cn(
+                        'text-2xl font-bold',
+                        getSatisfactionIndicator(insights!.day_summary.overall_satisfaction).className
+                      )}>
+                        {getSatisfactionIndicator(insights!.day_summary.overall_satisfaction).label}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Satisfaction</div>
+                    </div>
+                  )}
+
+                  {insights!.day_summary.total_tokens == null && (
+                    <div className="text-center">
+                      <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 truncate" title={insights!.day_summary.top_goals[0] || 'N/A'}>
+                        {insights!.day_summary.top_goals[0]
+                          ? insights!.day_summary.top_goals[0].replace(/_/g, ' ')
+                          : 'N/A'}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Top Goal</div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Top frictions */}
@@ -505,7 +870,16 @@ export function DayDetail() {
                   Session Details
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {insights!.sessions.map(session => (
+                  {[...insights!.sessions].sort((a, b) => {
+                    const hasInsight = (s: DateSessionInsight) =>
+                      s.outcome != null || s.satisfaction != null || s.friction_types.length > 0 || s.goal_categories.length > 0
+                    const aHas = hasInsight(a) ? 1 : 0
+                    const bHas = hasInsight(b) ? 1 : 0
+                    if (bHas !== aHas) return bHas - aHas
+                    const aTokens = a.token_usage ? a.token_usage.input_tokens + a.token_usage.output_tokens : 0
+                    const bTokens = b.token_usage ? b.token_usage.input_tokens + b.token_usage.output_tokens : 0
+                    return bTokens - aTokens
+                  }).map(session => (
                     <SessionInsightCard
                       key={session.session_id}
                       session={session}

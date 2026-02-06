@@ -3,6 +3,8 @@ use std::collections::HashMap;
 
 use crate::archive::ArchiveManager;
 use crate::config::Config;
+use crate::usage::scanner;
+use crate::usage::types::{SessionUsage, UsageSummary};
 
 use super::facets::SessionFacet;
 use super::trends::TrendData;
@@ -20,6 +22,7 @@ pub struct InsightsData {
     pub session_type_distribution: Vec<CategoryCount>,
     pub session_details: Vec<SessionInsight>,
     pub trends: Option<TrendData>,
+    pub usage_summary: Option<UsageSummary>,
 }
 
 /// Per-session insight combining archive metadata with facet analysis data
@@ -36,6 +39,7 @@ pub struct SessionInsight {
     pub satisfaction: Option<String>,
     pub claude_helpfulness: Option<String>,
     pub session_type: Option<String>,
+    pub token_usage: Option<SessionUsage>,
 }
 
 /// Statistics for a single day
@@ -44,6 +48,8 @@ pub struct DailyStat {
     pub date: String,
     pub session_count: usize,
     pub has_digest: bool,
+    pub total_tokens: Option<u64>,
+    pub total_cost: Option<f64>,
 }
 
 /// A category name with its occurrence count
@@ -63,6 +69,17 @@ impl InsightsData {
         let days_limit = days.unwrap_or(30);
         let dates: Vec<String> = all_dates.into_iter().take(days_limit).collect();
 
+        // Scan all usage data upfront
+        let all_session_usages = scanner::scan_all_sessions(None);
+        let usage_summary = scanner::aggregate_usage(&all_session_usages, None);
+
+        // Build a lookup: date -> DailyUsage for merging into daily_stats
+        let daily_usage_map: HashMap<String, &crate::usage::types::DailyUsage> = usage_summary
+            .daily_usage
+            .iter()
+            .map(|d| (d.date.clone(), d))
+            .collect();
+
         let mut daily_stats = Vec::new();
         let mut total_sessions = 0;
 
@@ -78,10 +95,26 @@ impl InsightsData {
                 })
                 .unwrap_or(false);
 
+            let (total_tokens, total_cost) = if let Some(du) = daily_usage_map.get(date.as_str()) {
+                (
+                    Some(
+                        du.input_tokens
+                            + du.output_tokens
+                            + du.cache_creation_tokens
+                            + du.cache_read_tokens,
+                    ),
+                    Some(du.total_cost_usd),
+                )
+            } else {
+                (None, None)
+            };
+
             daily_stats.push(DailyStat {
                 date: date.clone(),
                 session_count,
                 has_digest,
+                total_tokens,
+                total_cost,
             });
         }
 
@@ -118,6 +151,8 @@ impl InsightsData {
             for session_name in &sessions {
                 if let Ok(content) = manager.read_session(date, session_name) {
                     if let Some(session_id) = extract_session_id_from_frontmatter(&content) {
+                        let token_usage = all_session_usages.get(&session_id).cloned();
+
                         let insight = if let Some(facet) = facet_map.get(&session_id) {
                             // Determine the most common satisfaction level
                             let satisfaction = facet
@@ -138,6 +173,7 @@ impl InsightsData {
                                 satisfaction,
                                 claude_helpfulness: facet.claude_helpfulness.clone(),
                                 session_type: facet.session_type.clone(),
+                                token_usage,
                             }
                         } else {
                             // No facet data available for this session
@@ -153,6 +189,7 @@ impl InsightsData {
                                 satisfaction: None,
                                 claude_helpfulness: None,
                                 session_type: None,
+                                token_usage,
                             }
                         };
                         session_details.push(insight);
@@ -177,6 +214,7 @@ impl InsightsData {
             session_type_distribution,
             session_details,
             trends,
+            usage_summary: Some(usage_summary),
         })
     }
 }
