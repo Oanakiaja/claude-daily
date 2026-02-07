@@ -5,10 +5,12 @@ import { useApi } from '../hooks/useApi'
 import type { DateItem } from '../hooks/useApi'
 import { cn } from '../lib/utils'
 import { format, parseISO, isToday, isYesterday } from 'date-fns'
+import { useLanguage } from '../contexts/LanguageContext'
 
 export function DailyList() {
   const [dates, setDates] = useState<DateItem[]>([])
   const { fetchDates, loading, error } = useApi()
+  const { t } = useLanguage()
 
   useEffect(() => {
     fetchDates()
@@ -18,8 +20,8 @@ export function DailyList() {
 
   const getDateLabel = (dateStr: string) => {
     const date = parseISO(dateStr)
-    if (isToday(date)) return 'Today'
-    if (isYesterday(date)) return 'Yesterday'
+    if (isToday(date)) return t('archive.today')
+    if (isYesterday(date)) return t('archive.yesterday')
     return format(date, 'EEEE')
   }
 
@@ -39,7 +41,7 @@ export function DailyList() {
     return (
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-red-400">
-          Failed to load archives: {error}
+          {t('archive.loadFailed')} {error}
         </div>
       </div>
     )
@@ -47,13 +49,13 @@ export function DailyList() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-balance">Archives</h1>
+      <h1 className="text-3xl font-bold mb-8 text-balance">{t('archive.title')}</h1>
 
       {dates.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No archives yet.</p>
+          <p className="text-gray-500 text-lg">{t('archive.noArchives')}</p>
           <p className="text-gray-600 text-sm mt-2">
-            Start a Claude Code session to create your first archive.
+            {t('archive.noArchivesHint')}
           </p>
         </div>
       ) : (
@@ -84,11 +86,11 @@ export function DailyList() {
                     </div>
                     <div className="flex items-center gap-3 mt-1">
                       <span className="text-sm text-gray-400">
-                        {item.session_count} {item.session_count === 1 ? 'session' : 'sessions'}
+                        {item.session_count} {item.session_count === 1 ? t('archive.session') : t('archive.sessions')}
                       </span>
                       {item.has_digest && (
                         <span className="text-xs text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded">
-                          Digest
+                          {t('archive.digest')}
                         </span>
                       )}
                     </div>

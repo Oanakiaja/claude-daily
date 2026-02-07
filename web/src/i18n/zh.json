@@ -224,5 +224,18 @@
   "insights.satisfactionFrustrated": "沮丧",
 
   "theme.switchToLight": "切换到浅色模式",
-  "theme.switchToDark": "切换到深色模式"
+  "theme.switchToDark": "切换到深色模式",
+
+  "archive.title": "归档",
+  "archive.today": "今天",
+  "archive.yesterday": "昨天",
+  "archive.session": "个会话",
+  "archive.sessions": "个会话",
+  "archive.digest": "摘要",
+  "archive.dailySummary": "每日摘要",
+  "archive.sessionsLabel": "会话",
+  "archive.loadingSessions": "加载会话中...",
+  "archive.noArchives": "暂无归档。",
+  "archive.noArchivesHint": "启动一个 Claude Code 会话以开始归档。",
+  "archive.loadFailed": "加载归档失败："
 }

@@ -114,8 +114,10 @@ export function Layout() {
               {t('nav.settings')}
             </NavLink>
           </nav>
-          <LanguageToggle />
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
