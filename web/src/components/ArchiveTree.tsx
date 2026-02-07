@@ -5,6 +5,7 @@ import { format, parseISO, isToday, isYesterday } from 'date-fns'
 import { useApi } from '../hooks/useApi'
 import type { DateItem, Session } from '../hooks/useApi'
 import { cn } from '../lib/utils'
+import { useLanguage } from '../contexts/LanguageContext'
 
 interface DateNodeState {
   expanded: boolean
@@ -23,6 +24,7 @@ export function ArchiveTree() {
   const { fetchDates, fetchSessions, loading } = useApi()
   const navigate = useNavigate()
   const location = useLocation()
+  const { t } = useLanguage()
 
   // Build flat navigation list (only navigable items: daily summaries and sessions)
   const navItems = useMemo<NavItem[]>(() => {
@@ -184,8 +186,8 @@ export function ArchiveTree() {
 
   const getDateLabel = (dateStr: string) => {
     const date = parseISO(dateStr)
-    if (isToday(date)) return 'Today'
-    if (isYesterday(date)) return 'Yesterday'
+    if (isToday(date)) return t('archive.today')
+    if (isYesterday(date)) return t('archive.yesterday')
     return format(date, 'EEEE')
   }
 
@@ -234,7 +236,7 @@ export function ArchiveTree() {
                   <span className="text-xs text-gray-500">{getDateLabel(dateItem.date)}</span>
                 </div>
                 <div className="text-xs text-gray-500 mt-0.5">
-                  {dateItem.session_count} {dateItem.session_count === 1 ? 'session' : 'sessions'}
+                  {dateItem.session_count} {dateItem.session_count === 1 ? t('archive.session') : t('archive.sessions')}
                 </div>
               </div>
             </button>
@@ -261,7 +263,7 @@ export function ArchiveTree() {
                       )}
                     >
                       <span className="text-base">📝</span>
-                      <span>Daily Summary</span>
+                      <span>{t('archive.dailySummary')}</span>
                     </button>
 
                     {/* Sessions */}
@@ -269,7 +271,7 @@ export function ArchiveTree() {
                       state.sessions.length > 0 && (
                         <div className="pt-1">
                           <div className="px-3 py-1 text-xs text-gray-500 font-medium">
-                            Sessions ({state.sessions.length})
+                            {t('archive.sessionsLabel')} ({state.sessions.length})
                           </div>
                           {state.sessions.map((session) => (
                             <button
@@ -290,7 +292,7 @@ export function ArchiveTree() {
                         </div>
                       )
                     ) : (
-                      <div className="px-3 py-2 text-xs text-gray-500">Loading sessions...</div>
+                      <div className="px-3 py-2 text-xs text-gray-500">{t('archive.loadingSessions')}</div>
                     )}
                   </div>
                 </motion.div>

@@ -224,5 +224,18 @@
   "insights.satisfactionFrustrated": "Frustrated",
 
   "theme.switchToLight": "Switch to light mode",
-  "theme.switchToDark": "Switch to dark mode"
+  "theme.switchToDark": "Switch to dark mode",
+
+  "archive.title": "Archives",
+  "archive.today": "Today",
+  "archive.yesterday": "Yesterday",
+  "archive.session": "session",
+  "archive.sessions": "sessions",
+  "archive.digest": "Digest",
+  "archive.dailySummary": "Daily Summary",
+  "archive.sessionsLabel": "Sessions",
+  "archive.loadingSessions": "Loading sessions...",
+  "archive.noArchives": "No archives yet.",
+  "archive.noArchivesHint": "Start a Claude Code session to create your first archive.",
+  "archive.loadFailed": "Failed to load archives:"
 }
