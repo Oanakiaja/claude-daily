@@ -2,12 +2,15 @@ import { useEffect, useCallback } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { cn } from '../lib/utils'
 import { ThemeToggle } from './ThemeToggle'
+import { LanguageToggle } from './LanguageToggle'
+import { useLanguage } from '../contexts/LanguageContext'
 
 const TABS = ['/', '/insights', '/jobs', '/settings'] as const
 
 export function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { t } = useLanguage()
 
   // Get current tab index based on pathname
   const getCurrentTabIndex = useCallback(() => {
@@ -69,7 +72,7 @@ export function Layout() {
                 )
               }
             >
-              Archives
+              {t('nav.archives')}
             </NavLink>
             <NavLink
               to="/insights"
@@ -82,7 +85,7 @@ export function Layout() {
                 )
               }
             >
-              Insights
+              {t('nav.insights')}
             </NavLink>
             <NavLink
               to="/jobs"
@@ -95,7 +98,7 @@ export function Layout() {
                 )
               }
             >
-              Jobs
+              {t('nav.jobs')}
             </NavLink>
             <NavLink
               to="/settings"
@@ -108,9 +111,10 @@ export function Layout() {
                 )
               }
             >
-              Settings
+              {t('nav.settings')}
             </NavLink>
           </nav>
+          <LanguageToggle />
           <ThemeToggle />
         </div>
       </header>

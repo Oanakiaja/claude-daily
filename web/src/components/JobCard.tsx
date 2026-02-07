@@ -1,5 +1,6 @@
 import { cn } from '../lib/utils'
 import type { Job } from '../hooks/useApi'
+import { useLanguage } from '../contexts/LanguageContext'
 
 interface JobCardProps {
   job: Job
@@ -10,15 +11,16 @@ export function JobCard({ job, onKill }: JobCardProps) {
   const isRunning = job.status_type === 'running'
   const isFailed = job.status_type === 'failed'
   const isAutoSummarize = job.job_type === 'auto_summarize'
+  const { t } = useLanguage()
 
   const getJobTypeLabel = (type: string) => {
     switch (type) {
       case 'session_end':
-        return 'Session End'
+        return t('jobs.sessionEnd')
       case 'auto_summarize':
-        return 'Auto Summarize'
+        return t('jobs.autoSummarize')
       case 'manual':
-        return 'Manual'
+        return t('jobs.manual')
       default:
         return type
     }
@@ -85,7 +87,7 @@ export function JobCard({ job, onKill }: JobCardProps) {
               {job.id}
             </div>
             <div className="flex items-center gap-4">
-              <span>Started: {job.started_at}</span>
+              <span>{t('jobs.started')} {job.started_at}</span>
               <span className="tabular-nums">{job.elapsed}</span>
             </div>
             {isFailed && (
@@ -104,7 +106,7 @@ export function JobCard({ job, onKill }: JobCardProps) {
             )}
             aria-label={`Kill job ${job.task_name}`}
           >
-            Kill
+            {t('jobs.kill')}
           </button>
         )}
       </div>

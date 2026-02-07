@@ -4,6 +4,7 @@ import { useApi } from '../hooks/useApi'
 import type { ConversationMessage, ConversationContentBlock } from '../hooks/useApi'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { cn } from '../lib/utils'
+import { useLanguage } from '../contexts/LanguageContext'
 
 interface ChatViewProps {
   date: string
@@ -19,6 +20,7 @@ export function ChatView({ date, name }: ChatViewProps) {
   const [initialLoaded, setInitialLoaded] = useState(false)
   const { fetchConversation, loading } = useApi()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const { t } = useLanguage()
 
   useEffect(() => {
     setMessages([])
@@ -65,7 +67,7 @@ export function ChatView({ date, name }: ChatViewProps) {
           <svg className="size-12 mx-auto mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-          <p className="text-sm">No transcript available for this session</p>
+          <p className="text-sm">{t('chatView.noTranscript')}</p>
         </div>
       </div>
     )
@@ -74,7 +76,7 @@ export function ChatView({ date, name }: ChatViewProps) {
   if (messages.length === 0 && initialLoaded) {
     return (
       <div className="flex items-center justify-center py-16 text-gray-500 dark:text-gray-400">
-        <p className="text-sm">No conversation messages found</p>
+        <p className="text-sm">{t('chatView.noMessages')}</p>
       </div>
     )
   }
@@ -96,7 +98,7 @@ export function ChatView({ date, name }: ChatViewProps) {
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >
-            {loading ? 'Loading...' : `Load more (${totalEntries - messages.length} remaining)`}
+            {loading ? t('chatView.loading') : t('chatView.loadMore', { count: totalEntries - messages.length })}
           </button>
         </div>
       )}
@@ -106,6 +108,7 @@ export function ChatView({ date, name }: ChatViewProps) {
 
 const MessageBubble = memo(function MessageBubble({ message }: { message: ConversationMessage }) {
   const isUser = message.role === 'user'
+  const { t } = useLanguage()
 
   return (
     <motion.div
@@ -127,7 +130,7 @@ const MessageBubble = memo(function MessageBubble({ message }: { message: Conver
           'text-[11px] font-medium mb-1.5 flex items-center gap-2',
           isUser ? 'text-orange-400' : 'text-gray-400 dark:text-gray-500'
         )}>
-          <span>{isUser ? 'You' : 'Claude'}</span>
+          <span>{isUser ? t('chatView.you') : t('chatView.claude')}</span>
           {message.timestamp && (
             <span className="text-gray-400 dark:text-gray-600 font-normal">
               {formatTimestamp(message.timestamp)}
@@ -201,6 +204,7 @@ function ToolCallBlock({ name, input, toolUseId: _toolUseId }: { name: string; i
 
 function ToolResultBlock({ content }: { content: string }) {
   const [expanded, setExpanded] = useState(false)
+  const { t } = useLanguage()
 
   if (!content) return null
 
@@ -217,7 +221,7 @@ function ToolResultBlock({ content }: { content: string }) {
           'hover:bg-green-500/10 transition-colors'
         )}
       >
-        <span className="text-green-600 dark:text-green-500 font-semibold mr-2">Result</span>
+        <span className="text-green-600 dark:text-green-500 font-semibold mr-2">{t('chatView.result')}</span>
         {!expanded && <span className="opacity-60">{preview}</span>}
       </button>
       {expanded && (

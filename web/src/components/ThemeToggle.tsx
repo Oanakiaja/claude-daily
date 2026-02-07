@@ -1,8 +1,10 @@
 import { useTheme } from '../contexts/ThemeContext'
+import { useLanguage } from '../contexts/LanguageContext'
 import { cn } from '../lib/utils'
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, toggleTheme } = useTheme()
+  const { t } = useLanguage()
 
   return (
     <button
@@ -13,7 +15,7 @@ export function ThemeToggle({ className }: { className?: string }) {
         'hover:bg-gray-100 dark:hover:bg-gray-800',
         className
       )}
-      title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={theme === 'dark' ? t('theme.switchToLight') : t('theme.switchToDark')}
     >
       {theme === 'dark' ? (
         <svg
