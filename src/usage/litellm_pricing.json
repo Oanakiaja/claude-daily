@@ -1,0 +1,1129 @@
+{
+  "anthropic.claude-3-5-haiku-20241022-v1:0": {
+    "input_cost_per_token": 8e-07,
+    "output_cost_per_token": 4e-06,
+    "cache_creation_input_token_cost": 1e-06,
+    "cache_read_input_token_cost": 8e-08
+  },
+  "anthropic.claude-haiku-4-5-20251001-v1:0": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06,
+    "cache_creation_input_token_cost": 1.25e-06,
+    "cache_read_input_token_cost": 1e-07
+  },
+  "anthropic.claude-haiku-4-5@20251001": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06,
+    "cache_creation_input_token_cost": 1.25e-06,
+    "cache_read_input_token_cost": 1e-07
+  },
+  "anthropic.claude-3-5-sonnet-20240620-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 3e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "anthropic.claude-3-5-sonnet-20241022-v2:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 3e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "anthropic.claude-3-7-sonnet-20240620-v1:0": {
+    "input_cost_per_token": 3.6e-06,
+    "output_cost_per_token": 1.8e-05,
+    "cache_creation_input_token_cost": 4.5e-06,
+    "cache_read_input_token_cost": 3.6e-07
+  },
+  "anthropic.claude-3-7-sonnet-20250219-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "anthropic.claude-3-haiku-20240307-v1:0": {
+    "input_cost_per_token": 2.5e-07,
+    "output_cost_per_token": 1.25e-06
+  },
+  "anthropic.claude-3-opus-20240229-v1:0": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05
+  },
+  "anthropic.claude-3-sonnet-20240229-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "anthropic.claude-instant-v1": {
+    "input_cost_per_token": 8e-07,
+    "output_cost_per_token": 2.4e-06
+  },
+  "anthropic.claude-opus-4-1-20250805-v1:0": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "anthropic.claude-opus-4-20250514-v1:0": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "anthropic.claude-opus-4-5-20251101-v1:0": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07
+  },
+  "anthropic.claude-opus-4-6-v1": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07,
+    "input_cost_per_token_above_200k_tokens": 1e-05,
+    "output_cost_per_token_above_200k_tokens": 3.75e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 1.25e-05,
+    "cache_read_input_token_cost_above_200k_tokens": 1e-06
+  },
+  "global.anthropic.claude-opus-4-6-v1": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07,
+    "input_cost_per_token_above_200k_tokens": 1e-05,
+    "output_cost_per_token_above_200k_tokens": 3.75e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 1.25e-05,
+    "cache_read_input_token_cost_above_200k_tokens": 1e-06
+  },
+  "us.anthropic.claude-opus-4-6-v1:0": {
+    "input_cost_per_token": 5.5e-06,
+    "output_cost_per_token": 2.75e-05,
+    "cache_creation_input_token_cost": 6.875e-06,
+    "cache_read_input_token_cost": 5.5e-07,
+    "input_cost_per_token_above_200k_tokens": 1.1e-05,
+    "output_cost_per_token_above_200k_tokens": 4.125e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 1.375e-05,
+    "cache_read_input_token_cost_above_200k_tokens": 1.1e-06
+  },
+  "us.anthropic.claude-opus-4-6-v1": {
+    "input_cost_per_token": 5.5e-06,
+    "output_cost_per_token": 2.75e-05,
+    "cache_creation_input_token_cost": 6.875e-06,
+    "cache_read_input_token_cost": 5.5e-07,
+    "input_cost_per_token_above_200k_tokens": 1.1e-05,
+    "output_cost_per_token_above_200k_tokens": 4.125e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 1.375e-05,
+    "cache_read_input_token_cost_above_200k_tokens": 1.1e-06
+  },
+  "eu.anthropic.claude-opus-4-6-v1": {
+    "input_cost_per_token": 5.5e-06,
+    "output_cost_per_token": 2.75e-05,
+    "cache_creation_input_token_cost": 6.875e-06,
+    "cache_read_input_token_cost": 5.5e-07,
+    "input_cost_per_token_above_200k_tokens": 1.1e-05,
+    "output_cost_per_token_above_200k_tokens": 4.125e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 1.375e-05,
+    "cache_read_input_token_cost_above_200k_tokens": 1.1e-06
+  },
+  "apac.anthropic.claude-opus-4-6-v1": {
+    "input_cost_per_token": 5.5e-06,
+    "output_cost_per_token": 2.75e-05,
+    "cache_creation_input_token_cost": 6.875e-06,
+    "cache_read_input_token_cost": 5.5e-07,
+    "input_cost_per_token_above_200k_tokens": 1.1e-05,
+    "output_cost_per_token_above_200k_tokens": 4.125e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 1.375e-05,
+    "cache_read_input_token_cost_above_200k_tokens": 1.1e-06
+  },
+  "au.anthropic.claude-opus-4-6-v1:0": {
+    "input_cost_per_token": 5.5e-06,
+    "output_cost_per_token": 2.75e-05,
+    "cache_creation_input_token_cost": 6.875e-06,
+    "cache_read_input_token_cost": 5.5e-07,
+    "input_cost_per_token_above_200k_tokens": 1.1e-05,
+    "output_cost_per_token_above_200k_tokens": 4.125e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 1.375e-05,
+    "cache_read_input_token_cost_above_200k_tokens": 1.1e-06
+  },
+  "anthropic.claude-sonnet-4-20250514-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "anthropic.claude-sonnet-4-5-20250929-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "anthropic.claude-v1": {
+    "input_cost_per_token": 8e-06,
+    "output_cost_per_token": 2.4e-05
+  },
+  "anthropic.claude-v2:1": {
+    "input_cost_per_token": 8e-06,
+    "output_cost_per_token": 2.4e-05
+  },
+  "apac.anthropic.claude-3-5-sonnet-20240620-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "apac.anthropic.claude-3-5-sonnet-20241022-v2:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "apac.anthropic.claude-3-haiku-20240307-v1:0": {
+    "input_cost_per_token": 2.5e-07,
+    "output_cost_per_token": 1.25e-06
+  },
+  "apac.anthropic.claude-haiku-4-5-20251001-v1:0": {
+    "input_cost_per_token": 1.1e-06,
+    "output_cost_per_token": 5.5e-06,
+    "cache_creation_input_token_cost": 1.375e-06,
+    "cache_read_input_token_cost": 1.1e-07
+  },
+  "apac.anthropic.claude-3-sonnet-20240229-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "apac.anthropic.claude-sonnet-4-20250514-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "au.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+    "input_cost_per_token": 3.3e-06,
+    "output_cost_per_token": 1.65e-05,
+    "cache_creation_input_token_cost": 4.125e-06,
+    "cache_read_input_token_cost": 3.3e-07,
+    "input_cost_per_token_above_200k_tokens": 6.6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.475e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 8.25e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6.6e-07
+  },
+  "azure_ai/claude-haiku-4-5": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06,
+    "cache_creation_input_token_cost": 1.25e-06,
+    "cache_read_input_token_cost": 1e-07
+  },
+  "azure_ai/claude-opus-4-5": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07
+  },
+  "azure_ai/claude-opus-4-6": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07
+  },
+  "azure_ai/claude-opus-4-1": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "azure_ai/claude-sonnet-4-5": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "bedrock/ap-northeast-1/anthropic.claude-instant-v1": {
+    "input_cost_per_token": 2.23e-06,
+    "output_cost_per_token": 7.55e-06
+  },
+  "bedrock/ap-northeast-1/anthropic.claude-v1": {
+    "input_cost_per_token": 8e-06,
+    "output_cost_per_token": 2.4e-05
+  },
+  "bedrock/ap-northeast-1/anthropic.claude-v2:1": {
+    "input_cost_per_token": 8e-06,
+    "output_cost_per_token": 2.4e-05
+  },
+  "bedrock/eu-central-1/anthropic.claude-instant-v1": {
+    "input_cost_per_token": 2.48e-06,
+    "output_cost_per_token": 8.38e-06
+  },
+  "bedrock/eu-central-1/anthropic.claude-v1": {
+    "input_cost_per_token": 8e-06,
+    "output_cost_per_token": 2.4e-05
+  },
+  "bedrock/eu-central-1/anthropic.claude-v2:1": {
+    "input_cost_per_token": 8e-06,
+    "output_cost_per_token": 2.4e-05
+  },
+  "bedrock/invoke/anthropic.claude-3-5-sonnet-20240620-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "bedrock/us-east-1/anthropic.claude-instant-v1": {
+    "input_cost_per_token": 8e-07,
+    "output_cost_per_token": 2.4e-06
+  },
+  "bedrock/us-east-1/anthropic.claude-v1": {
+    "input_cost_per_token": 8e-06,
+    "output_cost_per_token": 2.4e-05
+  },
+  "bedrock/us-east-1/anthropic.claude-v2:1": {
+    "input_cost_per_token": 8e-06,
+    "output_cost_per_token": 2.4e-05
+  },
+  "bedrock/us-gov-east-1/anthropic.claude-3-5-sonnet-20240620-v1:0": {
+    "input_cost_per_token": 3.6e-06,
+    "output_cost_per_token": 1.8e-05
+  },
+  "bedrock/us-gov-east-1/anthropic.claude-3-haiku-20240307-v1:0": {
+    "input_cost_per_token": 3e-07,
+    "output_cost_per_token": 1.5e-06
+  },
+  "bedrock/us-gov-east-1/claude-sonnet-4-5-20250929-v1:0": {
+    "input_cost_per_token": 3.3e-06,
+    "output_cost_per_token": 1.65e-05
+  },
+  "bedrock/us-gov-west-1/anthropic.claude-3-7-sonnet-20250219-v1:0": {
+    "input_cost_per_token": 3.6e-06,
+    "output_cost_per_token": 1.8e-05,
+    "cache_creation_input_token_cost": 4.5e-06,
+    "cache_read_input_token_cost": 3.6e-07
+  },
+  "bedrock/us-gov-west-1/anthropic.claude-3-5-sonnet-20240620-v1:0": {
+    "input_cost_per_token": 3.6e-06,
+    "output_cost_per_token": 1.8e-05
+  },
+  "bedrock/us-gov-west-1/anthropic.claude-3-haiku-20240307-v1:0": {
+    "input_cost_per_token": 3e-07,
+    "output_cost_per_token": 1.5e-06
+  },
+  "bedrock/us-gov-west-1/claude-sonnet-4-5-20250929-v1:0": {
+    "input_cost_per_token": 3.3e-06,
+    "output_cost_per_token": 1.65e-05
+  },
+  "bedrock/us-west-2/anthropic.claude-instant-v1": {
+    "input_cost_per_token": 8e-07,
+    "output_cost_per_token": 2.4e-06
+  },
+  "bedrock/us-west-2/anthropic.claude-v1": {
+    "input_cost_per_token": 8e-06,
+    "output_cost_per_token": 2.4e-05
+  },
+  "bedrock/us-west-2/anthropic.claude-v2:1": {
+    "input_cost_per_token": 8e-06,
+    "output_cost_per_token": 2.4e-05
+  },
+  "bedrock/us.anthropic.claude-3-5-haiku-20241022-v1:0": {
+    "input_cost_per_token": 8e-07,
+    "output_cost_per_token": 4e-06,
+    "cache_creation_input_token_cost": 1e-06,
+    "cache_read_input_token_cost": 8e-08
+  },
+  "claude-3-5-haiku-20241022": {
+    "input_cost_per_token": 8e-07,
+    "output_cost_per_token": 4e-06,
+    "cache_creation_input_token_cost": 1e-06,
+    "cache_read_input_token_cost": 8e-08
+  },
+  "claude-3-5-haiku-latest": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06,
+    "cache_creation_input_token_cost": 1.25e-06,
+    "cache_read_input_token_cost": 1e-07
+  },
+  "claude-haiku-4-5-20251001": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06,
+    "cache_creation_input_token_cost": 1.25e-06,
+    "cache_read_input_token_cost": 1e-07
+  },
+  "claude-haiku-4-5": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06,
+    "cache_creation_input_token_cost": 1.25e-06,
+    "cache_read_input_token_cost": 1e-07
+  },
+  "claude-3-5-sonnet-20240620": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "claude-3-5-sonnet-20241022": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "claude-3-5-sonnet-latest": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "claude-3-7-sonnet-20250219": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "claude-3-7-sonnet-latest": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "claude-3-haiku-20240307": {
+    "input_cost_per_token": 2.5e-07,
+    "output_cost_per_token": 1.25e-06,
+    "cache_creation_input_token_cost": 3e-07,
+    "cache_read_input_token_cost": 3e-08
+  },
+  "claude-3-opus-20240229": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "claude-3-opus-latest": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "claude-4-opus-20250514": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "claude-4-sonnet-20250514": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "claude-sonnet-4-5": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "claude-sonnet-4-5-20250929": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "claude-sonnet-4-5-20250929-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "claude-opus-4-1": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "claude-opus-4-1-20250805": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "claude-opus-4-20250514": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "claude-opus-4-5-20251101": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07
+  },
+  "claude-opus-4-5": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07
+  },
+  "claude-opus-4-6": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07,
+    "input_cost_per_token_above_200k_tokens": 1e-05,
+    "output_cost_per_token_above_200k_tokens": 3.75e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 1.25e-05,
+    "cache_read_input_token_cost_above_200k_tokens": 1e-06
+  },
+  "us/claude-opus-4-6": {
+    "input_cost_per_token": 5.5e-06,
+    "output_cost_per_token": 2.75e-05,
+    "cache_creation_input_token_cost": 6.875e-06,
+    "cache_read_input_token_cost": 5.5e-07,
+    "input_cost_per_token_above_200k_tokens": 1.1e-05,
+    "output_cost_per_token_above_200k_tokens": 4.125e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 1.375e-05,
+    "cache_read_input_token_cost_above_200k_tokens": 1.1e-06
+  },
+  "claude-opus-4-6-20260205": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07,
+    "input_cost_per_token_above_200k_tokens": 1e-05,
+    "output_cost_per_token_above_200k_tokens": 3.75e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 1.25e-05,
+    "cache_read_input_token_cost_above_200k_tokens": 1e-06
+  },
+  "us/claude-opus-4-6-20260205": {
+    "input_cost_per_token": 5.5e-06,
+    "output_cost_per_token": 2.75e-05,
+    "cache_creation_input_token_cost": 6.875e-06,
+    "cache_read_input_token_cost": 5.5e-07,
+    "input_cost_per_token_above_200k_tokens": 1.1e-05,
+    "output_cost_per_token_above_200k_tokens": 4.125e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 1.375e-05,
+    "cache_read_input_token_cost_above_200k_tokens": 1.1e-06
+  },
+  "claude-sonnet-4-20250514": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "databricks/databricks-claude-3-7-sonnet": {
+    "input_cost_per_token": 2.9999900000000002e-06,
+    "output_cost_per_token": 1.5000020000000002e-05
+  },
+  "databricks/databricks-claude-haiku-4-5": {
+    "input_cost_per_token": 1.00002e-06,
+    "output_cost_per_token": 5.00003e-06
+  },
+  "databricks/databricks-claude-opus-4": {
+    "input_cost_per_token": 1.5000020000000002e-05,
+    "output_cost_per_token": 7.500003000000001e-05
+  },
+  "databricks/databricks-claude-opus-4-1": {
+    "input_cost_per_token": 1.5000020000000002e-05,
+    "output_cost_per_token": 7.500003000000001e-05
+  },
+  "databricks/databricks-claude-opus-4-5": {
+    "input_cost_per_token": 5.00003e-06,
+    "output_cost_per_token": 2.5000010000000002e-05
+  },
+  "databricks/databricks-claude-sonnet-4": {
+    "input_cost_per_token": 2.9999900000000002e-06,
+    "output_cost_per_token": 1.5000020000000002e-05
+  },
+  "databricks/databricks-claude-sonnet-4-1": {
+    "input_cost_per_token": 2.9999900000000002e-06,
+    "output_cost_per_token": 1.5000020000000002e-05
+  },
+  "databricks/databricks-claude-sonnet-4-5": {
+    "input_cost_per_token": 2.9999900000000002e-06,
+    "output_cost_per_token": 1.5000020000000002e-05
+  },
+  "deepinfra/anthropic/claude-3-7-sonnet-latest": {
+    "input_cost_per_token": 3.3e-06,
+    "output_cost_per_token": 1.65e-05,
+    "cache_read_input_token_cost": 3.3e-07
+  },
+  "deepinfra/anthropic/claude-4-opus": {
+    "input_cost_per_token": 1.65e-05,
+    "output_cost_per_token": 8.25e-05
+  },
+  "deepinfra/anthropic/claude-4-sonnet": {
+    "input_cost_per_token": 3.3e-06,
+    "output_cost_per_token": 1.65e-05
+  },
+  "eu.anthropic.claude-3-5-haiku-20241022-v1:0": {
+    "input_cost_per_token": 2.5e-07,
+    "output_cost_per_token": 1.25e-06
+  },
+  "eu.anthropic.claude-haiku-4-5-20251001-v1:0": {
+    "input_cost_per_token": 1.1e-06,
+    "output_cost_per_token": 5.5e-06,
+    "cache_creation_input_token_cost": 1.375e-06,
+    "cache_read_input_token_cost": 1.1e-07
+  },
+  "eu.anthropic.claude-3-5-sonnet-20240620-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "eu.anthropic.claude-3-5-sonnet-20241022-v2:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "eu.anthropic.claude-3-7-sonnet-20250219-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "eu.anthropic.claude-3-haiku-20240307-v1:0": {
+    "input_cost_per_token": 2.5e-07,
+    "output_cost_per_token": 1.25e-06
+  },
+  "eu.anthropic.claude-3-opus-20240229-v1:0": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05
+  },
+  "eu.anthropic.claude-3-sonnet-20240229-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "eu.anthropic.claude-opus-4-1-20250805-v1:0": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "eu.anthropic.claude-opus-4-20250514-v1:0": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "eu.anthropic.claude-sonnet-4-20250514-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "eu.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+    "input_cost_per_token": 3.3e-06,
+    "output_cost_per_token": 1.65e-05,
+    "cache_creation_input_token_cost": 4.125e-06,
+    "cache_read_input_token_cost": 3.3e-07,
+    "input_cost_per_token_above_200k_tokens": 6.6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.475e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 8.25e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6.6e-07
+  },
+  "gmi/anthropic/claude-opus-4.5": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05
+  },
+  "gmi/anthropic/claude-sonnet-4.5": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "gmi/anthropic/claude-sonnet-4": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "gmi/anthropic/claude-opus-4": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05
+  },
+  "global.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "global.anthropic.claude-sonnet-4-20250514-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "global.anthropic.claude-haiku-4-5-20251001-v1:0": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06,
+    "cache_creation_input_token_cost": 1.25e-06,
+    "cache_read_input_token_cost": 1e-07
+  },
+  "gradient_ai/anthropic-claude-3-opus": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05
+  },
+  "gradient_ai/anthropic-claude-3.5-haiku": {
+    "input_cost_per_token": 8e-07,
+    "output_cost_per_token": 4e-06
+  },
+  "gradient_ai/anthropic-claude-3.5-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "gradient_ai/anthropic-claude-3.7-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "jp.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+    "input_cost_per_token": 3.3e-06,
+    "output_cost_per_token": 1.65e-05,
+    "cache_creation_input_token_cost": 4.125e-06,
+    "cache_read_input_token_cost": 3.3e-07,
+    "input_cost_per_token_above_200k_tokens": 6.6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.475e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 8.25e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6.6e-07
+  },
+  "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+    "input_cost_per_token": 1.1e-06,
+    "output_cost_per_token": 5.5e-06,
+    "cache_creation_input_token_cost": 1.375e-06,
+    "cache_read_input_token_cost": 1.1e-07
+  },
+  "openrouter/anthropic/claude-2": {
+    "input_cost_per_token": 1.102e-05,
+    "output_cost_per_token": 3.268e-05
+  },
+  "openrouter/anthropic/claude-3-5-haiku": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06
+  },
+  "openrouter/anthropic/claude-3-5-haiku-20241022": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06
+  },
+  "openrouter/anthropic/claude-3-haiku": {
+    "input_cost_per_token": 2.5e-07,
+    "output_cost_per_token": 1.25e-06
+  },
+  "openrouter/anthropic/claude-3-haiku-20240307": {
+    "input_cost_per_token": 2.5e-07,
+    "output_cost_per_token": 1.25e-06
+  },
+  "openrouter/anthropic/claude-3-opus": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05
+  },
+  "openrouter/anthropic/claude-3-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "openrouter/anthropic/claude-3.5-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "openrouter/anthropic/claude-3.5-sonnet:beta": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "openrouter/anthropic/claude-3.7-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "openrouter/anthropic/claude-3.7-sonnet:beta": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "openrouter/anthropic/claude-instant-v1": {
+    "input_cost_per_token": 1.63e-06,
+    "output_cost_per_token": 5.51e-06
+  },
+  "openrouter/anthropic/claude-opus-4": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "openrouter/anthropic/claude-opus-4.1": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "openrouter/anthropic/claude-sonnet-4": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "openrouter/anthropic/claude-opus-4.5": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07
+  },
+  "openrouter/anthropic/claude-sonnet-4.5": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "openrouter/anthropic/claude-haiku-4.5": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06,
+    "cache_creation_input_token_cost": 1.25e-06,
+    "cache_read_input_token_cost": 1e-07
+  },
+  "replicate/anthropic/claude-4.5-haiku": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06
+  },
+  "replicate/anthropic/claude-4-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "replicate/anthropic/claude-3.7-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "replicate/anthropic/claude-3.5-haiku": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06
+  },
+  "replicate/anthropic/claude-3.5-sonnet": {
+    "input_cost_per_token": 3.75e-06,
+    "output_cost_per_token": 1.875e-05
+  },
+  "replicate/anthropic/claude-4.5-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "us.anthropic.claude-3-5-haiku-20241022-v1:0": {
+    "input_cost_per_token": 8e-07,
+    "output_cost_per_token": 4e-06,
+    "cache_creation_input_token_cost": 1e-06,
+    "cache_read_input_token_cost": 8e-08
+  },
+  "us.anthropic.claude-haiku-4-5-20251001-v1:0": {
+    "input_cost_per_token": 1.1e-06,
+    "output_cost_per_token": 5.5e-06,
+    "cache_creation_input_token_cost": 1.375e-06,
+    "cache_read_input_token_cost": 1.1e-07
+  },
+  "us.anthropic.claude-3-5-sonnet-20240620-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "us.anthropic.claude-3-5-sonnet-20241022-v2:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "us.anthropic.claude-3-7-sonnet-20250219-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "us.anthropic.claude-3-haiku-20240307-v1:0": {
+    "input_cost_per_token": 2.5e-07,
+    "output_cost_per_token": 1.25e-06
+  },
+  "us.anthropic.claude-3-opus-20240229-v1:0": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05
+  },
+  "us.anthropic.claude-3-sonnet-20240229-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "us.anthropic.claude-opus-4-1-20250805-v1:0": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "us.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+    "input_cost_per_token": 3.3e-06,
+    "output_cost_per_token": 1.65e-05,
+    "cache_creation_input_token_cost": 4.125e-06,
+    "cache_read_input_token_cost": 3.3e-07,
+    "input_cost_per_token_above_200k_tokens": 6.6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.475e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 8.25e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6.6e-07
+  },
+  "au.anthropic.claude-haiku-4-5-20251001-v1:0": {
+    "input_cost_per_token": 1.1e-06,
+    "output_cost_per_token": 5.5e-06,
+    "cache_creation_input_token_cost": 1.375e-06,
+    "cache_read_input_token_cost": 1.1e-07
+  },
+  "us.anthropic.claude-opus-4-20250514-v1:0": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "us.anthropic.claude-opus-4-5-20251101-v1:0": {
+    "input_cost_per_token": 5.5e-06,
+    "output_cost_per_token": 2.75e-05,
+    "cache_creation_input_token_cost": 6.875e-06,
+    "cache_read_input_token_cost": 5.5e-07
+  },
+  "global.anthropic.claude-opus-4-5-20251101-v1:0": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07
+  },
+  "eu.anthropic.claude-opus-4-5-20251101-v1:0": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07
+  },
+  "us.anthropic.claude-sonnet-4-20250514-v1:0": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "vercel_ai_gateway/anthropic/claude-3-haiku": {
+    "input_cost_per_token": 2.5e-07,
+    "output_cost_per_token": 1.25e-06,
+    "cache_creation_input_token_cost": 3e-07,
+    "cache_read_input_token_cost": 3e-08
+  },
+  "vercel_ai_gateway/anthropic/claude-3-opus": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "vercel_ai_gateway/anthropic/claude-3.5-haiku": {
+    "input_cost_per_token": 8e-07,
+    "output_cost_per_token": 4e-06,
+    "cache_creation_input_token_cost": 1e-06,
+    "cache_read_input_token_cost": 8e-08
+  },
+  "vercel_ai_gateway/anthropic/claude-3.5-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "vercel_ai_gateway/anthropic/claude-3.7-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "vercel_ai_gateway/anthropic/claude-4-opus": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "vercel_ai_gateway/anthropic/claude-4-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "vertex_ai/claude-3-5-haiku": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06
+  },
+  "vertex_ai/claude-3-5-haiku@20241022": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06
+  },
+  "vertex_ai/claude-haiku-4-5@20251001": {
+    "input_cost_per_token": 1e-06,
+    "output_cost_per_token": 5e-06,
+    "cache_creation_input_token_cost": 1.25e-06,
+    "cache_read_input_token_cost": 1e-07
+  },
+  "vertex_ai/claude-3-5-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "vertex_ai/claude-3-5-sonnet-v2": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "vertex_ai/claude-3-5-sonnet-v2@20241022": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "vertex_ai/claude-3-5-sonnet@20240620": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "vertex_ai/claude-3-7-sonnet@20250219": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07
+  },
+  "vertex_ai/claude-3-haiku": {
+    "input_cost_per_token": 2.5e-07,
+    "output_cost_per_token": 1.25e-06
+  },
+  "vertex_ai/claude-3-haiku@20240307": {
+    "input_cost_per_token": 2.5e-07,
+    "output_cost_per_token": 1.25e-06
+  },
+  "vertex_ai/claude-3-opus": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05
+  },
+  "vertex_ai/claude-3-opus@20240229": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05
+  },
+  "vertex_ai/claude-3-sonnet": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "vertex_ai/claude-3-sonnet@20240229": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05
+  },
+  "vertex_ai/claude-opus-4": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "vertex_ai/claude-opus-4-1": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "vertex_ai/claude-opus-4-1@20250805": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "vertex_ai/claude-opus-4-5": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07
+  },
+  "vertex_ai/claude-opus-4-5@20251101": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07
+  },
+  "vertex_ai/claude-opus-4-6": {
+    "input_cost_per_token": 5e-06,
+    "output_cost_per_token": 2.5e-05,
+    "cache_creation_input_token_cost": 6.25e-06,
+    "cache_read_input_token_cost": 5e-07,
+    "input_cost_per_token_above_200k_tokens": 1e-05,
+    "output_cost_per_token_above_200k_tokens": 3.75e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 1.25e-05,
+    "cache_read_input_token_cost_above_200k_tokens": 1e-06
+  },
+  "vertex_ai/claude-sonnet-4-5": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "vertex_ai/claude-sonnet-4-5@20250929": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "vertex_ai/claude-opus-4@20250514": {
+    "input_cost_per_token": 1.5e-05,
+    "output_cost_per_token": 7.5e-05,
+    "cache_creation_input_token_cost": 1.875e-05,
+    "cache_read_input_token_cost": 1.5e-06
+  },
+  "vertex_ai/claude-sonnet-4": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  },
+  "vertex_ai/claude-sonnet-4@20250514": {
+    "input_cost_per_token": 3e-06,
+    "output_cost_per_token": 1.5e-05,
+    "cache_creation_input_token_cost": 3.75e-06,
+    "cache_read_input_token_cost": 3e-07,
+    "input_cost_per_token_above_200k_tokens": 6e-06,
+    "output_cost_per_token_above_200k_tokens": 2.25e-05,
+    "cache_creation_input_token_cost_above_200k_tokens": 7.5e-06,
+    "cache_read_input_token_cost_above_200k_tokens": 6e-07
+  }
+}

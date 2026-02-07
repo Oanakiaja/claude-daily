@@ -12,12 +12,14 @@ use crate::insights::collector::InsightsData;
 use crate::insights::daily::DateInsights;
 use crate::jobs::JobManager;
 use crate::summarizer::Prompts;
+use crate::usage::pricing::PricingData;
 
 use super::dto::*;
 
 /// Shared application state
 pub struct AppState {
     pub config: RwLock<Config>,
+    pub pricing: PricingData,
 }
 
 /// List all available dates
@@ -525,7 +527,7 @@ pub async fn get_insights(
         .and_then(|d| d.parse().ok())
         .unwrap_or(30);
 
-    match InsightsData::collect(&config, Some(days)) {
+    match InsightsData::collect(&config, Some(days), &state.pricing) {
         Ok(data) => {
             let dto = InsightsDto {
                 total_days: data.total_days,
@@ -668,7 +670,7 @@ pub async fn get_date_insights(
 ) -> impl IntoResponse {
     let config = state.config.read().unwrap().clone();
 
-    match DateInsights::collect(&date, &config) {
+    match DateInsights::collect(&date, &config, &state.pricing) {
         Ok(data) => {
             let dto = DateInsightsDto {
                 sessions: data

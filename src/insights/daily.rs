@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 use crate::archive::ArchiveManager;
 use crate::config::Config;
+use crate::usage::pricing::PricingData;
 use crate::usage::scanner;
 use crate::usage::types::SessionUsage;
 
@@ -67,7 +68,7 @@ pub struct DateInsights {
 
 impl DateInsights {
     /// Collect insights for a specific date by matching session archives with facet data
-    pub fn collect(date: &str, config: &Config) -> anyhow::Result<Self> {
+    pub fn collect(date: &str, config: &Config, pricing: &PricingData) -> anyhow::Result<Self> {
         let manager = ArchiveManager::new(config.clone());
         let session_names = manager.list_sessions(date).unwrap_or_default();
 
@@ -87,7 +88,7 @@ impl DateInsights {
 
         // Scan usage for only the sessions belonging to this date
         let usage_map = if !date_session_ids.is_empty() {
-            scanner::scan_all_sessions(Some(&date_session_ids))
+            scanner::scan_all_sessions(Some(&date_session_ids), pricing)
         } else {
             HashMap::new()
         };

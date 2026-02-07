@@ -45,6 +45,9 @@ dialoguer = { version = "0.11", features = ["fuzzy-select"] }
 # Path handling
 shellexpand = "3.1"
 
+# HTTP client
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+
 # Web server
 axum = "0.7"
 tower = "0.5"

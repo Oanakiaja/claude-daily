@@ -1,15 +1,18 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 
-use super::pricing::calculate_cost;
+use super::pricing::PricingData;
 use super::types::*;
 
 /// Scan all JSONL session files under `~/.claude/projects/`.
 ///
 /// If `session_ids` is provided, only scan files whose filename stem matches.
 /// Returns a map from session_id to SessionUsage.
-pub fn scan_all_sessions(session_ids: Option<&[String]>) -> HashMap<String, SessionUsage> {
+pub fn scan_all_sessions(
+    session_ids: Option<&[String]>,
+    pricing: &PricingData,
+) -> HashMap<String, SessionUsage> {
     let projects_dir = match dirs::home_dir() {
         Some(home) => home.join(".claude").join("projects"),
         None => return HashMap::new(),
@@ -21,6 +24,8 @@ pub fn scan_all_sessions(session_ids: Option<&[String]>) -> HashMap<String, Sess
 
     let jsonl_files = collect_jsonl_files(&projects_dir);
     let mut result: HashMap<String, SessionUsage> = HashMap::new();
+    // Global dedup set: messageId:requestId across ALL files (matches ccusage behavior)
+    let mut global_seen: HashSet<String> = HashSet::new();
 
     for path in jsonl_files {
         let session_id = match path.file_stem().and_then(|s| s.to_str()) {
@@ -35,7 +40,7 @@ pub fn scan_all_sessions(session_ids: Option<&[String]>) -> HashMap<String, Sess
             }
         }
 
-        if let Some(usage) = parse_session_file(&path, &session_id) {
+        if let Some(usage) = parse_session_file(&path, &session_id, pricing, &mut global_seen) {
             result.insert(session_id, usage);
         }
     }
@@ -177,7 +182,12 @@ fn collect_jsonl_files(dir: &PathBuf) -> Vec<PathBuf> {
 }
 
 /// Parse a single JSONL session file and extract usage data
-fn parse_session_file(path: &PathBuf, session_id: &str) -> Option<SessionUsage> {
+fn parse_session_file(
+    path: &PathBuf,
+    session_id: &str,
+    pricing: &PricingData,
+    global_seen: &mut HashSet<String>,
+) -> Option<SessionUsage> {
     let file = std::fs::File::open(path).ok()?;
     let reader = BufReader::new(file);
 
@@ -217,6 +227,20 @@ fn parse_session_file(path: &PathBuf, session_id: &str) -> Option<SessionUsage> 
             None => continue,
         };
 
+        // Deduplicate: skip if we've already seen this messageId:requestId
+        let msg_id = message.get("id").and_then(|v| v.as_str()).unwrap_or("");
+        let req_id = message
+            .get("requestId")
+            .and_then(|v| v.as_str())
+            .or_else(|| entry.get("requestId").and_then(|v| v.as_str()))
+            .unwrap_or("");
+        if !msg_id.is_empty() || !req_id.is_empty() {
+            let dedup_key = format!("{}:{}", msg_id, req_id);
+            if !global_seen.insert(dedup_key) {
+                continue; // Already seen, skip duplicate
+            }
+        }
+
         // Extract model
         if let Some(model) = message.get("model").and_then(|v| v.as_str()) {
             *usage.model_calls.entry(model.to_string()).or_insert(0) += 1;
@@ -253,7 +277,7 @@ fn parse_session_file(path: &PathBuf, session_id: &str) -> Option<SessionUsage> 
                 .and_then(|v| v.as_str())
                 .unwrap_or("claude-sonnet");
             usage.total_cost_usd +=
-                calculate_cost(msg_model, input, output, cache_creation, cache_read);
+                pricing.calculate_cost(msg_model, input, output, cache_creation, cache_read);
         }
 
         // Extract first timestamp

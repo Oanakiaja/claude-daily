@@ -3,6 +3,7 @@ use colored::Colorize;
 
 use crate::config::load_config;
 use crate::insights::collector::InsightsData;
+use crate::usage::pricing::PricingData;
 
 /// Run the insights command, displaying aggregated archive and facet data
 pub async fn run(days: usize) -> Result<()> {
@@ -16,7 +17,8 @@ pub async fn run(days: usize) -> Result<()> {
     );
     println!("{}", "  ─────────────────────────────".dimmed());
 
-    let data = InsightsData::collect(&config, Some(days))?;
+    let pricing = PricingData::load().await;
+    let data = InsightsData::collect(&config, Some(days), &pricing)?;
 
     // Overview stats
     println!(

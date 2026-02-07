@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 use crate::archive::ArchiveManager;
 use crate::config::Config;
+use crate::usage::pricing::PricingData;
 use crate::usage::scanner;
 use crate::usage::types::{SessionUsage, UsageSummary};
 
@@ -62,7 +63,11 @@ pub struct CategoryCount {
 impl InsightsData {
     /// Collect insights data from archives and facets.
     /// `days` limits the number of most recent days to analyze.
-    pub fn collect(config: &Config, days: Option<usize>) -> anyhow::Result<Self> {
+    pub fn collect(
+        config: &Config,
+        days: Option<usize>,
+        pricing: &PricingData,
+    ) -> anyhow::Result<Self> {
         let manager = ArchiveManager::new(config.clone());
         let all_dates = manager.list_dates()?;
 
@@ -70,7 +75,7 @@ impl InsightsData {
         let dates: Vec<String> = all_dates.into_iter().take(days_limit).collect();
 
         // Scan all usage data upfront
-        let all_session_usages = scanner::scan_all_sessions(None);
+        let all_session_usages = scanner::scan_all_sessions(None, pricing);
         let usage_summary = scanner::aggregate_usage(&all_session_usages, None);
 
         // Build a lookup: date -> DailyUsage for merging into daily_stats

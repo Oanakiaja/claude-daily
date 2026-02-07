@@ -10,6 +10,7 @@ use crate::auto_summarize::{
 };
 use crate::config::{load_config, save_config};
 use crate::server::{create_router, handlers::AppState};
+use crate::usage::pricing::PricingData;
 
 const DEFAULT_PORT: u16 = 31456;
 const MAX_PORT_ATTEMPTS: u16 = 100;
@@ -52,8 +53,10 @@ pub async fn run(port: Option<u16>, host: String, open_browser: bool) -> Result<
         }
     }
 
+    let pricing = PricingData::load().await;
     let state = Arc::new(AppState {
         config: RwLock::new(config),
+        pricing,
     });
 
     // Find available port
