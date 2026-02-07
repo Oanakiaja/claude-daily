@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import type { TrendData } from '../hooks/useApi'
+import { useLanguage } from '../contexts/LanguageContext'
 
 interface InsightsTrendsProps {
   trends: TrendData | undefined
@@ -70,11 +71,13 @@ function TrendCard({ label, value, changePct, comparisonLabel, invertPolarity = 
 }
 
 export function InsightsTrends({ trends }: InsightsTrendsProps) {
+  const { t } = useLanguage()
+
   if (!trends) {
     return (
       <div className="mb-6 p-4 bg-gray-50 dark:bg-daily-light rounded-xl border border-gray-200 dark:border-gray-800 text-center">
         <p className="text-sm text-gray-400 dark:text-gray-500">
-          Not enough data for trend analysis. Need at least 2 days of history.
+          {t('insights.trendNoData')}
         </p>
       </div>
     )
@@ -85,7 +88,7 @@ export function InsightsTrends({ trends }: InsightsTrendsProps) {
   return (
     <div className="mb-6">
       <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-        Trend Analysis
+        {t('insights.trendAnalysis')}
         <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
           ({trends.period_label})
         </span>
@@ -94,26 +97,26 @@ export function InsightsTrends({ trends }: InsightsTrendsProps) {
       {/* Trend Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         <TrendCard
-          label="Sessions"
+          label={t('insights.trendSessions')}
           value={String(trends.current_sessions)}
           changePct={trends.sessions_change_pct}
           comparisonLabel={compLabel}
         />
         <TrendCard
-          label="Friction Rate"
+          label={t('insights.trendFrictionRate')}
           value={`${trends.current_friction_rate.toFixed(1)}%`}
           changePct={trends.friction_change_pct}
           comparisonLabel={compLabel}
           invertPolarity
         />
         <TrendCard
-          label="Success Rate"
+          label={t('insights.trendSuccessRate')}
           value={`${trends.current_success_rate.toFixed(1)}%`}
           changePct={trends.success_change_pct}
           comparisonLabel={compLabel}
         />
         <TrendCard
-          label="Satisfaction"
+          label={t('insights.trendSatisfaction')}
           value={trends.current_satisfaction_score > 0 ? trends.current_satisfaction_score.toFixed(0) : 'N/A'}
           changePct={trends.current_satisfaction_score > 0 ? trends.satisfaction_change_pct : 0}
           comparisonLabel={compLabel}
@@ -127,15 +130,15 @@ export function InsightsTrends({ trends }: InsightsTrendsProps) {
           animate={{ opacity: 1, y: 0 }}
           className="bg-gray-50 dark:bg-daily-light rounded-xl p-5 border border-gray-200 dark:border-gray-800"
         >
-          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Weekly Breakdown</h4>
+          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">{t('insights.weeklyBreakdown')}</h4>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-gray-400 dark:text-gray-500 border-b border-gray-200 dark:border-gray-700">
-                  <th className="pb-2 pr-4 font-medium">Week</th>
-                  <th className="pb-2 pr-4 font-medium text-right">Sessions</th>
-                  <th className="pb-2 pr-4 font-medium text-right">Friction</th>
-                  <th className="pb-2 font-medium text-right">Success</th>
+                  <th className="pb-2 pr-4 font-medium">{t('insights.weeklyWeek')}</th>
+                  <th className="pb-2 pr-4 font-medium text-right">{t('insights.weeklySessions')}</th>
+                  <th className="pb-2 pr-4 font-medium text-right">{t('insights.weeklyFriction')}</th>
+                  <th className="pb-2 font-medium text-right">{t('insights.weeklySuccess')}</th>
                 </tr>
               </thead>
               <tbody>

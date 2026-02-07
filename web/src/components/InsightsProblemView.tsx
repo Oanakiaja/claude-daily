@@ -2,30 +2,26 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { SessionInsight } from '../hooks/useApi'
+import { useLanguage } from '../contexts/LanguageContext'
 
 type FilterTab = 'all' | 'friction' | 'not_achieved' | 'low_satisfaction'
 
-const FILTER_TABS: { key: FilterTab; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'friction', label: 'With Friction' },
-  { key: 'not_achieved', label: 'Not Achieved' },
-  { key: 'low_satisfaction', label: 'Low Satisfaction' },
-]
-
 function OutcomeBadge({ outcome }: { outcome: string | null }) {
+  const { t } = useLanguage()
   if (!outcome) return null
 
-  const config: Record<string, { bg: string; text: string; label: string }> = {
-    achieved: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400', label: 'Achieved' },
-    partially_achieved: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-600 dark:text-yellow-400', label: 'Partial' },
-    not_achieved: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400', label: 'Not Achieved' },
+  const config: Record<string, { bg: string; text: string; labelKey: string }> = {
+    achieved: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400', labelKey: 'insights.outcomeAchieved' },
+    partially_achieved: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-600 dark:text-yellow-400', labelKey: 'insights.outcomePartial' },
+    not_achieved: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400', labelKey: 'insights.outcomeNotAchieved' },
   }
 
-  const style = config[outcome] || { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-500', label: outcome }
+  const style = config[outcome] || { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-500', labelKey: '' }
+  const label = style.labelKey ? t(style.labelKey) : outcome
 
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text}`}>
-      {style.label}
+      {label}
     </span>
   )
 }
@@ -39,21 +35,23 @@ function FrictionTag({ type: frictionType }: { type: string }) {
 }
 
 function SatisfactionIndicator({ satisfaction }: { satisfaction: string | null }) {
+  const { t } = useLanguage()
   if (!satisfaction) return null
 
-  const config: Record<string, { color: string; label: string }> = {
-    happy: { color: 'text-green-500', label: 'Happy' },
-    likely_satisfied: { color: 'text-green-400', label: 'Satisfied' },
-    satisfied: { color: 'text-green-400', label: 'Satisfied' },
-    neutral: { color: 'text-yellow-500', label: 'Neutral' },
-    frustrated: { color: 'text-red-500', label: 'Frustrated' },
+  const config: Record<string, { color: string; labelKey: string }> = {
+    happy: { color: 'text-green-500', labelKey: 'insights.satisfactionHappy' },
+    likely_satisfied: { color: 'text-green-400', labelKey: 'insights.satisfactionSatisfied' },
+    satisfied: { color: 'text-green-400', labelKey: 'insights.satisfactionSatisfied' },
+    neutral: { color: 'text-yellow-500', labelKey: 'insights.satisfactionNeutral' },
+    frustrated: { color: 'text-red-500', labelKey: 'insights.satisfactionFrustrated' },
   }
 
-  const style = config[satisfaction] || { color: 'text-gray-400', label: satisfaction }
+  const style = config[satisfaction] || { color: 'text-gray-400', labelKey: '' }
+  const label = style.labelKey ? t(style.labelKey) : satisfaction
 
   return (
     <span className={`text-xs font-medium ${style.color}`}>
-      {style.label}
+      {label}
     </span>
   )
 }
@@ -184,6 +182,14 @@ interface InsightsProblemViewProps {
 
 export function InsightsProblemView({ sessionDetails }: InsightsProblemViewProps) {
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all')
+  const { t } = useLanguage()
+
+  const FILTER_TABS: { key: FilterTab; label: string }[] = [
+    { key: 'all', label: t('insights.problemAll') },
+    { key: 'friction', label: t('insights.problemFriction') },
+    { key: 'not_achieved', label: t('insights.problemNotAchieved') },
+    { key: 'low_satisfaction', label: t('insights.problemLowSatisfaction') },
+  ]
 
   const filtered = filterSessions(sessionDetails, activeFilter)
 
@@ -209,7 +215,7 @@ export function InsightsProblemView({ sessionDetails }: InsightsProblemViewProps
     >
       {/* Section header */}
       <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
-        Session Details
+        {t('insights.problemSessionDetails')}
       </h2>
 
       {/* Filter tabs - only show tabs that have matching sessions */}
@@ -259,7 +265,7 @@ export function InsightsProblemView({ sessionDetails }: InsightsProblemViewProps
             className="text-center py-12 bg-gray-50 dark:bg-daily-light rounded-xl border border-gray-200 dark:border-gray-800"
           >
             <p className="text-gray-500 dark:text-gray-400">
-              No issues detected in this period
+              {t('insights.problemNoIssues')}
             </p>
           </motion.div>
         )}

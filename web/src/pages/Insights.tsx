@@ -17,6 +17,7 @@ import { InsightsProblemView } from '../components/InsightsProblemView'
 import { InsightsTrends } from '../components/InsightsTrends'
 import { UsageTimeline, CostTimeline, ModelPieChart, formatTokenCount, formatCost } from '../components/UsageCharts'
 import { cn } from '../lib/utils'
+import { useLanguage } from '../contexts/LanguageContext'
 
 type InsightTab = 'charts' | 'sessions'
 
@@ -66,6 +67,7 @@ export function Insights() {
   const [days, setDays] = useState(30)
   const [activeTab, setActiveTab] = useState<InsightTab>('charts')
   const { fetchInsights } = useApi()
+  const { t } = useLanguage()
 
   useEffect(() => {
     const load = async () => {
@@ -86,7 +88,7 @@ export function Insights() {
     return (
       <div className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-bold mb-8">
-          <span className="text-orange-500 dark:text-orange-400">Insights</span>
+          <span className="text-orange-500 dark:text-orange-400">{t('insights.title')}</span>
         </h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {[...Array(3)].map((_, i) => (
@@ -102,9 +104,9 @@ export function Insights() {
     return (
       <div className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-bold mb-4">
-          <span className="text-orange-500 dark:text-orange-400">Insights</span>
+          <span className="text-orange-500 dark:text-orange-400">{t('insights.title')}</span>
         </h1>
-        <p className="text-gray-500">Failed to load insights data.</p>
+        <p className="text-gray-500">{t('insights.failed')}</p>
       </div>
     )
   }
@@ -123,10 +125,10 @@ export function Insights() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">
-            <span className="text-orange-500 dark:text-orange-400">Insights</span>
+            <span className="text-orange-500 dark:text-orange-400">{t('insights.title')}</span>
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Work pattern analysis across your sessions
+            {t('insights.subtitle')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -149,8 +151,8 @@ export function Insights() {
       {/* Tab bar */}
       <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 mb-6">
         {([
-          { key: 'charts' as InsightTab, label: 'Charts' },
-          { key: 'sessions' as InsightTab, label: 'Session Details', count: data.session_details?.length },
+          { key: 'charts' as InsightTab, label: t('insights.tabCharts') },
+          { key: 'sessions' as InsightTab, label: t('insights.tabSessions'), count: data.session_details?.length },
         ]).map(tab => (
           <button
             key={tab.key}
@@ -177,23 +179,23 @@ export function Insights() {
         <>
           {/* Stats Overview */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <StatCard label="Total Days" value={data.total_days} />
-            <StatCard label="Total Sessions" value={data.total_sessions} />
-            <StatCard label="Avg Sessions/Day" value={avgSessions} />
-            <StatCard label="Digest Rate" value={`${digestRate}%`} sub="days with summary" />
+            <StatCard label={t('insights.totalDays')} value={data.total_days} />
+            <StatCard label={t('insights.totalSessions')} value={data.total_sessions} />
+            <StatCard label={t('insights.avgSessions')} value={avgSessions} />
+            <StatCard label={t('insights.digestRate')} value={`${digestRate}%`} sub={t('insights.digestRateSub')} />
           </div>
 
           {/* Token Usage Section */}
           {data.usage_summary && data.usage_summary.total_sessions > 0 && (
             <>
               <div className="mb-4">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Token Usage</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">API usage and cost analytics</p>
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('insights.tokenUsage')}</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('insights.tokenUsageDesc')}</p>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <StatCard
-                  label="Total Tokens"
+                  label={t('insights.totalTokens')}
                   value={formatTokenCount(
                     data.usage_summary.total_input_tokens +
                     data.usage_summary.total_output_tokens +
@@ -203,31 +205,31 @@ export function Insights() {
                   sub={`${data.usage_summary.total_sessions} sessions`}
                 />
                 <StatCard
-                  label="Input Tokens"
+                  label={t('insights.inputTokens')}
                   value={formatTokenCount(data.usage_summary.total_input_tokens)}
                 />
                 <StatCard
-                  label="Output Tokens"
+                  label={t('insights.outputTokens')}
                   value={formatTokenCount(data.usage_summary.total_output_tokens)}
                 />
                 <StatCard
-                  label="Total Cost"
+                  label={t('insights.totalCost')}
                   value={formatCost(data.usage_summary.total_cost_usd)}
                   sub={`cache: ${formatTokenCount(data.usage_summary.total_cache_read_tokens)} read`}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <ChartCard title="Token Usage Timeline">
+                <ChartCard title={t('insights.tokenTimeline')}>
                   <UsageTimeline data={data.usage_summary.daily_usage} />
                 </ChartCard>
-                <ChartCard title="Daily Cost">
+                <ChartCard title={t('insights.dailyCost')}>
                   <CostTimeline data={data.usage_summary.daily_usage} />
                 </ChartCard>
               </div>
 
               {data.usage_summary.model_distribution.length > 0 && (
-                <ChartCard title="Model Distribution">
+                <ChartCard title={t('insights.modelDistribution')}>
                   <ModelPieChart data={data.usage_summary.model_distribution} />
                 </ChartCard>
               )}
@@ -238,7 +240,7 @@ export function Insights() {
           <InsightsTrends trends={data.trends} />
 
           {/* Activity Timeline */}
-          <ChartCard title="Activity Timeline">
+          <ChartCard title={t('insights.activityTimeline')}>
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={data.daily_stats}>
                 <defs>
@@ -270,7 +272,7 @@ export function Insights() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             {/* Languages */}
             {data.language_distribution.length > 0 && (
-              <ChartCard title="Languages">
+              <ChartCard title={t('insights.languages')}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={data.language_distribution.slice(0, 8)} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
@@ -292,7 +294,7 @@ export function Insights() {
           {/* Session Types */}
           {data.session_type_distribution.length > 0 && (
             <div className="mt-4">
-              <ChartCard title="Session Types">
+              <ChartCard title={t('insights.sessionTypes')}>
                 <div className="flex flex-wrap gap-3">
                   {data.session_type_distribution.map((item, i) => (
                     <div
@@ -321,7 +323,7 @@ export function Insights() {
             <InsightsProblemView sessionDetails={data.session_details} />
           ) : (
             <div className="text-center py-12 bg-gray-50 dark:bg-daily-light rounded-xl border border-gray-200 dark:border-gray-800">
-              <p className="text-gray-500 dark:text-gray-400">No session details available yet</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('insights.noSessionDetails')}</p>
             </div>
           )}
         </>

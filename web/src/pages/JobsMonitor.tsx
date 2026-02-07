@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useApi } from '../hooks/useApi'
 import type { Job } from '../hooks/useApi'
 import { JobCard } from '../components/JobCard'
+import { useLanguage } from '../contexts/LanguageContext'
 
 export function JobsMonitor() {
   const [jobs, setJobs] = useState<Job[]>([])
   const { fetchJobs, killJob, error } = useApi()
+  const { t } = useLanguage()
 
   const loadJobs = useCallback(() => {
     fetchJobs()
@@ -36,7 +38,7 @@ export function JobsMonitor() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-balance">Jobs Monitor</h1>
+        <h1 className="text-3xl font-bold text-balance">{t('jobs.title')}</h1>
       </div>
 
       {error && (
@@ -48,7 +50,7 @@ export function JobsMonitor() {
       {/* Running Jobs */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">
-          Running ({runningJobs.length})
+          {t('jobs.running')} ({runningJobs.length})
         </h2>
         <AnimatePresence mode="popLayout">
           {runningJobs.length === 0 ? (
@@ -57,7 +59,7 @@ export function JobsMonitor() {
               animate={{ opacity: 1 }}
               className="text-gray-500"
             >
-              No running jobs
+              {t('jobs.noRunning')}
             </motion.p>
           ) : (
             <div className="space-y-3">
@@ -80,10 +82,10 @@ export function JobsMonitor() {
       {/* Completed Jobs */}
       <section>
         <h2 className="text-xl font-semibold text-gray-400 mb-4">
-          Completed ({completedJobs.length})
+          {t('jobs.completed')} ({completedJobs.length})
         </h2>
         {completedJobs.length === 0 ? (
-          <p className="text-gray-500">No completed jobs</p>
+          <p className="text-gray-500">{t('jobs.noCompleted')}</p>
         ) : (
           <div className="space-y-3">
             {completedJobs.map((job, i) => (

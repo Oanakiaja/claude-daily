@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
+import { useLanguage } from '../contexts/LanguageContext'
 
 interface VariableInfo {
   name: string
@@ -36,6 +37,7 @@ export function TemplateEditor({
   const [preview, setPreview] = useState('')
   const [useRealData, setUseRealData] = useState(!!realData)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const { t } = useLanguage()
 
   // Auto-switch to real data when it becomes available
   useEffect(() => {
@@ -84,10 +86,10 @@ export function TemplateEditor({
     setSaveMessage(null)
     try {
       await onSave(isUsingDefault ? null : value)
-      setSaveMessage('Saved successfully')
+      setSaveMessage(t('template.savedSuccess'))
       setTimeout(() => setSaveMessage(null), 2000)
     } catch {
-      setSaveMessage('Failed to save')
+      setSaveMessage(t('template.savedFail'))
     } finally {
       setSaving(false)
     }
@@ -117,13 +119,13 @@ export function TemplateEditor({
           <div className="flex items-center gap-2">
             {!isUsingDefault && (
               <span className="text-xs px-2 py-1 bg-orange-500/20 text-orange-400 rounded">
-                Custom
+                {t('template.custom')}
               </span>
             )}
             {saveMessage && (
               <span
                 className={`text-sm ${
-                  saveMessage.includes('success') ? 'text-green-400' : 'text-red-400'
+                  saveMessage === t('template.savedSuccess') ? 'text-green-400' : 'text-red-400'
                 }`}
               >
                 {saveMessage}
@@ -143,7 +145,7 @@ export function TemplateEditor({
                 : 'bg-gray-200 dark:bg-daily-dark text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
             }`}
           >
-            Use Default
+            {t('template.useDefault')}
           </button>
           <button
             onClick={handleUseCustom}
@@ -154,7 +156,7 @@ export function TemplateEditor({
                 : 'bg-gray-200 dark:bg-daily-dark text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
             }`}
           >
-            Custom
+            {t('template.custom')}
           </button>
           <div className="flex-1" />
           {!isUsingDefault && (
@@ -163,7 +165,7 @@ export function TemplateEditor({
               disabled={disabled || saving}
               className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
             >
-              Reset to Default
+              {t('template.resetToDefault')}
             </button>
           )}
           <button
@@ -173,7 +175,7 @@ export function TemplateEditor({
                        hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed
                        transition-colors"
           >
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? t('template.saving') : t('template.save')}
           </button>
         </div>
       </div>
@@ -184,7 +186,7 @@ export function TemplateEditor({
         <div className="w-1/2 flex flex-col border-r border-gray-200 dark:border-gray-800">
           {/* Variables */}
           <div className="flex-shrink-0 bg-gray-100 dark:bg-daily-dark/50 border-b border-gray-200 dark:border-gray-800 px-4 py-3 transition-colors">
-            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Available Variables (click to insert)</h4>
+            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">{t('template.variables')}</h4>
             <div className="flex flex-wrap gap-2">
               {availableVariables.map((v) => (
                 <button
@@ -213,7 +215,7 @@ export function TemplateEditor({
                          p-4 text-gray-800 dark:text-gray-200 font-mono text-sm resize-none
                          focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none
                          disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-              placeholder="Enter custom template..."
+              placeholder={t('template.placeholder')}
             />
           </div>
         </div>
@@ -222,7 +224,7 @@ export function TemplateEditor({
         <div className="w-1/2 flex flex-col bg-gray-50 dark:bg-daily-dark/30 transition-colors">
           <div className="flex-shrink-0 bg-gray-100 dark:bg-daily-dark/50 border-b border-gray-200 dark:border-gray-800 px-4 py-3 transition-colors">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Preview</h4>
+              <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('template.preview')}</h4>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setUseRealData(false)}
@@ -232,7 +234,7 @@ export function TemplateEditor({
                       : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                   }`}
                 >
-                  Example
+                  {t('template.example')}
                 </button>
                 <button
                   onClick={() => setUseRealData(true)}
@@ -244,9 +246,9 @@ export function TemplateEditor({
                         ? 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                         : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
                   }`}
-                  title={!realData ? 'No real archive data available' : 'Use real archive data'}
+                  title={!realData ? t('template.noRealData') : t('template.useRealData')}
                 >
-                  Real Data
+                  {t('template.realData')}
                 </button>
               </div>
             </div>

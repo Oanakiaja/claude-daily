@@ -6,6 +6,7 @@ import type { SessionDetail as SessionDetailType } from '../hooks/useApi'
 import { MarkdownRenderer } from '../components/MarkdownRenderer'
 import { ChatView } from '../components/ChatView'
 import { cn } from '../lib/utils'
+import { useLanguage } from '../contexts/LanguageContext'
 
 export function SessionDetail() {
   const { date, name } = useParams<{ date: string; name: string }>()
@@ -13,6 +14,7 @@ export function SessionDetail() {
   const [copySuccess, setCopySuccess] = useState(false)
   const [activeTab, setActiveTab] = useState<'summary' | 'conversation'>('summary')
   const { fetchSession, loading, error } = useApi()
+  const { t } = useLanguage()
 
   const handleCopyContent = async () => {
     if (!session?.content) return
@@ -53,14 +55,14 @@ export function SessionDetail() {
       {/* Breadcrumb */}
       <nav className="mb-6 text-sm">
         <Link to="/" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-          Archives
+          {t('dayDetail.breadcrumbArchives')}
         </Link>
         <span className="text-gray-400 dark:text-gray-600 mx-2">/</span>
         <Link to={`/day/${date}`} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
           {date}
         </Link>
         <span className="text-gray-400 dark:text-gray-600 mx-2">/</span>
-        <span className="text-gray-500">Sessions</span>
+        <span className="text-gray-500">{t('sessionDetail.breadcrumbSessions')}</span>
         <span className="text-gray-400 dark:text-gray-600 mx-2">/</span>
         <span className="text-orange-500 dark:text-orange-400 truncate">{session?.metadata?.title || decodeURIComponent(name || '')}</span>
       </nav>
@@ -100,14 +102,14 @@ export function SessionDetail() {
                       <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      <span>Copied!</span>
+                      <span>{t('sessionDetail.copied')}</span>
                     </>
                   ) : (
                     <>
                       <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
-                      <span>Copy</span>
+                      <span>{t('sessionDetail.copy')}</span>
                     </>
                   )}
                 </button>
@@ -155,7 +157,7 @@ export function SessionDetail() {
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               )}
             >
-              Summary
+              {t('sessionDetail.tabSummary')}
             </button>
             <button
               onClick={() => setActiveTab('conversation')}
@@ -169,7 +171,7 @@ export function SessionDetail() {
               <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              Conversation
+              {t('sessionDetail.tabConversation')}
             </button>
           </div>
 
