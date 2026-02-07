@@ -17,8 +17,7 @@ import { useApi } from '../hooks/useApi'
 import type { DateItem, DailySummary, Job, DailyUsageData } from '../hooks/useApi'
 import { cn } from '../lib/utils'
 import { formatCost } from '../components/UsageCharts'
-
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+import { useLanguage } from '../contexts/LanguageContext'
 
 export function Welcome() {
   const [days, setDays] = useState<DateItem[]>([])
@@ -30,6 +29,12 @@ export function Welcome() {
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left')
   const { fetchDates, fetchDailySummary, fetchJobs, fetchInsights } = useApi()
   const navigate = useNavigate()
+  const { t } = useLanguage()
+
+  const WEEKDAYS = [
+    t('weekdays.mon'), t('weekdays.tue'), t('weekdays.wed'), t('weekdays.thu'),
+    t('weekdays.fri'), t('weekdays.sat'), t('weekdays.sun'),
+  ]
 
   useEffect(() => {
     const loadData = async () => {
@@ -167,7 +172,7 @@ export function Welcome() {
     return (
       <div className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-bold mb-2">
-          <span className="text-orange-500 dark:text-orange-400">Daily</span> Archives
+          <span className="text-orange-500 dark:text-orange-400">{t('welcome.title')}</span> {t('welcome.titleSuffix')}
         </h1>
         <p className="text-gray-400 mb-8 h-5 w-48 bg-gray-200 dark:bg-daily-light rounded animate-pulse" />
         <div className="flex items-center justify-between mb-6">
@@ -194,14 +199,14 @@ export function Welcome() {
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <div className="text-center space-y-4">
             <h1 className="text-4xl font-bold text-balance mb-2">
-              Welcome to <span className="text-orange-500 dark:text-orange-400">Daily</span>
+              {t('welcome.emptyTitle')} <span className="text-orange-500 dark:text-orange-400">{t('welcome.emptyTitleHighlight')}</span>
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-lg max-w-md mx-auto">
-              Your context archive system for Claude Code sessions
+              {t('welcome.emptySubtitle')}
             </p>
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800">
               <p className="text-gray-500 text-sm">
-                No archives found. Start a Claude Code session to begin archiving.
+                {t('welcome.emptyHint')}
               </p>
             </div>
           </div>
@@ -214,10 +219,13 @@ export function Welcome() {
     <div className="max-w-6xl mx-auto px-6 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          <span className="text-orange-500 dark:text-orange-400">Daily</span> Archives
+          <span className="text-orange-500 dark:text-orange-400">{t('welcome.title')}</span> {t('welcome.titleSuffix')}
         </h1>
         <p className="text-gray-500 dark:text-gray-400">
-          {days.length} {days.length === 1 ? 'day' : 'days'} of Claude Code sessions
+          {t('welcome.subtitle', {
+            count: days.length,
+            dayWord: days.length === 1 ? t('welcome.day') : t('welcome.days'),
+          })}
         </p>
       </div>
 
@@ -234,10 +242,13 @@ export function Welcome() {
               <span className="text-blue-400 text-lg">🤖</span>
               <div className="flex-1">
                 <p className="text-blue-400 font-medium">
-                  Auto-summarizing {autoSummarizeJobs.length} missed session{autoSummarizeJobs.length > 1 ? 's' : ''}
+                  {t('welcome.autoSummarizing', {
+                    count: autoSummarizeJobs.length,
+                    plural: autoSummarizeJobs.length > 1 ? 's' : '',
+                  })}
                 </p>
                 <p className="text-blue-400/70 text-sm mt-1">
-                  Sessions without session_end hook are being summarized automatically
+                  {t('welcome.autoSummarizingDesc')}
                 </p>
               </div>
               <div className="size-2 bg-blue-400 rounded-full animate-pulse" />
@@ -281,7 +292,7 @@ export function Welcome() {
             onClick={goToToday}
             className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-daily-light transition-colors text-gray-600 dark:text-gray-300"
           >
-            Today
+            {t('welcome.today')}
           </button>
         </div>
       </div>

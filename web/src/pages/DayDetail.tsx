@@ -6,6 +6,7 @@ import type { DailySummary, DateInsights, DateSessionInsight, SummaryCard } from
 import { MarkdownRenderer } from '../components/MarkdownRenderer'
 import { cn } from '../lib/utils'
 import { formatTokenCount, formatCost } from '../components/UsageCharts'
+import { useLanguage } from '../contexts/LanguageContext'
 
 type DayTab = 'summary' | 'focus' | 'skills' | 'insights'
 
@@ -44,28 +45,6 @@ const getOutcomeBadgeClass = (outcome: string | null): string => {
   }
 }
 
-// Get satisfaction indicator
-const getSatisfactionIndicator = (satisfaction: string | null): { label: string; className: string } => {
-  switch (satisfaction) {
-    case 'happy':
-      return { label: 'Happy', className: 'text-green-600 dark:text-green-400' }
-    case 'likely_satisfied':
-      return { label: 'Satisfied', className: 'text-blue-600 dark:text-blue-400' }
-    case 'neutral':
-      return { label: 'Neutral', className: 'text-gray-500 dark:text-gray-400' }
-    case 'frustrated':
-      return { label: 'Frustrated', className: 'text-red-600 dark:text-red-400' }
-    default:
-      return { label: 'Unknown', className: 'text-gray-400' }
-  }
-}
-
-// Get helpfulness display
-const formatHelpfulness = (helpfulness: string | null): string => {
-  if (!helpfulness) return 'N/A'
-  return helpfulness.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-}
-
 // Collapsible summary card component
 function CollapsibleCard({ card, defaultOpen = true }: { card: SummaryCard; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -97,7 +76,7 @@ function CollapsibleCard({ card, defaultOpen = true }: { card: SummaryCard; defa
 
 // Card section component that groups cards under a heading
 function CardSection({ title, cards, icon }: { title: string; cards: SummaryCard[]; icon?: React.ReactNode }) {
-  if (cards.length === 0) return null
+  if (!Array.isArray(cards) || cards.length === 0) return null
 
   return (
     <div className="space-y-2">
@@ -132,6 +111,7 @@ function SkillCommandCard({
   const [installing, setInstalling] = useState(false)
   const [installed, setInstalled] = useState(false)
   const [installPath, setInstallPath] = useState<string | null>(null)
+  const { t } = useLanguage()
   const isSkill = type === 'skill'
   const colorClass = isSkill
     ? 'border-green-200 dark:border-green-800/40 hover:border-green-300 dark:hover:border-green-700/60'
@@ -201,7 +181,7 @@ function SkillCommandCard({
                 {card.title}
               </h4>
               <span className={cn('text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 uppercase tracking-wide', badgeClass)}>
-                {isSkill ? 'Skill' : 'Cmd'}
+                {isSkill ? t('dayDetail.skill') : t('dayDetail.cmd')}
               </span>
             </div>
             {!expanded && card.content && (
@@ -239,14 +219,14 @@ function SkillCommandCard({
                   <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Copied
+                  {t('dayDetail.copied')}
                 </>
               ) : (
                 <>
                   <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
-                  Copy
+                  {t('dayDetail.copy')}
                 </>
               )}
             </button>
@@ -269,21 +249,21 @@ function SkillCommandCard({
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Installing...
+                  {t('dayDetail.installing')}
                 </>
               ) : installed ? (
                 <>
                   <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Installed
+                  {t('dayDetail.installed')}
                 </>
               ) : (
                 <>
                   <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
-                  Install
+                  {t('dayDetail.install')}
                 </>
               )}
             </button>
@@ -309,6 +289,7 @@ function SkillsCommandsSection({
   commands: SummaryCard[]
   onInstall: (title: string, content: string, cardType: 'skill' | 'command') => Promise<void>
 }) {
+  const { t } = useLanguage()
   if (skills.length === 0 && commands.length === 0) return null
 
   return (
@@ -318,7 +299,7 @@ function SkillsCommandsSection({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
         </svg>
         <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          Skills & Commands
+          {t('dayDetail.skillsCommands')}
         </h3>
         <span className="text-xs text-gray-400 dark:text-gray-500">({skills.length + commands.length})</span>
       </div>
@@ -336,8 +317,29 @@ function SkillsCommandsSection({
 
 // Session insight card component
 function SessionInsightCard({ session, date }: { session: DateSessionInsight; date: string }) {
+  const { t } = useLanguage()
+
+  const getSatisfactionIndicator = (satisfaction: string | null): { label: string; className: string } => {
+    switch (satisfaction) {
+      case 'happy':
+        return { label: t('dayDetail.happy'), className: 'text-green-600 dark:text-green-400' }
+      case 'likely_satisfied':
+        return { label: t('dayDetail.satisfied'), className: 'text-blue-600 dark:text-blue-400' }
+      case 'neutral':
+        return { label: t('dayDetail.neutral'), className: 'text-gray-500 dark:text-gray-400' }
+      case 'frustrated':
+        return { label: t('dayDetail.frustrated'), className: 'text-red-600 dark:text-red-400' }
+      default:
+        return { label: t('dayDetail.unknown'), className: 'text-gray-400' }
+    }
+  }
+
   const satisfactionInfo = getSatisfactionIndicator(session.satisfaction)
   const hasFriction = session.friction_types.length > 0
+  const formatHelpfulness = (helpfulness: string | null): string => {
+    if (!helpfulness) return 'N/A'
+    return helpfulness.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  }
 
   return (
     <motion.div
@@ -425,7 +427,7 @@ function SessionInsightCard({ session, date }: { session: DateSessionInsight; da
             <svg className="size-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
-            <span className="font-medium">Friction:</span>
+            <span className="font-medium">{t('dayDetail.friction')}</span>
             <span className="text-gray-600 dark:text-gray-400">
               {session.friction_types.map(f => f.replace(/_/g, ' ')).join(', ')}
             </span>
@@ -451,6 +453,23 @@ export function DayDetail() {
   const [copySuccess, setCopySuccess] = useState(false)
   const [insights, setInsights] = useState<DateInsights | null>(null)
   const { fetchDailySummary, triggerDigest, fetchDateInsights, installCard, loading, error } = useApi()
+  const { t } = useLanguage()
+
+  // Get satisfaction indicator (used in insights tab)
+  const getSatisfactionIndicator = (satisfaction: string | null): { label: string; className: string } => {
+    switch (satisfaction) {
+      case 'happy':
+        return { label: t('dayDetail.happy'), className: 'text-green-600 dark:text-green-400' }
+      case 'likely_satisfied':
+        return { label: t('dayDetail.satisfied'), className: 'text-blue-600 dark:text-blue-400' }
+      case 'neutral':
+        return { label: t('dayDetail.neutral'), className: 'text-gray-500 dark:text-gray-400' }
+      case 'frustrated':
+        return { label: t('dayDetail.frustrated'), className: 'text-red-600 dark:text-red-400' }
+      default:
+        return { label: t('dayDetail.unknown'), className: 'text-gray-400' }
+    }
+  }
 
   const handleCopyContent = async () => {
     if (!digestContent) return
@@ -500,7 +519,7 @@ export function DayDetail() {
     setDigestMessage(null)
     try {
       const response = await triggerDigest(date)
-      setDigestMessage(`Daily summary regeneration started. Processing ${response.session_count} sessions.`)
+      setDigestMessage(t('dayDetail.regenerationStarted', { count: response.session_count }))
 
       const previousRaw = summary?.raw_content
       const pollInterval = 3000
@@ -516,7 +535,7 @@ export function DayDetail() {
             const content = extractContent(newSummary.raw_content)
             setDigestContent(content || null)
             setDigestLoading(false)
-            setDigestMessage('Daily summary regenerated successfully!')
+            setDigestMessage(t('dayDetail.regenerated'))
             setTimeout(() => setDigestMessage(null), 3000)
             return
           }
@@ -528,7 +547,7 @@ export function DayDetail() {
           setTimeout(poll, pollInterval)
         } else {
           setDigestLoading(false)
-          setDigestMessage('Regeneration is taking longer than expected. Please refresh the page later.')
+          setDigestMessage(t('dayDetail.regenerationSlow'))
         }
       }
 
@@ -558,7 +577,7 @@ export function DayDetail() {
       {/* Breadcrumb */}
       <nav className="mb-4 text-sm">
         <Link to="/" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-          Archives
+          {t('dayDetail.breadcrumbArchives')}
         </Link>
         <span className="text-gray-400 dark:text-gray-600 mx-2">/</span>
         <span className="text-orange-500 dark:text-orange-400">{date}</span>
@@ -568,10 +587,10 @@ export function DayDetail() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
           {([
-            { key: 'summary' as DayTab, label: 'Summary' },
-            { key: 'focus' as DayTab, label: 'Focus', count: summary?.tomorrow_focus?.length },
-            { key: 'skills' as DayTab, label: 'Skills', count: (summary?.skills?.length ?? 0) + (summary?.commands?.length ?? 0) },
-            { key: 'insights' as DayTab, label: 'Insights', badge: hasInsights && insights!.day_summary.sessions_with_friction > 0 ? insights!.day_summary.sessions_with_friction : undefined },
+            { key: 'summary' as DayTab, label: t('dayDetail.tabSummary') },
+            { key: 'focus' as DayTab, label: t('dayDetail.tabFocus'), count: summary?.tomorrow_focus?.length },
+            { key: 'skills' as DayTab, label: t('dayDetail.tabSkills'), count: (summary?.skills?.length ?? 0) + (summary?.commands?.length ?? 0) },
+            { key: 'insights' as DayTab, label: t('dayDetail.tabInsights'), badge: hasInsights && insights!.day_summary.sessions_with_friction > 0 ? insights!.day_summary.sessions_with_friction : undefined },
           ]).map(tab => (
             <button
               key={tab.key}
@@ -617,14 +636,14 @@ export function DayDetail() {
                     <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Copied!</span>
+                    <span>{t('dayDetail.copied')}</span>
                   </>
                 ) : (
                   <>
                     <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
-                    <span>Copy</span>
+                    <span>{t('dayDetail.copy')}</span>
                   </>
                 )}
               </button>
@@ -646,10 +665,10 @@ export function DayDetail() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Regenerating...
+                  {t('dayDetail.regenerating')}
                 </span>
               ) : (
-                'Regenerate'
+                t('dayDetail.regenerate')
               )}
             </button>
           </div>
@@ -689,7 +708,7 @@ export function DayDetail() {
             </motion.div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-lg mb-4">No daily summary available for this date.</p>
+              <p className="text-gray-500 text-lg mb-4">{t('dayDetail.noSummary')}</p>
               <button
                 onClick={handleRegenerate}
                 disabled={digestLoading}
@@ -699,16 +718,16 @@ export function DayDetail() {
                   'border border-orange-500/30 hover:border-orange-500/50'
                 )}
               >
-                Generate Summary
+                {t('dayDetail.generateSummary')}
               </button>
             </div>
           )}
 
           {/* Key Insights - stays in summary */}
-          {summary && summary.insights.length > 0 && (
+          {summary && Array.isArray(summary.insights) && summary.insights.length > 0 && (
             <div className="mt-6">
               <CardSection
-                title="Key Insights"
+                title={t('dayDetail.keyInsights')}
                 cards={summary.insights}
                 icon={<svg className="size-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>}
               />
@@ -732,7 +751,7 @@ export function DayDetail() {
             </div>
           ) : (
             <div className="text-center py-12 bg-gray-50 dark:bg-daily-light rounded-xl border border-gray-200 dark:border-gray-800">
-              <p className="text-gray-500 dark:text-gray-400">No focus items identified for tomorrow</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('dayDetail.noFocus')}</p>
             </div>
           )}
         </motion.div>
@@ -749,7 +768,7 @@ export function DayDetail() {
             <SkillsCommandsSection skills={summary.skills} commands={summary.commands} onInstall={installCard} />
           ) : (
             <div className="text-center py-12 bg-gray-50 dark:bg-daily-light rounded-xl border border-gray-200 dark:border-gray-800">
-              <p className="text-gray-500 dark:text-gray-400">No skills or commands identified today</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('dayDetail.noSkills')}</p>
             </div>
           )}
         </motion.div>
@@ -771,7 +790,7 @@ export function DayDetail() {
                     <div className="text-2xl font-bold text-orange-500">
                       {insights!.day_summary.total_sessions}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Sessions</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('dayDetail.sessions')}</div>
                   </div>
 
                   <div className="text-center">
@@ -783,7 +802,7 @@ export function DayDetail() {
                     )}>
                       {insights!.day_summary.sessions_with_friction}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">With Friction</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('dayDetail.withFriction')}</div>
                   </div>
 
                   {insights!.day_summary.total_tokens != null && (
@@ -791,7 +810,7 @@ export function DayDetail() {
                       <div className="text-2xl font-bold text-sky-500">
                         {formatTokenCount(insights!.day_summary.total_tokens!)}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Tokens</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('dayDetail.tokens')}</div>
                     </div>
                   )}
 
@@ -800,7 +819,7 @@ export function DayDetail() {
                       <div className="text-2xl font-bold text-purple-500">
                         {formatCost(insights!.day_summary.total_cost!)}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Cost</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('dayDetail.cost')}</div>
                     </div>
                   )}
 
@@ -812,7 +831,7 @@ export function DayDetail() {
                       )}>
                         {getSatisfactionIndicator(insights!.day_summary.overall_satisfaction).label}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Satisfaction</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('dayDetail.satisfaction')}</div>
                     </div>
                   )}
 
@@ -823,7 +842,7 @@ export function DayDetail() {
                           ? insights!.day_summary.top_goals[0].replace(/_/g, ' ')
                           : 'N/A'}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Top Goal</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('dayDetail.topGoal')}</div>
                     </div>
                   )}
                 </div>
@@ -831,7 +850,7 @@ export function DayDetail() {
                 {/* Top frictions */}
                 {insights!.day_summary.top_frictions.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
-                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium mr-1">Frictions:</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium mr-1">{t('dayDetail.frictions')}</span>
                     {insights!.day_summary.top_frictions.map(friction => (
                       <span
                         key={friction}
@@ -850,7 +869,7 @@ export function DayDetail() {
                       <svg className="size-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                       </svg>
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Recommendations</span>
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('dayDetail.recommendations')}</span>
                     </div>
                     <ul className="space-y-1.5">
                       {insights!.day_summary.recommendations.map((rec, i) => (
@@ -867,7 +886,7 @@ export function DayDetail() {
               {/* Per-session insight cards */}
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Session Details
+                  {t('dayDetail.sessionDetails')}
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[...insights!.sessions].sort((a, b) => {
@@ -891,9 +910,9 @@ export function DayDetail() {
             </div>
           ) : (
             <div className="text-center py-12 bg-gray-50 dark:bg-daily-light rounded-xl border border-gray-200 dark:border-gray-800">
-              <p className="text-gray-500 dark:text-gray-400 mb-2">No insights data available for this date</p>
+              <p className="text-gray-500 dark:text-gray-400 mb-2">{t('dayDetail.noInsights')}</p>
               <p className="text-sm text-gray-400 dark:text-gray-500">
-                Insights are generated from Claude Code session facets
+                {t('dayDetail.noInsightsHint')}
               </p>
             </div>
           )}

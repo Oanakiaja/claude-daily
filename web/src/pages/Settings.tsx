@@ -5,6 +5,7 @@ import type { Config, DefaultTemplates } from '../hooks/useApi'
 import { TemplateEditor } from '../components/TemplateEditor'
 import { EXAMPLE_DATA } from '../data/templateExamples'
 import { cn } from '../lib/utils'
+import { useLanguage } from '../contexts/LanguageContext'
 
 // Real data state for template preview
 interface RealPreviewData {
@@ -45,23 +46,6 @@ const TEMPLATE_VARIABLES = {
   ],
 }
 
-const NAV_SECTIONS = {
-  general: [
-    { id: 'language', label: 'Summary Language', icon: '🌐' },
-    { id: 'model', label: 'Model', icon: '🤖' },
-    { id: 'features', label: 'Features', icon: '⚙️' },
-    { id: 'digest-time', label: 'Digest Time', icon: '⏰' },
-    { id: 'author', label: 'Author', icon: '✍️' },
-    { id: 'info', label: 'Storage Info', icon: '💾' },
-  ],
-  templates: [
-    { id: 'session-template', label: 'Session Template', icon: '📝' },
-    { id: 'daily-template', label: 'Daily Template', icon: '📅' },
-    { id: 'skill-template', label: 'Skill Template', icon: '🎯' },
-    { id: 'command-template', label: 'Command Template', icon: '⌨️' },
-  ],
-}
-
 export function Settings() {
   const [config, setConfig] = useState<Config | null>(null)
   const [defaultTemplates, setDefaultTemplates] = useState<DefaultTemplates | null>(null)
@@ -77,6 +61,24 @@ export function Settings() {
   })
   const contentRef = useRef<HTMLDivElement>(null)
   const { fetchConfig, updateConfig, fetchDefaultTemplates, fetchDates, fetchSessions, fetchSession, fetchDailySummary, error } = useApi()
+  const { t } = useLanguage()
+
+  const NAV_SECTIONS = {
+    general: [
+      { id: 'language', label: t('settings.nav.language'), icon: '🌐' },
+      { id: 'model', label: t('settings.nav.model'), icon: '🤖' },
+      { id: 'features', label: t('settings.nav.features'), icon: '⚙️' },
+      { id: 'digest-time', label: t('settings.nav.digestTime'), icon: '⏰' },
+      { id: 'author', label: t('settings.nav.author'), icon: '✍️' },
+      { id: 'info', label: t('settings.nav.info'), icon: '💾' },
+    ],
+    templates: [
+      { id: 'session-template', label: t('settings.nav.sessionTemplate'), icon: '📝' },
+      { id: 'daily-template', label: t('settings.nav.dailyTemplate'), icon: '📅' },
+      { id: 'skill-template', label: t('settings.nav.skillTemplate'), icon: '🎯' },
+      { id: 'command-template', label: t('settings.nav.commandTemplate'), icon: '⌨️' },
+    ],
+  }
 
   const loadConfig = useCallback(() => {
     fetchConfig()
@@ -193,7 +195,7 @@ export function Settings() {
       if (field === 'author') {
         setAuthorInput(updated.author || '')
       }
-      setSaveMessage('Settings saved')
+      setSaveMessage(t('settings.saved'))
       setTimeout(() => setSaveMessage(null), 2000)
     } catch (err) {
       console.error('Failed to save config:', err)
@@ -218,7 +220,7 @@ export function Settings() {
   if (!config) {
     return (
       <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500">{t('settings.loading')}</div>
       </div>
     )
   }
@@ -228,14 +230,14 @@ export function Settings() {
       {/* Left Navigation */}
       <aside className="w-64 shrink-0 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-black overflow-y-auto transition-colors">
         <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-          <h2 className="text-lg font-semibold text-orange-500 dark:text-orange-400">Settings</h2>
-          <p className="text-xs text-gray-500 mt-1">Configure Daily options</p>
+          <h2 className="text-lg font-semibold text-orange-500 dark:text-orange-400">{t('settings.title')}</h2>
+          <p className="text-xs text-gray-500 mt-1">{t('settings.subtitle')}</p>
         </div>
         <nav className="p-3">
           {/* General Settings */}
           <div className="mb-4">
             <h3 className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              General
+              {t('settings.general')}
             </h3>
             <div className="space-y-1">
               {NAV_SECTIONS.general.map((item) => (
@@ -259,7 +261,7 @@ export function Settings() {
           {/* Template Settings */}
           <div>
             <h3 className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Templates
+              {t('settings.templates')}
             </h3>
             <div className="space-y-1">
               {NAV_SECTIONS.templates.map((item) => (
@@ -287,8 +289,8 @@ export function Settings() {
         {/* Template Editor View (Full Screen) */}
         {activeSection === 'session-template' && defaultTemplates && (
           <TemplateEditor
-            title="Session Summary Template"
-            description="Template for summarizing individual Claude Code sessions"
+            title={t('template.sessionTitle')}
+            description={t('template.sessionDesc')}
             currentValue={config.prompt_templates.session_summary}
             defaultValue={
               config.summary_language === 'zh'
@@ -310,8 +312,8 @@ export function Settings() {
 
         {activeSection === 'daily-template' && defaultTemplates && (
           <TemplateEditor
-            title="Daily Summary Template"
-            description="Template for generating daily digest from all sessions"
+            title={t('template.dailyTitle')}
+            description={t('template.dailyDesc')}
             currentValue={config.prompt_templates.daily_summary}
             defaultValue={
               config.summary_language === 'zh'
@@ -333,8 +335,8 @@ export function Settings() {
 
         {activeSection === 'skill-template' && defaultTemplates && (
           <TemplateEditor
-            title="Skill Extraction Template"
-            description="Template for extracting reusable skills from session summaries"
+            title={t('template.skillTitle')}
+            description={t('template.skillDesc')}
             currentValue={config.prompt_templates.skill_extract}
             defaultValue={
               config.summary_language === 'zh'
@@ -356,8 +358,8 @@ export function Settings() {
 
         {activeSection === 'command-template' && defaultTemplates && (
           <TemplateEditor
-            title="Command Extraction Template"
-            description="Template for extracting slash commands from session summaries"
+            title={t('template.commandTitle')}
+            description={t('template.commandDesc')}
             currentValue={config.prompt_templates.command_extract}
             defaultValue={
               config.summary_language === 'zh'
@@ -401,9 +403,9 @@ export function Settings() {
               <div className="space-y-6">
             {/* Summary Language */}
             <section id="language" className="bg-gray-50 dark:bg-daily-light border border-gray-200 dark:border-orange-500/20 rounded-xl p-6 transition-colors">
-              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">Summary Language</h2>
+              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">{t('settings.language.title')}</h2>
               <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
-                Choose the language for AI-generated summaries and digests
+                {t('settings.language.desc')}
               </p>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -416,7 +418,7 @@ export function Settings() {
                     disabled={saving}
                     className="w-4 h-4 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 focus:ring-orange-500"
                   />
-                  <span className="text-gray-700 dark:text-gray-200">English</span>
+                  <span className="text-gray-700 dark:text-gray-200">{t('settings.language.english')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -428,16 +430,16 @@ export function Settings() {
                     disabled={saving}
                     className="w-4 h-4 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 focus:ring-orange-500"
                   />
-                  <span className="text-gray-700 dark:text-gray-200">Chinese / 中文</span>
+                  <span className="text-gray-700 dark:text-gray-200">{t('settings.language.chinese')}</span>
                 </label>
               </div>
             </section>
 
             {/* Model Selection */}
             <section id="model" className="bg-gray-50 dark:bg-daily-light border border-gray-200 dark:border-orange-500/20 rounded-xl p-6 transition-colors">
-              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">Summarization Model</h2>
+              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">{t('settings.model.title')}</h2>
               <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
-                Choose the Claude model for generating summaries
+                {t('settings.model.desc')}
               </p>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -450,7 +452,7 @@ export function Settings() {
                     disabled={saving}
                     className="w-4 h-4 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 focus:ring-orange-500"
                   />
-                  <span className="text-gray-700 dark:text-gray-200">Sonnet (smarter)</span>
+                  <span className="text-gray-700 dark:text-gray-200">{t('settings.model.sonnet')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -462,19 +464,19 @@ export function Settings() {
                     disabled={saving}
                     className="w-4 h-4 text-orange-500 bg-white dark:bg-daily-dark border-gray-300 dark:border-gray-600 focus:ring-orange-500"
                   />
-                  <span className="text-gray-700 dark:text-gray-200">Haiku (faster, cheaper)</span>
+                  <span className="text-gray-700 dark:text-gray-200">{t('settings.model.haiku')}</span>
                 </label>
               </div>
             </section>
 
             {/* Feature Toggles */}
             <section id="features" className="bg-gray-50 dark:bg-daily-light border border-gray-200 dark:border-orange-500/20 rounded-xl p-6 transition-colors">
-              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">Features</h2>
+              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">{t('settings.features.title')}</h2>
               <div className="space-y-4">
                 <label className="flex items-center justify-between cursor-pointer">
                   <div>
-                    <span className="text-gray-700 dark:text-gray-200">Enable Daily Summary</span>
-                    <p className="text-gray-500 text-sm">Generate daily digest from session summaries</p>
+                    <span className="text-gray-700 dark:text-gray-200">{t('settings.features.dailySummary')}</span>
+                    <p className="text-gray-500 text-sm">{t('settings.features.dailySummaryDesc')}</p>
                   </div>
                   <input
                     type="checkbox"
@@ -487,8 +489,8 @@ export function Settings() {
 
                 <label className="flex items-center justify-between cursor-pointer">
                   <div>
-                    <span className="text-gray-700 dark:text-gray-200">Enable Extraction Hints</span>
-                    <p className="text-gray-500 text-sm">Suggest potential skills and commands to extract</p>
+                    <span className="text-gray-700 dark:text-gray-200">{t('settings.features.extractionHints')}</span>
+                    <p className="text-gray-500 text-sm">{t('settings.features.extractionHintsDesc')}</p>
                   </div>
                   <input
                     type="checkbox"
@@ -501,8 +503,8 @@ export function Settings() {
 
                 <label className="flex items-center justify-between cursor-pointer">
                   <div>
-                    <span className="text-gray-700 dark:text-gray-200">Auto Digest</span>
-                    <p className="text-gray-500 text-sm">Automatically digest previous day's sessions on session start</p>
+                    <span className="text-gray-700 dark:text-gray-200">{t('settings.features.autoDigest')}</span>
+                    <p className="text-gray-500 text-sm">{t('settings.features.autoDigestDesc')}</p>
                   </div>
                   <input
                     type="checkbox"
@@ -514,15 +516,15 @@ export function Settings() {
                 </label>
 
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3">Auto Summarize on Show</h3>
+                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3">{t('settings.features.autoSummarizeTitle')}</h3>
                   <p className="text-gray-500 text-xs mb-4">
-                    Automatically summarize sessions that missed the session_end hook when opening daily show
+                    {t('settings.features.autoSummarizeDesc')}
                   </p>
 
                   <label className="flex items-center justify-between cursor-pointer mb-4">
                     <div>
-                      <span className="text-gray-700 dark:text-gray-200">Enable Auto Summarize</span>
-                      <p className="text-gray-500 text-sm">Master switch for auto-summarization</p>
+                      <span className="text-gray-700 dark:text-gray-200">{t('settings.features.enableAutoSummarize')}</span>
+                      <p className="text-gray-500 text-sm">{t('settings.features.enableAutoSummarizeDesc')}</p>
                     </div>
                     <input
                       type="checkbox"
@@ -535,8 +537,8 @@ export function Settings() {
 
                   <label className="flex items-center justify-between cursor-pointer mb-4">
                     <div>
-                      <span className="text-gray-700 dark:text-gray-200">Trigger on Show</span>
-                      <p className="text-gray-500 text-sm">Check for missed sessions every time daily show is opened</p>
+                      <span className="text-gray-700 dark:text-gray-200">{t('settings.features.triggerOnShow')}</span>
+                      <p className="text-gray-500 text-sm">{t('settings.features.triggerOnShowDesc')}</p>
                     </div>
                     <input
                       type="checkbox"
@@ -549,8 +551,8 @@ export function Settings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-gray-700 dark:text-gray-200">Inactive Threshold</span>
-                      <p className="text-gray-500 text-sm">Minutes of inactivity before a session is considered ended</p>
+                      <span className="text-gray-700 dark:text-gray-200">{t('settings.features.inactiveThreshold')}</span>
+                      <p className="text-gray-500 text-sm">{t('settings.features.inactiveThresholdDesc')}</p>
                     </div>
                     <input
                       type="number"
@@ -568,9 +570,9 @@ export function Settings() {
 
             {/* Digest Time */}
             <section id="digest-time" className="bg-gray-50 dark:bg-daily-light border border-gray-200 dark:border-orange-500/20 rounded-xl p-6 transition-colors">
-              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">Digest Time</h2>
+              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">{t('settings.digestTime.title')}</h2>
               <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
-                Time to auto-digest previous day's sessions (format: HH:MM)
+                {t('settings.digestTime.desc')}
               </p>
               <input
                 type="time"
@@ -583,9 +585,9 @@ export function Settings() {
 
             {/* Author */}
             <section id="author" className="bg-gray-50 dark:bg-daily-light border border-gray-200 dark:border-orange-500/20 rounded-xl p-6 transition-colors">
-              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">Author</h2>
+              <h2 className="text-xl font-semibold text-orange-500 dark:text-orange-400 mb-4">{t('settings.author.title')}</h2>
               <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
-                Author name for archive metadata (optional)
+                {t('settings.author.desc')}
               </p>
               <input
                 type="text"
@@ -602,22 +604,22 @@ export function Settings() {
                   }
                 }}
                 disabled={saving}
-                placeholder="Enter author name..."
+                placeholder={t('settings.author.placeholder')}
                 className="w-full bg-white dark:bg-daily-dark border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
               />
             </section>
 
             {/* Info Section (read-only) */}
             <section id="info" className="bg-gray-100 dark:bg-daily-dark/50 border border-gray-200 dark:border-gray-700 rounded-xl p-6 transition-colors">
-              <h2 className="text-lg font-semibold text-gray-500 dark:text-gray-400 mb-3">Storage Info</h2>
+              <h2 className="text-lg font-semibold text-gray-500 dark:text-gray-400 mb-3">{t('settings.info.title')}</h2>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Storage Path</span>
+                  <span className="text-gray-500">{t('settings.info.storagePath')}</span>
                   <span className="text-gray-700 dark:text-gray-300 font-mono text-xs">{config.storage_path}</span>
                 </div>
               </div>
               <p className="text-gray-500 dark:text-gray-600 text-xs mt-4">
-                Storage path can only be changed via CLI: <code className="bg-gray-200 dark:bg-gray-800 px-1 rounded">daily config --set-storage &lt;path&gt;</code>
+                {t('settings.info.cliHint')} <code className="bg-gray-200 dark:bg-gray-800 px-1 rounded">daily config --set-storage &lt;path&gt;</code>
               </p>
             </section>
               </div>
